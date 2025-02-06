@@ -29,7 +29,7 @@ void close_pipe(int pipe_fd[2]){
 
 int main(){
     int pipe_fd[2];
-    __pid_t pid_rana, pid_grafica;
+    pid_t pid_rana, pid_grafica;
     pid_rana = fork();
     Messaggio msg;
 
@@ -37,9 +37,11 @@ int main(){
     if (pid_rana == -1){
         perror("Fork rana fallita");
     } else if (pid_rana == 0){
-        execl("./rana", "rana", NULL);
-        perror("Errore esecuzione rana.c");
-        exit(1);
+        frog(pipe_fd);
+        return 0;
+        // execl("./rana", "rana", NULL);  DA NON FARE
+        // perror("Errore esecuzione rana.c");
+        // exit(1);
     } else {
         switch (msg.oggetto)
         {
