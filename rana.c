@@ -9,6 +9,22 @@
 #include "strutture.h"
 #include "rana.h"
 
+// Sprite della rana
+char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA + 1] = {
+    " o.o ", 
+    "+-|-+", 
+    "\\-|-/"
+};
+
+// Funzione per disegnare la rana alla posizione (x, y)
+void draw_frog(int x, int y) {
+    for (int i = 0; i < ALTEZZA_RANA; i++) {
+        mvprintw(y + i, x, "%s", spriteRana[i]);
+    }
+    refresh();
+}
+
+
 
 void frog(int pipe_fd){
 
@@ -22,7 +38,7 @@ void frog(int pipe_fd){
     Messaggio msg;
     int x_max, y_max;
     getmaxyx(stdscr, y_max, x_max);
-    int centro_y = y_max -1;
+    int centro_y = y_max - ALTEZZA_RANA; // Ora la rana è completamente visibile
     int centro_x = x_max / 2;
     int input;
 
@@ -38,7 +54,7 @@ void frog(int pipe_fd){
                 if (msg.y > 0) msg.y--;
                 break;
             case KEY_DOWN:
-                if (msg.y < y_max - 1) msg.y++;
+                if (msg.y < y_max - ALTEZZA_RANA) msg.y++;
                 break;
             case KEY_LEFT:
                 if (msg.x > 0) msg.x--;
@@ -52,7 +68,6 @@ void frog(int pipe_fd){
             return;
     }
     write(pipe_fd, &msg, sizeof(Messaggio));
-    printf("Inviato: x = %d, y = %d\n", msg.x, msg.y);
     fflush(stdout);  // Forza la stampa immediata
 
     usleep(50000); // da vedere

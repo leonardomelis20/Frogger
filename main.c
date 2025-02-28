@@ -30,7 +30,8 @@ int main(){
     int pipe_fd[2];
     pid_t pid_rana;
     Messaggio msg;
-
+    int x, y;
+    getmaxyx(stdscr, y, x);
     if (pipe(pipe_fd) == -1){
         perror ("Errore creazione pipe");
         exit(EXIT_FAILURE);
@@ -55,12 +56,11 @@ int main(){
 
     //dovremo mettere uno switch case 
     while(1){
-         if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
-        clear();
-        mvprintw(msg.y, msg.x, RANA);
-        refresh();
-    
-    }
+        if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
+            clear();  // Pulisce lo schermo prima di disegnare
+            draw_frog(msg.x, msg.y);  // Disegna la rana alla posizione ricevuta
+            refresh();
+        }
     }
     endwin();
     return 0;
