@@ -10,22 +10,21 @@
 #include "rana.h"
 
 
-int frog(int pipe_fd[2]){
+void frog(int pipe_fd){
 
     initscr();
     noecho();
     cbreak();
+    keypad(stdscr, TRUE);
+    timeout(100);
     curs_set(0);
 
     Messaggio msg;
-    int pipe_rana[2];
-    int x, y;
-    getmaxyx(stdscr, y, x);
-    int centro_y = y -1;
-    int centro_x = x / 2;
+    int x_max, y_max;
+    getmaxyx(stdscr, y_max, x_max);
+    int centro_y = y_max -1;
+    int centro_x = x_max / 2;
     int input;
-
-    close(pipe_rana[0]);
 
     msg.oggetto = ID_RANA;
     msg.x = centro_x;
@@ -34,31 +33,30 @@ int frog(int pipe_fd[2]){
 
     while(1){
         input = getch();
-        if (input == 'q') { //debug
-            // Invia una posizione speciale (-1, -1) per segnalare la chiusura del gioco
-            msg.x = -1;
-            msg.y = -1;
-            write(pipe_rana[1], &msg, sizeof(Messaggio));
-            close(pipe_rana[1]);
-            _exit(0);
-        }
          switch (input) {
             case KEY_UP:
                 if (msg.y > 0) msg.y--;
                 break;
             case KEY_DOWN:
-                if (msg.y < y - 1) msg.y++;
+                if (msg.y < y_max - 1) msg.y++;
                 break;
             case KEY_LEFT:
                 if (msg.x > 0) msg.x--;
                 break;
             case KEY_RIGHT:
-                if (msg.x < x - 1) msg.x++;
+                if (msg.x < x_max - 1) msg.x++;
                 break;
+            case 'q':
+            endwin();
+            close(pipe_fd);
+            return;
     }
-    write(pipe_rana[1], &msg, sizeof(Messaggio));
-    usleep(50000); // da vedere
+    write(pipe_fd, &msg, sizeof(Messaggio));
+    printf("Inviato: x = %d, y = %d\n", msg.x, msg.y);
+    fflush(stdout);  // Forza la stampa immediata
 
+    usleep(50000); // da vedere
     }
+    endwin();
 
 }

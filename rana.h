@@ -4,6 +4,6 @@
 #define RANA "°°"
 #define ID_RANA 1
 
-int frog(int pipe_fd[2]);
+void frog(int pipe_fd);
 
 #endif
