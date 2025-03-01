@@ -31,13 +31,13 @@
 void inizializza_schermo(); //per chiamare le funzioni ncurses
 int main(){
     int pipe_fd[2];
-    pid_t pid_rana, pid_coccodrillo;
+    pid_t pid_rana, pid_coccodrillo[8];
     Messaggio msg;
-    int x, y;
+    int x = GAME_HEIGHT, y = GAME_WIDTH;
     int prev_x_rana = -1, prev_y_rana = -1; 
 
     inizializza_schermo();
-    getmaxyx(stdscr, y, x);
+    //getmaxyx(stdscr, y, x);
     box(stdscr, 0, 0);  // Disegna un bordo attorno allo schermo
     refresh();
 
@@ -56,17 +56,21 @@ int main(){
         frog(pipe_fd[WRITE]); //passo la pipe direttamente in scrittura
         exit(EXIT_SUCCESS);
     }
+    for (int i = 0; i < 8; i++){
+        pid_coccodrillo[i] = fork();
 
-    pid_coccodrillo = fork();
-
-    if (pid_coccodrillo == -1){
+    if (pid_coccodrillo[i] == -1){
         perror("Fork coccodrillo fallita");
         exit(EXIT_FAILURE);
-    } else if (pid_coccodrillo == 0){
+    } else if (pid_coccodrillo[i] == 0){
+        int y_pos = 2 +(i*3);
         close(pipe_fd[READ]);  //chiudo la pipe in lettura
-        crocodile(pipe_fd[WRITE]); //passo la pipe direttamente in scrittura
+        crocodile(pipe_fd[WRITE], y_pos); //passo la pipe direttamente in scrittura
         exit(EXIT_SUCCESS);
     }
+    }
+    
+    
     // Processo padre chiude scrittura e legge dalla pipe
     close(pipe_fd[WRITE]);
    
@@ -95,15 +99,22 @@ int main(){
                 case ID_CROCODILE: draw_crocodile(msg.x, msg.y); break;
             }
             refresh();
-        }
+        } 
     }
     
     
     kill(pid_rana, SIGKILL);
-    kill(pid_coccodrillo, SIGKILL);
-
     waitpid(pid_rana, NULL, 0);
-    waitpid(pid_coccodrillo, NULL, 0);
+    for (int i = 0; i < 8; i++)
+    {
+        kill(pid_coccodrillo[i], SIGKILL);
+        waitpid(pid_coccodrillo[i], NULL, 0);
+    }
+    
+    
+
+    
+    
 
     endwin();
     return 0;

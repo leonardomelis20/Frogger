@@ -17,13 +17,13 @@ char spriteCoccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
 
 void draw_crocodile(int x, int y){
     for (int i = 0; i < ALTEZZA_COCCODRILLO; i++){
-        mvprintw(y+i, x, "%s", spriteCoccodrillo[i]);
+        mvprintw( y+i, x, "%s", spriteCoccodrillo[i]);
     }
     refresh();
 }
 
 
-void crocodile(int pipe_fd){
+void crocodile(int pipe_fd, int y_pos){
 
     srand(time(NULL));
     initscr();

@@ -2,7 +2,7 @@
 #define STRUTTURE_H
 
 #define GAME_WIDTH 80  // Larghezza dell'area di gioco
-#define GAME_HEIGHT 24 // Altezza dell'area di gioco
+#define GAME_HEIGHT 33 // Altezza dell'area di gioco
 #define LARGHEZZA_RANA 5
 #define ALTEZZA_RANA 3
 #define LARGHEZZA_COCCODRILLO 11
