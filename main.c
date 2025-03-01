@@ -8,6 +8,8 @@
 
 #include "rana.h"
 #include "strutture.h"
+#include "coccodrilli.h"
+#include "disegni.h"
 
 #define READ 0 //macro da usare nelle pipe x codice più leggibile
 #define WRITE 1
@@ -25,12 +27,12 @@
                   8)tane */
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
-
 int main(){
     int pipe_fd[2];
-    pid_t pid_rana;
+    pid_t pid_rana, pid_coccodrillo;
     Messaggio msg;
     int x, y;
+    inizializza_schermo();
     getmaxyx(stdscr, y, x);
     if (pipe(pipe_fd) == -1){
         perror ("Errore creazione pipe");
@@ -48,17 +50,45 @@ int main(){
         exit(EXIT_SUCCESS);
     }
 
+    pid_coccodrillo = fork();
+    if (pid_coccodrillo == -1){
+        perror("Fork coccodrillo fallita");
+        exit(EXIT_FAILURE);
+    } else if (pid_coccodrillo == 0){
+        close(pipe_fd[READ]);  //chiudo la pipe in lettura
+        crocodile(pipe_fd[WRITE]); //passo la pipe direttamente in scrittura
+        exit(EXIT_SUCCESS);
+    }
     // Processo padre chiude scrittura e legge dalla pipe
     close(pipe_fd[WRITE]);
+   
 
 
-    inizializza_schermo();
-
+    switch (msg.oggetto)
+    {
+    case ID_RANA:
+    if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
+        clear();  // Pulisce lo schermo prima di disegnare
+        draw_frog(msg.x, msg.y); 
+        refresh();
+        break;
+    case ID_CROCODILE:
+        clear();
+        draw_crocodile(msg.x, msg.y);
+        refresh();
+        break;
+    }
     //dovremo mettere uno switch case 
-    while(1){
+   /* while(1){
+       /* draw_river();
+        draw_burrows();
+        draw_safety_zones();
+        refresh();*/
+        
         if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
             clear();  // Pulisce lo schermo prima di disegnare
             draw_frog(msg.x, msg.y);  // Disegna la rana alla posizione ricevuta
+            draw_crocodile(msg.x, msg.y);
             refresh();
         }
     }
@@ -74,4 +104,5 @@ void inizializza_schermo(){
     cbreak();
     timeout(100);
     curs_set(0);
+    
 }
