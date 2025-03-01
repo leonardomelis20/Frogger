@@ -24,9 +24,14 @@ void draw_frog(int x, int y) {
     refresh();
 }
 
-
+void clear_frog(int x, int y) {
+    for (int i = 0; i < ALTEZZA_RANA; i++) {
+        mvprintw(y + i, x, "     ");  // 5 spazi per cancellare la rana
+    }
+}
 
 void frog(int pipe_fd){
+
 
     initscr();
     noecho();

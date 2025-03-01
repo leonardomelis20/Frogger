@@ -5,5 +5,6 @@
 
 void frog(int pipe_fd);
 void draw_frog(int x, int y); // Nuova funzione per disegnare la rana
+void clear_frog(int x, int y);
 
 #endif

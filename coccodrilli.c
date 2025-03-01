@@ -9,7 +9,7 @@
 #include "strutture.h"
 #include "coccodrilli.h"
 
-char spriteCoccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO] = {
+char spriteCoccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
     "  ~~~___~~ ",  
     " (o)---(o) ",  
     "  ~~~   ~~ "   
@@ -22,7 +22,9 @@ void draw_crocodile(int x, int y){
     refresh();
 }
 
+
 void crocodile(int pipe_fd){
+
     srand(time(NULL));
     initscr();
     noecho();
@@ -40,7 +42,7 @@ void crocodile(int pipe_fd){
     } else {
         direzione = -1;
     }
-    getmaxyx(stdscr, y_max, x_max);
+   // getmaxyx(stdscr, y_max, x_max);
 
     msg.oggetto = ID_CROCODILE;
     msg.x = x_max;
@@ -52,7 +54,12 @@ void crocodile(int pipe_fd){
         if (msg.x >= GAME_WIDTH - LARGHEZZA_COCCODRILLO || msg.x < 0){
             direzione *= -1;
         }
-        write(pipe_fd, &msg, sizeof(Messaggio));
+       // printf("Coccodrillo x = %d y = %d", msg.x, msg.y);
+        if (write(pipe_fd, &msg, sizeof(Messaggio)) == -1) {
+            perror("Errore durante la scrittura della pipe");
+            endwin();
+            exit(EXIT_FAILURE);
+        }
         usleep(300000);
         fflush(stdout);
     }
