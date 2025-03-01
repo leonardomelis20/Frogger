@@ -64,32 +64,28 @@ int main(){
    
 
 
-    switch (msg.oggetto)
-    {
-    case ID_RANA:
-    if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
-        clear();  // Pulisce lo schermo prima di disegnare
-        draw_frog(msg.x, msg.y); 
-        refresh();
-        break;
-    case ID_CROCODILE:
-        clear();
-        draw_crocodile(msg.x, msg.y);
-        refresh();
-        break;
-    }
+    
     //dovremo mettere uno switch case 
-   /* while(1){
+    while(1){
        /* draw_river();
         draw_burrows();
         draw_safety_zones();
         refresh();*/
-        
         if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
-            clear();  // Pulisce lo schermo prima di disegnare
-            draw_frog(msg.x, msg.y);  // Disegna la rana alla posizione ricevuta
-            draw_crocodile(msg.x, msg.y);
-            refresh();
+            clear();
+        switch (msg.oggetto)
+    {
+    case ID_RANA:
+    {
+        draw_frog(msg.x, msg.y); 
+        break;
+    case ID_CROCODILE:
+        draw_crocodile(msg.x, msg.y);
+       
+        break;
+    }
+    refresh();
+        
         }
     }
     endwin();
