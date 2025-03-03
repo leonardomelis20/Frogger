@@ -9,6 +9,8 @@
 #define ALTEZZA_COCCODRILLO 3
 #define NUM_STREAMS 8
 #define NUM_BURROWS 5
+#define MIN_COCCODRILLO 1
+#define MAX_COCCODRILLO 100 
 
 enum oggetto {FROG, COCCODRILLO};
 

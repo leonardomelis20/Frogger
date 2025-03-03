@@ -4,6 +4,6 @@
 #define ID_CROCODILE 2
 
 void draw_crocodile(int, int);
-void crocodile(int, int);
+void crocodile(int, int, int, int);
 
 #endif

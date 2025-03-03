@@ -23,9 +23,9 @@ void draw_crocodile(int x, int y){
 }
 
 
-void crocodile(int pipe_fd, int y_pos){
+void crocodile(int pipe_fd, int y_pos, int direzione, int x_start){
+    srand(time(NULL) ^ getpid());
 
-    srand(time(NULL));
     initscr();
     noecho();
     cbreak();
@@ -34,18 +34,12 @@ void crocodile(int pipe_fd, int y_pos){
     curs_set(0);
 
     Messaggio msg;
-    int x_max = 1;
     int vx = 2, vy = 2; //velocità
-    int direzione;
-    if (rand() % 2 == 0){
-        direzione = 1;
-    } else {
-        direzione = -1;
-    }
-   // getmaxyx(stdscr, y_max, x_max);
+    int x_max;
+
 
     msg.oggetto = ID_CROCODILE;
-    msg.x = x_max;
+    msg.x = x_start;
     msg.y = y_pos;
 
     while (1)
