@@ -17,7 +17,7 @@ char spriteCoccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
 
 void draw_crocodile(int x, int y){
     for (int i = 0; i < ALTEZZA_COCCODRILLO; i++){
-        mvprintw( y+i, x, "%s", spriteCoccodrillo[i]);
+        mvprintw( y +i, x, "%s", spriteCoccodrillo[i]);
     }
     refresh();
 }
@@ -34,7 +34,7 @@ void crocodile(int pipe_fd, int y_pos){
     curs_set(0);
 
     Messaggio msg;
-    int x_max = 1, y_max = 1;
+    int x_max = 1;
     int vx = 2, vy = 2; //velocità
     int direzione;
     if (rand() % 2 == 0){
@@ -46,7 +46,7 @@ void crocodile(int pipe_fd, int y_pos){
 
     msg.oggetto = ID_CROCODILE;
     msg.x = x_max;
-    msg.y = y_max;
+    msg.y = y_pos;
 
     while (1)
     {

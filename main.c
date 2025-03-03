@@ -35,7 +35,6 @@ int main(){
     Messaggio msg;
     int x = GAME_HEIGHT, y = GAME_WIDTH;
     int prev_x_rana = -1, prev_y_rana = -1; 
-
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
     box(stdscr, 0, 0);  // Disegna un bordo attorno allo schermo
@@ -98,8 +97,8 @@ int main(){
                 break;
                 case ID_CROCODILE: draw_crocodile(msg.x, msg.y); break;
             }
-            refresh();
         } 
+        refresh();
     }
     
     
@@ -130,4 +129,6 @@ void inizializza_schermo(){
     timeout(100);
     curs_set(0);
     
+    resize_term(GAME_HEIGHT, GAME_WIDTH);
+    clear();
 }

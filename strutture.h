@@ -16,6 +16,7 @@ typedef struct {
     int x;
     int y;
     int oggetto;
+    int vel; // velocità per i coccodrilli, nella rana non ci serve quindi basta non inizializzarla
 } Messaggio;
 
 #endif 
