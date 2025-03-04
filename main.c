@@ -11,6 +11,7 @@
 #include "strutture.h"
 #include "coccodrilli.h"
 #include "disegni.h"
+#include "collisioni.h"
 
 #define READ 0 //macro da usare nelle pipe x codice più leggibile
 #define WRITE 1
@@ -37,6 +38,9 @@ int main(){
     int x = GAME_HEIGHT, y = GAME_WIDTH;
     int prev_x_rana = -1, prev_y_rana = -1; 
     int direzione, x_max;
+    int coccodrilli_x[NUM_STREAMS] = {0};
+    int coccodrilli_y[NUM_STREAMS] = {0};
+    int found;
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
     box(stdscr, 0, 0);  // Disegna un bordo attorno allo schermo
@@ -85,7 +89,22 @@ int main(){
                 prev_y_rana = msg.y;
                 draw_frog(msg.x, msg.y);
                 break;
-                case ID_CROCODILE: draw_crocodile(msg.x, msg.y); break;
+                case ID_CROCODILE: 
+                for (int i = 0; i < NUM_STREAMS && !found; i++)
+                {
+                    if (coccodrilli_x[i] == 0){
+                        coccodrilli_x[i] = msg.x;
+                        coccodrilli_y[i] = msg.y;
+                        found = 1;
+                    }
+                }
+                
+                draw_crocodile(msg.x, msg.y); break;
+            }
+            if (!verifica_collisione(prev_x_rana, prev_y_rana, coccodrilli_x, coccodrilli_y)){
+                printf("La rana è caduta\n");
+                endwin();
+                exit(EXIT_FAILURE);
             }
         } 
         refresh();
@@ -118,9 +137,18 @@ void inizializza_schermo(){
 }
 
 void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]){
-    int direzione_iniziale = rand() % 2 == 0 ? 1 : -1;  // 1 = da sinistra a destra, -1 = da destra a sinistra
-    int direzione = direzione_iniziale; // Memorizza la direzione attuale
+    srand(time(NULL) ^ getpid());
+    int direzione; // Memorizza la direzione attuale
+    int num = MIN_COCCODRILLO + rand() % (MAX_COCCODRILLO - MIN_COCCODRILLO +1);
+    int x_max;
 
+    if (num % 2 == 0){
+        direzione = 1;
+        x_max = 0; 
+    } else {
+        direzione = -1; 
+        x_max = GAME_WIDTH - LARGHEZZA_COCCODRILLO; 
+    }
     for (int i = 0; i < 8; i++) {
         pid_coccodrillo[i] = fork();
 
@@ -129,13 +157,20 @@ void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]){
             exit(EXIT_FAILURE);
         } else if (pid_coccodrillo[i] == 0) {
             int y_pos = 2 + (i * 3);
-            int x_start = (direzione == 1) ? 0 : (GAME_WIDTH - LARGHEZZA_COCCODRILLO);
             
             close(pipe_fd[READ]);  
-            crocodile(pipe_fd[WRITE], y_pos, direzione, x_start);  
+            crocodile(pipe_fd[WRITE], y_pos, direzione, x_max);  
             exit(EXIT_SUCCESS);
         }
 
-        direzione *= -1; // Alterna la direzione per il prossimo coccodrillo
+        if (direzione == 1) {
+            direzione = -1;
+            x_max = GAME_WIDTH - LARGHEZZA_COCCODRILLO;
+        } else {
+            direzione = 1;
+            x_max = 0;
+        }
+
+        //direzione *= -1; // Alterna la direzione per il prossimo coccodrillo
     }
 }

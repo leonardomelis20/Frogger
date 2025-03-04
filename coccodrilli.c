@@ -24,7 +24,7 @@ void draw_crocodile(int x, int y){
 
 
 void crocodile(int pipe_fd, int y_pos, int direzione, int x_start){
-    srand(time(NULL) ^ getpid());
+    
 
     initscr();
     noecho();
