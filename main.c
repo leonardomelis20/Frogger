@@ -40,7 +40,11 @@ int main(){
     int direzione, x_max;
     int coccodrilli_x[NUM_STREAMS] = {0};
     int coccodrilli_y[NUM_STREAMS] = {0};
-    int found;
+    int found = 0;
+    int vite = 5;
+
+
+
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
     box(stdscr, 0, 0);  // Disegna un bordo attorno allo schermo
@@ -73,12 +77,11 @@ int main(){
     //dovremo mettere uno switch case 
     while(1){
        /* draw_river();
-        draw_burrows();
+        draw_burrows();*/
         draw_safety_zones();
-        refresh();*/
+        refresh();
         if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
-            //printf("Ricevuto messaggio: oggetto=%d, x=%d, y=%d\n", msg.oggetto, msg.x, msg.y); 
-            //clear();
+
             switch (msg.oggetto) {
                 case ID_RANA: if (prev_x_rana != -1 && prev_y_rana != -1) {
                     clear_frog(prev_x_rana, prev_y_rana);
@@ -98,17 +101,25 @@ int main(){
                         found = 1;
                     }
                 }
-                
                 draw_crocodile(msg.x, msg.y); break;
             }
-            if (!verifica_collisione(prev_x_rana, prev_y_rana, coccodrilli_x, coccodrilli_y)){
-                printf("La rana è caduta\n");
-                endwin();
-                exit(EXIT_FAILURE);
-            }
-        } 
-        refresh();
+            
+        //printf("x %d y %d", prev_x_rana, prev_y_rana);
+    if (prev_x_rana != -1 && prev_y_rana != -1) {
+        int collisione = verifica_collisione(prev_x_rana, prev_y_rana, coccodrilli_x, coccodrilli_y);
+        if (!collisione) {  // Se la collisione è 0, la rana è caduta
+        printf("💀 La rana è caduta in acqua! GAME OVER.\n");
+        fflush(stdout);
+        sleep(10);  // Aspetta 10 secondo per permettere la stampa
+        endwin();
+        vite--;
+        exit(EXIT_FAILURE);
     }
+                refresh();
+            }
+        }
+    }
+        
     
     
     kill(pid_rana, SIGKILL);
@@ -118,6 +129,7 @@ int main(){
         kill(pid_coccodrillo[i], SIGKILL);
         waitpid(pid_coccodrillo[i], NULL, 0);
     }
+
     
     endwin();
     return 0;
@@ -156,7 +168,7 @@ void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]){
             perror("Fork coccodrillo fallita");
             exit(EXIT_FAILURE);
         } else if (pid_coccodrillo[i] == 0) {
-            int y_pos = 2 + (i * 3);
+            int y_pos = 9 + (i * 3);
             
             close(pipe_fd[READ]);  
             crocodile(pipe_fd[WRITE], y_pos, direzione, x_max);  
@@ -170,7 +182,6 @@ void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]){
             direzione = 1;
             x_max = 0;
         }
-
         //direzione *= -1; // Alterna la direzione per il prossimo coccodrillo
     }
 }

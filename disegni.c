@@ -47,7 +47,7 @@ void draw_burrows() {
 
 void draw_safety_zones() {
     attron(COLOR_PAIR(2));
-    mvhline(0, 0, '=', GAME_WIDTH); // Prato superiore
-    mvhline(GAME_HEIGHT - 1, 0, '=', GAME_WIDTH); // Prato inferiore
+    mvhline(7, 0, '=', GAME_WIDTH); // Prato superiore
+    mvhline(SAFE_ZONE, 0, '=', GAME_WIDTH); // Prato inferiore
     attroff(COLOR_PAIR(2));
 }
