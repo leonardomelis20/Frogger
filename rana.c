@@ -67,19 +67,6 @@ void frog(int pipe_fd){
             case KEY_RIGHT:
                 if (msg.x < x_max - 1) msg.x++;
                 break;
-            case ' ':
-                if (msg.y > SALTO_ALTEZZA) {
-                // Fase 1: la rana si alza
-                msg.y -= SALTO_ALTEZZA;
-                msg.x += SALTO_DISTANZA / 2;  // Si sposta leggermente avanti
-                write(pipe_fd, &msg, sizeof(Messaggio));
-        usleep(100000); // Pausa per mostrare il salto
-    }
-    // Fase 2: la rana scende
-    msg.y += SALTO_ALTEZZA;
-    msg.x += SALTO_DISTANZA / 2;  // Continua ad avanzare un po'
-    write(pipe_fd, &msg, sizeof(Messaggio));
-    break
             case 'q':
             endwin();
             close(pipe_fd);
