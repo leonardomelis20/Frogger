@@ -15,10 +15,19 @@
 
 enum oggetto {FROG, COCCODRILLO};
 
+
+
+//possiamo valutare di usare una struttura per chiudere bene tutti i processi
+typedef struct{
+    pid_t pid_rana;
+    pid_t pid_coccodrillo[NUM_STREAMS];
+} Processi;
+
 typedef struct {
     int x;
     int y;
     int oggetto;
+    bool salto;
 } Messaggio;
 
 #endif 

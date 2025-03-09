@@ -30,6 +30,7 @@
                   8)tane */
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
+void termina_gioco(pid_t, pid_t*);
 void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]);
 int main(){
     int pipe_fd[2];
@@ -42,6 +43,7 @@ int main(){
     int coccodrilli_y[NUM_STREAMS] = {0};
     int found = 0;
     int vite = 5;
+    int input;
 
 
 
@@ -110,26 +112,15 @@ int main(){
         if (!collisione) {  // Se la collisione è 0, la rana è caduta
         printf("💀 La rana è caduta in acqua! GAME OVER.\n");
         fflush(stdout);
-        sleep(10);  // Aspetta 10 secondo per permettere la stampa
+        sleep(3);  // Aspetta 10 secondo per permettere la stampa
         endwin();
         vite--;
-        exit(EXIT_FAILURE);
+        exit(EXIT_SUCCESS);
     }
                 refresh();
             }
         }
     }
-        
-    
-    
-    kill(pid_rana, SIGKILL);
-    waitpid(pid_rana, NULL, 0);
-    for (int i = 0; i < 8; i++)
-    {
-        kill(pid_coccodrillo[i], SIGKILL);
-        waitpid(pid_coccodrillo[i], NULL, 0);
-    }
-
     
     endwin();
     return 0;
@@ -146,6 +137,25 @@ void inizializza_schermo(){
     curs_set(0);
     resize_term(GAME_HEIGHT, GAME_WIDTH);
     clear();
+}
+
+
+/* dobbiamo creare un processo che si occupi solo di chiudere gli altri processi chiamando questa funzione*/
+void termina_gioco(pid_t pid_rana, pid_t pid_coccodrillo[]) {
+    // Termina la rana
+    kill(pid_rana, SIGKILL);
+    waitpid(pid_rana, NULL, 0);
+
+    // Termina tutti i coccodrilli
+    for (int i = 0; i < NUM_STREAMS; i++) {
+        kill(pid_coccodrillo[i], SIGKILL);
+        waitpid(pid_coccodrillo[i], NULL, 0);
+    }
+
+    // Chiude ncurses e stampa un messaggio di uscita
+    endwin();
+    printf("Gioco terminato!\n");
+    exit(EXIT_SUCCESS);
 }
 
 void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]){

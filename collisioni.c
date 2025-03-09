@@ -15,7 +15,7 @@
 int verifica_collisione(int x_rana, int y_rana, int x_coccodrillo[], int y_coccodrillo[]){
 
     int cx_start = 0, cx_end = 0, cy = 0;
-    bool sopra, mid_sopra; 
+    bool sopra, mid_sopra, between = false; 
     int lim_dx = 0, lim_sx = 0;
     int mid_rana = 0;
     int flag = 0;
@@ -52,10 +52,25 @@ int verifica_collisione(int x_rana, int y_rana, int x_coccodrillo[], int y_cocco
                 flag = 0;
             }
            }
+           //non funziona?????
+           if (i < NUM_STREAMS - 1) {
+            int cx_next_start = x_coccodrillo[i + 1];
+            int cx_next_end = cx_next_start + LARGHEZZA_COCCODRILLO;
+            
+            if (cx_end < cx_next_start && x_rana > cx_end -3 && x_rana < cx_next_start +3) {
+                between = true;
+            }
+        }
+
         
 
         }
     }
-        return flag;
+    if (flag || between) {
+        return 1;  // Collisione valida, la rana è sopra qualcosa di sicuro
+    } else {
+        return 0;  // Nessuna collisione valida, la rana è in acqua
+    }
 }
+
 

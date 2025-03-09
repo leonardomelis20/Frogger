@@ -5,6 +5,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #include "strutture.h"
 #include "rana.h"
@@ -50,6 +51,7 @@ void frog(int pipe_fd){
     msg.oggetto = ID_RANA;
     msg.x = centro_x;
     msg.y= centro_y;
+    msg.salto = false;
 
 
     while(1){
@@ -67,6 +69,9 @@ void frog(int pipe_fd){
             case KEY_RIGHT:
                 if (msg.x < x_max - 1) msg.x++;
                 break;
+            case ' ':
+                if (msg.x < x_max -1) msg.y -= 3;
+                break;
             case 'q':
             endwin();
             close(pipe_fd);
@@ -74,7 +79,6 @@ void frog(int pipe_fd){
     }
     write(pipe_fd, &msg, sizeof(Messaggio));
     fflush(stdout);  // Forza la stampa immediata
-
     usleep(50000); // da vedere
     }
     endwin();
