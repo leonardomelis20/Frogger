@@ -25,6 +25,7 @@ void draw_crocodile(int x, int y){
 
 void crocodile(int pipe_fd, int y_pos, int direzione, int x_start){
     
+    srand(time(NULL)); 
 
     initscr();
     noecho();
@@ -34,16 +35,17 @@ void crocodile(int pipe_fd, int y_pos, int direzione, int x_start){
     curs_set(0);
 
     Messaggio msg;
-    int vx = 2, vy = 2; //velocità
     int x_max;
 
 
     msg.oggetto = ID_CROCODILE;
     msg.x = x_start;
     msg.y = y_pos;
+   
 
     while (1)
     {
+        msg.velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
         msg.x += direzione;
         if (msg.x >= GAME_WIDTH - LARGHEZZA_COCCODRILLO || msg.x < 0){
             direzione *= -1;
@@ -54,8 +56,7 @@ void crocodile(int pipe_fd, int y_pos, int direzione, int x_start){
             endwin();
             exit(EXIT_FAILURE);
         }
-        usleep(300000);
-        fflush(stdout);
+        usleep(msg.velocita);
     }
     
     endwin();

@@ -39,15 +39,15 @@ void draw_burrows() {
     attron(COLOR_PAIR(4));
     int spacing = GAME_WIDTH / NUM_BURROWS;
     for (int i = 0; i < NUM_BURROWS; i++) {
-        int x = i * spacing + (spacing - LARGHEZZA_RANA) / 2;
-        mvhline(1, x, '[', LARGHEZZA_RANA);
+        int x = i * spacing + (spacing - LARGHEZZA_TANA) / 2;
+        mvprintw(1, x, "[     ]");
     }
     attroff(COLOR_PAIR(4));
 }
 
 void draw_safety_zones() {
     attron(COLOR_PAIR(2));
-    mvhline(7, 0, '=', GAME_WIDTH); // Prato superiore
-    mvhline(SAFE_ZONE, 0, '=', GAME_WIDTH); // Prato inferiore
+    mvhline(SAFE_ZONE_END, 0, '=', GAME_WIDTH); // Prato superiore
+    mvhline(SAFE_ZONE_START, 0, '=', GAME_WIDTH); // Prato inferiore
     attroff(COLOR_PAIR(2));
 }

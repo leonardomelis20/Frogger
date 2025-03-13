@@ -25,7 +25,7 @@ int verifica_collisione(int x_rana, int y_rana, int x_coccodrillo[], int y_cocco
 
 
 
-    if (y_rana >= SAFE_ZONE - 3 && y_rana <= GAME_HEIGHT){ //controllo marciapiede iniziale
+    if (y_rana >= SAFE_ZONE_START - 3 && y_rana <= GAME_HEIGHT){ //controllo marciapiede iniziale
         flag = 1;
     }
 

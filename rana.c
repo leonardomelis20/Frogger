@@ -51,23 +51,25 @@ void frog(int pipe_fd){
     msg.oggetto = ID_RANA;
     msg.x = centro_x;
     msg.y= centro_y;
-    msg.salto = false;
+
+
+    //muoversi di 3
 
 
     while(1){
         input = getch();
          switch (input) {
             case KEY_UP:
-                if (msg.y > 0) msg.y--;
+                if (msg.y > 0) msg.y -= 3;
                 break;
             case KEY_DOWN:
-                if (msg.y < y_max - ALTEZZA_RANA) msg.y++;
+                if (msg.y < y_max - ALTEZZA_RANA) msg.y +=3;
                 break;
             case KEY_LEFT:
-                if (msg.x > 0) msg.x--;
+                if (msg.x > 0) msg.x-= 3;
                 break;
             case KEY_RIGHT:
-                if (msg.x < x_max - 1) msg.x++;
+                if (msg.x < x_max - 1) msg.x+= 3;
                 break;
             case ' ':
                 if (msg.x < x_max -1) msg.y -= 3;
