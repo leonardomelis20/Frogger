@@ -14,8 +14,8 @@
 #define SAFE_ZONE_START 33
 #define SAFE_ZONE_END 5
 #define LARGHEZZA_TANA 7
-#define MIN_VELOCITA 100000
-#define MAX_VELOCITA 1000000
+#define MIN_VELOCITA 50000   // 0.05 secondi
+#define MAX_VELOCITA 70000  // 0.07 secondi
 
 
 enum oggetto {FROG, COCCODRILLO};

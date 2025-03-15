@@ -44,7 +44,8 @@ int main(){
     int found = 0;
     int vite = 5;
     int input;
-    int velocita_c[NUM_STREAMS] = {0}; 
+    int prev_x_c = -1, prev_y_c = -1;
+    
 
     
     inizializza_schermo();
@@ -86,7 +87,7 @@ int main(){
         if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
 
             switch (msg.oggetto) {
-                case ID_RANA: if (prev_x_rana != -1 && prev_y_rana != -1) {
+                case ID_RANA: if (prev_x_rana != -1 && prev_y_rana != -1) { // Se la rana è già stata disegnata
                     clear_frog(prev_x_rana, prev_y_rana);
                 }
 
@@ -96,18 +97,18 @@ int main(){
                 draw_frog(msg.x, msg.y);
                 break;
                 case ID_CROCODILE: 
-                //found serve per fermare il ciclo for non appena viene trovato uno slot libero
-                for (int i = 0; i < NUM_STREAMS && !found; i++)
-                {
-                    if (coccodrilli_x[i] == 0){
-                        coccodrilli_x[i] = msg.x;
-                        coccodrilli_y[i] = msg.y;
-                       
-                        found = 1;
-                    }
+                /*if(prev_x_c != -1 && prev_y_c != -1){
+                    clear_cocodrile(prev_x_c, prev_y_c);
                 }
+                prev_x_c = msg.x;
+                prev_y_c = msg.y;*/
                 draw_crocodile(msg.x, msg.y); break;
+
+
+
+
             }
+
             
         //printf("x %d y %d", prev_x_rana, prev_y_rana);
     /*if (prev_x_rana != -1 && prev_y_rana != -1) {
@@ -124,6 +125,15 @@ int main(){
             }*/
             refresh();
         }
+    }
+
+    kill(pid_rana, SIGKILL);
+    waitpid(pid_rana, NULL, 0);
+
+    // Termina tutti i coccodrilli
+    for (int i = 0; i < NUM_STREAMS; i++) {
+        kill(pid_coccodrillo[i], SIGKILL);
+        waitpid(pid_coccodrillo[i], NULL, 0);
     }
     
     endwin();
@@ -147,14 +157,7 @@ void inizializza_schermo(){
 /* dobbiamo creare un processo che si occupi solo di chiudere gli altri processi chiamando questa funzione*/
 void termina_gioco(pid_t pid_rana, pid_t pid_coccodrillo[]) {
     // Termina la rana
-    kill(pid_rana, SIGKILL);
-    waitpid(pid_rana, NULL, 0);
-
-    // Termina tutti i coccodrilli
-    for (int i = 0; i < NUM_STREAMS; i++) {
-        kill(pid_coccodrillo[i], SIGKILL);
-        waitpid(pid_coccodrillo[i], NULL, 0);
-    }
+   
 
     // Chiude ncurses e stampa un messaggio di uscita
     endwin();
@@ -163,10 +166,11 @@ void termina_gioco(pid_t pid_rana, pid_t pid_coccodrillo[]) {
 }
 
 void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]){
-    srand(time(NULL) ^ getpid());
     int direzione; // Memorizza la direzione attuale
     int num = MIN_COCCODRILLO + rand() % (MAX_COCCODRILLO - MIN_COCCODRILLO +1);
     int x_max;
+    Messaggio msg;
+    int velocita = 0;
 
     if (num % 2 == 0){
         direzione = 1;
@@ -176,16 +180,24 @@ void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]){
         x_max = GAME_WIDTH - LARGHEZZA_COCCODRILLO; 
     }
     for (int i = 0; i < 9; i++) {
+        
         pid_coccodrillo[i] = fork();
 
         if (pid_coccodrillo[i] == -1) {
             perror("Fork coccodrillo fallita");
             exit(EXIT_FAILURE);
         } else if (pid_coccodrillo[i] == 0) {
+            //viene creato il seed casuale all'interno del processo figlio
+            srand(time(NULL) ^ getpid());
+            velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
             int y_pos = 6 + (i * 3);
             
+            msg.oggetto= ID_CROCODILE;
+            
+            
+            
             close(pipe_fd[READ]);  
-            crocodile(pipe_fd[WRITE], y_pos, direzione, x_max);  
+            crocodile(pipe_fd[WRITE], y_pos, direzione, x_max, velocita);  
             exit(EXIT_SUCCESS);
         }
 
