@@ -8,14 +8,16 @@
 #define LARGHEZZA_COCCODRILLO 11
 #define ALTEZZA_COCCODRILLO 3
 #define NUM_STREAMS 9
+#define COCCODRILLI_X_FLUSSO 1
 #define NUM_BURROWS 5
 #define MIN_COCCODRILLO 1
 #define MAX_COCCODRILLO 100 
 #define SAFE_ZONE_START 33
 #define SAFE_ZONE_END 5
 #define LARGHEZZA_TANA 7
-#define MIN_VELOCITA 50000   // 0.05 secondi
-#define MAX_VELOCITA 70000  // 0.07 secondi
+#define MIN_VELOCITA 100000   // 0.1 secondi
+#define MAX_VELOCITA 150000  // 0.15 secondi
+#define MAX_MESSAGES 10
 
 
 enum oggetto {FROG, COCCODRILLO};
@@ -29,10 +31,19 @@ typedef struct{
 } Processi;
 
 typedef struct {
+     int speed;
+     int direzione;
+     int x_pos;
+     int y_pos;
+     int cont; //numero di coccodrilli nel flusso
+} InfoFlussi;
+
+typedef struct {
     int x;
     int y;
     int oggetto;
     int velocita;
+    int index;
 } Messaggio;
 
 #endif 

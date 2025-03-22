@@ -22,7 +22,6 @@ void draw_frog(int x, int y) {
     for (int i = 0; i < ALTEZZA_RANA; i++) {
         mvprintw(y + i, x, "%s", spriteRana[i]);
     }
-    refresh();
 }
 
 void clear_frog(int x, int y) {

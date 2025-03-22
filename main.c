@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h> //pipe non bloccante
 
 #include "rana.h"
 #include "strutture.h"
@@ -31,26 +32,29 @@
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
 void termina_gioco(pid_t, pid_t*);
-void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[9]);
+void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[NUM_STREAMS * COCCODRILLI_X_FLUSSO]);
 int main(){
     int pipe_fd[2];
-    pid_t pid_rana, pid_coccodrillo[9];
+    pid_t pid_rana, pid_coccodrillo[NUM_STREAMS*COCCODRILLI_X_FLUSSO];
     Messaggio msg;
-    int x = GAME_HEIGHT, y = GAME_WIDTH;
+    InfoFlussi info[NUM_STREAMS];
     int prev_x_rana = -1, prev_y_rana = -1; 
+    int prev_x_coccodrillo = -1, prev_y_coccodrillo = -1;
     int direzione, x_max;
     int coccodrilli_x[NUM_STREAMS] = {0};
     int coccodrilli_y[NUM_STREAMS] = {0};
-    int found = 0;
     int vite = 5;
-    int input;
     int prev_x_c = -1, prev_y_c = -1;
+    int status = 0;
     
 
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
-    box(stdscr, 0, 0);  // Disegna un bordo attorno allo schermo
+    box(stdscr, 0, 0); // Disegna un bordo attorno allo schermo
+    draw_safety_zones();
+    draw_burrows(); 
+    //mvprintw(GAME_HEIGHT/2, GAME_WIDTH/2 - 10, "Caricamento in corso...");
     refresh();
     
     if (pipe(pipe_fd) == -1){
@@ -71,43 +75,62 @@ int main(){
    inizializza_coccodrilli(pipe_fd, pid_coccodrillo);
     
     
-    // Processo padre chiude scrittura e legge dalla pipe
-    close(pipe_fd[WRITE]);
-   
-
-
-    
+  
     //dovremo mettere uno switch case 
-    while(1){
-       /* draw_river();
-        draw_burrows();*/
-        draw_safety_zones();
-        draw_burrows();
-        refresh();
-        if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0) {
 
+    // Imposta la pipe in modalità non bloccante
+    fcntl(pipe_fd[READ], F_SETFL, O_NONBLOCK);   
+    while (1) {
+        Messaggio msg;
+        ssize_t bytes_read;
+
+        // Leggi tutti i messaggi disponibili dalla pipe
+        while ((bytes_read = read(pipe_fd[READ], &msg, sizeof(Messaggio))) > 0) {
             switch (msg.oggetto) {
-                case ID_RANA: if (prev_x_rana != -1 && prev_y_rana != -1) { // Se la rana è già stata disegnata
-                    clear_frog(prev_x_rana, prev_y_rana);
+                case ID_RANA:
+                    if (prev_x_rana != -1 && prev_y_rana != -1) {
+                        clear_frog(prev_x_rana, prev_y_rana);
+                    }
+                    prev_x_rana = msg.x;
+                    prev_y_rana = msg.y;
+                    draw_frog(msg.x, msg.y);
+                    break;
+                    case ID_CROCODILE:
+                if (prev_x_coccodrillo != -1 && prev_y_coccodrillo != -1) {
+                    clear_cocodrile(prev_x_coccodrillo, prev_y_coccodrillo, msg.velocita, getpid());
                 }
-
-                // Aggiorna la posizione e disegna la rana
-                prev_x_rana = msg.x;
-                prev_y_rana = msg.y;
-                draw_frog(msg.x, msg.y);
+                prev_x_coccodrillo = msg.x;
+                prev_y_coccodrillo = msg.y;
+                draw_crocodile(msg.x, msg.y);
                 break;
-                case ID_CROCODILE: 
-                /*if(prev_x_c != -1 && prev_y_c != -1){
-                    clear_cocodrile(prev_x_c, prev_y_c);
+                case -1:
+                int i = msg.index;  // Get the index from the message
+                
+                // Use SIGTERM instead of SIGKILL to allow proper cleanup
+                kill(pid_coccodrillo[i], SIGTERM);
+                waitpid(pid_coccodrillo[i], &status, 0);
+                
+                // Set the proper values in the info structure before respawning
+                // This is the key part that's missing
+                if (info[i].direzione = 1) {  // The direction is stored in velocita field when oggetto = -1
+                    info[i].x_pos = 0;  // Start from left
+                } else {
+                    info[i].x_pos = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Start from right
                 }
-                prev_x_c = msg.x;
-                prev_y_c = msg.y;*/
-                draw_crocodile(msg.x, msg.y); break;
-
-
-
-
+                info[i].y_pos = msg.y;  // Keep the same y position
+                info[i].speed = msg.velocita;  // Get the actual speed
+                
+                // Now fork with the updated info
+                pid_coccodrillo[i] = fork();
+                if (pid_coccodrillo[i] == 0) {
+                    close(pipe_fd[READ]);
+                    crocodile(pipe_fd[WRITE], info, i);
+                    exit(EXIT_SUCCESS);
+                }
+                break;
+                
             }
+        }
 
             
         //printf("x %d y %d", prev_x_rana, prev_y_rana);
@@ -124,17 +147,23 @@ int main(){
                 
             }*/
             refresh();
-        }
+             // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
+        usleep(50000);  // 50ms
+
     }
 
     kill(pid_rana, SIGKILL);
     waitpid(pid_rana, NULL, 0);
 
     // Termina tutti i coccodrilli
-    for (int i = 0; i < NUM_STREAMS; i++) {
+    for (int i = 0; i < NUM_STREAMS * COCCODRILLI_X_FLUSSO; i++) {
         kill(pid_coccodrillo[i], SIGKILL);
         waitpid(pid_coccodrillo[i], NULL, 0);
     }
+
+      // Processo padre chiude scrittura e legge dalla pipe
+      close(pipe_fd[WRITE]);
+        close(pipe_fd[READ]);
     
     endwin();
     return 0;
@@ -147,6 +176,7 @@ void inizializza_schermo(){
     initscr();
     noecho();
     cbreak();
+    keypad(stdscr, TRUE);
     timeout(100);
     curs_set(0);
     resize_term(GAME_HEIGHT, GAME_WIDTH);
@@ -165,49 +195,58 @@ void termina_gioco(pid_t pid_rana, pid_t pid_coccodrillo[]) {
     exit(EXIT_SUCCESS);
 }
 
-void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[8]){
+void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[NUM_STREAMS * COCCODRILLI_X_FLUSSO]){
     int direzione; // Memorizza la direzione attuale
     int num = MIN_COCCODRILLO + rand() % (MAX_COCCODRILLO - MIN_COCCODRILLO +1);
-    int x_max;
-    Messaggio msg;
-    int velocita = 0;
+    InfoFlussi info[NUM_STREAMS];
+    int coccodrillo_index = 0;
 
+
+ //assegno la prima direzione in modo casuale
     if (num % 2 == 0){
         direzione = 1;
-        x_max = 0; 
     } else {
         direzione = -1; 
-        x_max = GAME_WIDTH - LARGHEZZA_COCCODRILLO; 
     }
-    for (int i = 0; i < 9; i++) {
-        
-        pid_coccodrillo[i] = fork();
 
-        if (pid_coccodrillo[i] == -1) {
-            perror("Fork coccodrillo fallita");
-            exit(EXIT_FAILURE);
-        } else if (pid_coccodrillo[i] == 0) {
-            //viene creato il seed casuale all'interno del processo figlio
-            srand(time(NULL) ^ getpid());
-            velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
-            int y_pos = 6 + (i * 3);
-            
-            msg.oggetto= ID_CROCODILE;
-            
-            
-            
-            close(pipe_fd[READ]);  
-            crocodile(pipe_fd[WRITE], y_pos, direzione, x_max, velocita);  
-            exit(EXIT_SUCCESS);
-        }
-
-        if (direzione == 1) {
-            direzione = -1;
-            x_max = GAME_WIDTH - LARGHEZZA_COCCODRILLO;
+      // Inizializzo i flussi con direzioni alternate
+      for (int j = 0; j < NUM_STREAMS; j++) {
+        // La direzione viene decisa in base alla prima
+        if (j % 2 == 0) {
+            info[j].direzione = direzione;
         } else {
-            direzione = 1;
-            x_max = 0;
+            info[j].direzione = -direzione;
         }
-        //direzione *= -1; // Alterna la direzione per il prossimo coccodrillo
+        
+        // Setto la x in base alla posizione
+        if (info[j].direzione == 1) {
+            info[j].x_pos = 0;  //Inizia d sinistra se si sta muovendo verso destra
+        } else {
+            info[j].x_pos = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Inizia da destra se si sta muovendo verso sinistra
+        }
+        
+        // Setto la y e la velocità
+        info[j].y_pos = 6 + (j * 3);  // Ogni y è distante 3 unità
+        info[j].speed = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1); // Velocità casuale tra i due estremi
     }
+        
+    
+  // Crea un coccodrillo iniziale per flusso
+  for (int flusso = 0; flusso < NUM_STREAMS; flusso++) {
+    pid_coccodrillo[coccodrillo_index] = fork();
+    if (pid_coccodrillo[coccodrillo_index] == -1) {
+        perror("Fork coccodrillo fallita");
+        exit(EXIT_FAILURE);
+    } else if (pid_coccodrillo[coccodrillo_index] == 0) {
+        close(pipe_fd[READ]);
+        /*while (1) {
+            crocodile(pipe_fd[WRITE], info, flusso);
+            sleep(1);  // Aspetta prima di rigenerare il coccodrillo
+        }*/
+        crocodile(pipe_fd[WRITE], info, flusso);
+        exit(EXIT_SUCCESS);
+    }
+    coccodrillo_index++;
+    usleep(200000);  // Ritardo di 200ms tra la creazione dei coccodrilli
+}
 }
