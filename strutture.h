@@ -44,6 +44,7 @@ typedef struct {
     int oggetto;
     int velocita;
     int index;
+    int direzione;
 } Messaggio;
 
 #endif 

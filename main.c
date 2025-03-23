@@ -97,7 +97,7 @@ int main(){
                     break;
                     case ID_CROCODILE:
                 if (prev_x_coccodrillo != -1 && prev_y_coccodrillo != -1) {
-                    clear_cocodrile(prev_x_coccodrillo, prev_y_coccodrillo, msg.velocita, getpid());
+                    clear_cocodrile(prev_x_coccodrillo, prev_y_coccodrillo, msg.direzione, getpid());
                 }
                 prev_x_coccodrillo = msg.x;
                 prev_y_coccodrillo = msg.y;
@@ -109,10 +109,12 @@ int main(){
                 // Use SIGTERM instead of SIGKILL to allow proper cleanup
                 kill(pid_coccodrillo[i], SIGTERM);
                 waitpid(pid_coccodrillo[i], &status, 0);
+
+                info[i].direzione = msg.direzione;
                 
                 // Set the proper values in the info structure before respawning
                 // This is the key part that's missing
-                if (info[i].direzione = 1) {  // The direction is stored in velocita field when oggetto = -1
+                if (info[i].direzione == 1) {  // The direction is stored in velocita field when oggetto = -1
                     info[i].x_pos = 0;  // Start from left
                 } else {
                     info[i].x_pos = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Start from right

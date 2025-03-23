@@ -61,7 +61,6 @@ void clear_cocodrile(int x, int y, int direzione, pid_t pid) {
 
 // In coccodrilli.c, modifica la funzione crocodile:
 void crocodile(int pipe_fd, InfoFlussi* info, int index) {
-
     signal(SIGTERM, coccodrillo_sig_handler);
     srand(time(NULL) ^ getpid());
 
@@ -82,10 +81,16 @@ void crocodile(int pipe_fd, InfoFlussi* info, int index) {
             msg.oggetto = -1;
             msg.x = info[index].x_pos;
             msg.y = info[index].y_pos;
-            msg.oggetto = ID_CROCODILE;
-            msg.velocita = info[index].speed;
+            msg.direzione = direzione;
             write(pipe_fd, &msg, sizeof(Messaggio));
 
+            // Reset position for this process too
+            if (direzione == 1) {
+                msg.x = 0;  // Start from left
+            } else {
+                msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Start from right
+            }
+            msg.oggetto = ID_CROCODILE;  // Reset to normal crocodile object
         }
 
         // Scrittura nella pipe per aggiornare la posizione
@@ -95,5 +100,5 @@ void crocodile(int pipe_fd, InfoFlussi* info, int index) {
         }
 
         usleep(msg.velocita);
-        }
     }
+}
