@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <fcntl.h> 
 
 #include "strutture.h"
 #include "coccodrilli.h"
@@ -39,7 +40,7 @@ void clear_cocodrile(int x, int y, int direzione, pid_t pid) {
         for (int step = 0; step < LARGHEZZA_COCCODRILLO; step++) { //cancella carattere per carattere
             for (int i = 0; i < ALTEZZA_COCCODRILLO; i++) { //cancella riga per riga
                 
-
+                
                 if (direzione == 1) {
                     // Se si muove a destra, cancella dalla testa (destra)
                     offset = LARGHEZZA_COCCODRILLO - step -1;
@@ -47,6 +48,7 @@ void clear_cocodrile(int x, int y, int direzione, pid_t pid) {
                     // Se si muove a sinistra, cancella dalla testa (sinistra)
                     offset = step;
                 }
+                
 
                 mvprintw(y + i, x + offset, " ");  // Cancella la testa prima
             }
@@ -71,14 +73,17 @@ void crocodile(int pipe_fd, InfoFlussi* info, int index) {
     msg.oggetto = ID_CROCODILE;
     msg.velocita = info[index].speed;
     int direzione = info[index].direzione;
+    msg.direzione = info[index].direzione;
+    
 
     while (1) {      
         msg.x += direzione;  // Muovi il coccodrillo nella direzione corretta
         
         // Se il coccodrillo è uscito dallo schermo, lo riposiziona
-        if ((direzione == 1 && msg.x >= GAME_WIDTH) || (direzione == -1 && msg.x <= 0)) {
+        if ((direzione == 1 && msg.x >= GAME_WIDTH) || (direzione == -1 && msg.x <= -LARGHEZZA_COCCODRILLO)) {
             // Invia un messaggio speciale per pulire il coccodrillo e passo le informazioni dei flussi
             msg.oggetto = -1;
+            msg.pid = getpid();
             msg.x = info[index].x_pos;
             msg.y = info[index].y_pos;
             msg.direzione = direzione;

@@ -34,6 +34,7 @@ void inizializza_schermo(); //per chiamare le funzioni ncurses
 void termina_gioco(pid_t, pid_t*);
 void inizializza_coccodrilli(int pipe_fd[2], pid_t pid_coccodrillo[NUM_STREAMS * COCCODRILLI_X_FLUSSO]);
 int main(){
+    srand(time(NULL));
     int pipe_fd[2];
     pid_t pid_rana, pid_coccodrillo[NUM_STREAMS*COCCODRILLI_X_FLUSSO];
     Messaggio msg;
@@ -105,10 +106,7 @@ int main(){
                 break;
                 case -1:
                 int i = msg.index;  // Get the index from the message
-                
                 // Use SIGTERM instead of SIGKILL to allow proper cleanup
-                kill(pid_coccodrillo[i], SIGTERM);
-                waitpid(pid_coccodrillo[i], &status, 0);
 
                 info[i].direzione = msg.direzione;
                 
@@ -121,6 +119,11 @@ int main(){
                 }
                 info[i].y_pos = msg.y;  // Keep the same y position
                 info[i].speed = msg.velocita;  // Get the actual speed
+
+                kill(msg.pid, SIGTERM);
+                waitpid(msg.pid, &status, 0);
+
+                
                 
                 // Now fork with the updated info
                 pid_coccodrillo[i] = fork();
