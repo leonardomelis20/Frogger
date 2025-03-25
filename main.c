@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <ncurses.h>
+#include <curses.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
@@ -47,6 +47,7 @@ int main(){
     int vite = 5;
     int prev_x_c = -1, prev_y_c = -1;
     int status = 0;
+    int i= 0; 
     
 
     
@@ -104,8 +105,8 @@ int main(){
                 prev_y_coccodrillo = msg.y;
                 draw_crocodile(msg.x, msg.y);
                 break;
-                case -1:
-                int i = msg.index;  // Get the index from the message
+                case (-1):
+                i = msg.index;  // Get the index from the message
                 // Use SIGTERM instead of SIGKILL to allow proper cleanup
 
                 info[i].direzione = msg.direzione;
