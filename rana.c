@@ -30,71 +30,70 @@ void clear_frog(int x, int y) {
     }
 }
 
-void frog(int pipe_fd){
-
-    initscr();       // OK
-noecho();
-cbreak();
-keypad(stdscr, TRUE);
-timeout(100);
-curs_set(0);
-
+void frog(int pipe_fd) {
+    // IMPORTANTE: Non inizializziamo ncurses qui
+    
     Messaggio msg;
-    int x_max, y_max;
-    getmaxyx(stdscr, y_max, x_max);
-    int centro_y = y_max - ALTEZZA_RANA; // Ora la rana è completamente visibile
+    int x_max = GAME_WIDTH;
+    int y_max = GAME_HEIGHT;
+    int centro_y = y_max - ALTEZZA_RANA;
     int centro_x = x_max / 2;
     int input;
 
     msg.oggetto = ID_RANA;
     msg.x = centro_x;
-    msg.y= centro_y;
+    msg.y = centro_y;
+    msg.pid = getpid();
+    
+    // Invia la posizione iniziale
+    write(pipe_fd, &msg, sizeof(Messaggio));
 
-    //muoversi di 3
-
-
-    while(1){
+    // Loop principale per gestire l'input
+    while(1) {
+        // Attendi un po' prima di controllare nuovamente l'input
+        usleep(50000);
+        
+        // Legge l'input (non bloccante)
         input = getch();
+        
+        // Gestiamo l'input
         switch (input) {
             case KEY_UP:
                 if (msg.y > 0) {
                     msg.y -= 3;
-                
                 }
                 break;
             case KEY_DOWN:
                 if (msg.y < y_max - ALTEZZA_RANA) {
                     msg.y += 3;
-            
                 }
                 break;
             case KEY_LEFT:
                 if (msg.x > 0) {
                     msg.x -= 3;
-                    
                 }
                 break;
             case KEY_RIGHT:
                 if (msg.x < x_max - LARGHEZZA_RANA) {
                     msg.x += 3;
-                  
                 }
                 break;
-            case ' ':
+            case ' ':  // Spazio
                 if (msg.y > 0) {
                     msg.y -= 3;
-            
                 }
                 break;
-            case 'q':
-                endwin();
+            case 'q':  // Uscita
                 close(pipe_fd);
+                exit(EXIT_SUCCESS);
                 return;
+            default:
+                // Se non c'è input valido, invia comunque la posizione attuale
+                // per mantenere la comunicazione con il processo principale
+                break;
         }
-
-         
-    write(pipe_fd, &msg, sizeof(Messaggio));
-    fflush(stdout);  // Forza la stampa immediata
-    usleep(50000); // da vedere
+        
+        // Invia la posizione aggiornata
+        write(pipe_fd, &msg, sizeof(Messaggio));
     }
 }

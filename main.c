@@ -72,7 +72,7 @@ int main(){
    inizializza_coccodrilli(pipe_fd, coccodrilli);
     
     
-  
+  close(pipe_fd[WRITE]);
     //dovremo mettere uno switch case 
 
     
@@ -81,12 +81,14 @@ int main(){
         ssize_t bytes_read;
         ssize_t bytes_read2;
         // Leggi tutti i messaggi disponibili dalla pipe
-        if (read(pipe_fd[READ], &msg, sizeof(Messaggio)))  {
+        if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0)  {
             switch (msg.oggetto) {
                 case ID_RANA:
+                // Cancella la vecchia posizione della rana
                     if (prev_x_rana != -1 && prev_y_rana != -1) {
                         clear_frog(prev_x_rana, prev_y_rana);
                     }
+                    // Aggiorna e disegna la nuova posizione
                     prev_x_rana = msg.x;
                     prev_y_rana = msg.y;
                     draw_frog(msg.x, msg.y);

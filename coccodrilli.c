@@ -44,10 +44,13 @@ void inizializza_coccodrilli(int pipe_fd[2], InfoCocc coccodrilli[NUM_CROC]){
   // Crea un coccodrillo iniziale per flusso
   for (int flusso = 0; flusso < NUM_STREAMS; flusso++) {
         pid = fork();
+
     if (pid == -1) {
         perror("Fork coccodrillo fallita");
         exit(EXIT_FAILURE);
+
     } else if (pid == 0) {
+        close(pipe_fd[READ]);
         coccodrilli[flusso].pid = getpid();
         msg.oggetto = ID_CROCODILE;
         msg.pid = coccodrilli[flusso].pid;
@@ -68,7 +71,6 @@ void inizializza_coccodrilli(int pipe_fd[2], InfoCocc coccodrilli[NUM_CROC]){
         // Setto la y e la velocità
         coccodrilli[flusso].y = 6 + (flusso * 3);  // Ogni y è distante 3 unità
         coccodrilli[flusso].velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1); // Velocità casuale tra i due estremi
-        close(pipe_fd[READ]);
         write(pipe_fd[WRITE], coccodrilli, sizeof(InfoCocc));
         write(pipe_fd[WRITE], &msg, sizeof(Messaggio));
         close(pipe_fd[WRITE]);
