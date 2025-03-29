@@ -32,13 +32,12 @@ void clear_frog(int x, int y) {
 
 void frog(int pipe_fd){
 
-
-    initscr();
-    noecho();
-    cbreak();
-    keypad(stdscr, TRUE);
-    timeout(100);
-    curs_set(0);
+    initscr();       // OK
+noecho();
+cbreak();
+keypad(stdscr, TRUE);
+timeout(100);
+curs_set(0);
 
     Messaggio msg;
     int x_max, y_max;
@@ -51,37 +50,51 @@ void frog(int pipe_fd){
     msg.x = centro_x;
     msg.y= centro_y;
 
-
     //muoversi di 3
 
 
     while(1){
         input = getch();
-         switch (input) {
+        switch (input) {
             case KEY_UP:
-                if (msg.y > 0) msg.y -= 3;
+                if (msg.y > 0) {
+                    msg.y -= 3;
+                
+                }
                 break;
             case KEY_DOWN:
-                if (msg.y < y_max - ALTEZZA_RANA) msg.y +=3;
+                if (msg.y < y_max - ALTEZZA_RANA) {
+                    msg.y += 3;
+            
+                }
                 break;
             case KEY_LEFT:
-                if (msg.x > 0) msg.x-= 3;
+                if (msg.x > 0) {
+                    msg.x -= 3;
+                    
+                }
                 break;
             case KEY_RIGHT:
-                if (msg.x < x_max - 1) msg.x+= 3;
+                if (msg.x < x_max - LARGHEZZA_RANA) {
+                    msg.x += 3;
+                  
+                }
                 break;
             case ' ':
-                if (msg.x < x_max -1) msg.y -= 3;
+                if (msg.y > 0) {
+                    msg.y -= 3;
+            
+                }
                 break;
             case 'q':
-            endwin();
-            close(pipe_fd);
-            return;
-    }
+                endwin();
+                close(pipe_fd);
+                return;
+        }
+
+         
     write(pipe_fd, &msg, sizeof(Messaggio));
     fflush(stdout);  // Forza la stampa immediata
     usleep(50000); // da vedere
     }
-    endwin();
-
 }

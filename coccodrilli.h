@@ -4,8 +4,12 @@
 #define ID_CROCODILE 2
 
 
-void draw_crocodile(int, int);
-void crocodile(int, InfoFlussi*, int);
-void clear_cocodrile(int, int, int, pid_t);
+int main_croc(int*, InfoCocc*, Messaggio);
+void draw_crocodile(int , int ); 
+int get_pid_croc(InfoCocc*, pid_t );
+void inizializza_coccodrilli(int*, InfoCocc*);
+void movement_croc(InfoCocc*);
+bool check_borders(InfoCocc*);
+void clear_croc(InfoCocc);
 
 #endif

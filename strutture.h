@@ -8,6 +8,7 @@
 #define LARGHEZZA_COCCODRILLO 11
 #define ALTEZZA_COCCODRILLO 3
 #define NUM_STREAMS 9
+#define NUM_CROC 9
 #define COCCODRILLI_X_FLUSSO 1
 #define NUM_BURROWS 5
 #define MIN_COCCODRILLO 1
@@ -18,6 +19,10 @@
 #define MIN_VELOCITA 100000   // 0.1 secondi
 #define MAX_VELOCITA 150000  // 0.15 secondi
 #define MAX_MESSAGES 10
+#define READ 0 //macro da usare nelle pipe x codice più leggibile
+#define WRITE 1
+
+
 
 
 enum oggetto {FROG, COCCODRILLO};
@@ -47,5 +52,14 @@ typedef struct {
     int direzione;
     int pid;
 } Messaggio;
+
+typedef struct{
+    int direzione; 
+    int velocita; 
+    pid_t pid; 
+    int x; 
+    int y; 
+    int index;
+} InfoCocc;
 
 #endif 
