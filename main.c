@@ -94,57 +94,6 @@ int main(){
                 case ID_CROCODILE:
                 main_croc(pipe_fd, coccodrilli, msg);
                 
-                /*
-                    for(int i = 0; i < NUM_STREAMS*2; i++){
-                        if (prev_x_coccodrillo != -1 && prev_y_coccodrillo != -1) {
-                            clear_cocodrile(coccodrilli[i].x, coccodrilli[i].y, msg.direzione, getpid());
-                        }
-                        coccodrilli[i].x = msg.x;
-                        coccodrilli[i].y = msg.y;
-                        log_coordinates(coccodrilli[i].y, coccodrilli[i].x);
-                        draw_crocodile(coccodrilli[i].x, coccodrilli[i].y);
-                    }
-                    
-
-                    int index = getPidCoccodrillo(coccodrilli, msg.pid);
-                    if (prev_x_coccodrillo != -1 && prev_y_coccodrillo != -1) {
-                        clear_cocodrile(coccodrilli[index].x, coccodrilli[index].y, msg.direzione, getpid());
-                    }
-                    coccodrilli[index].x = msg.x;
-                    coccodrilli[index].y = msg.y;
-                    //log_coordinates(coccodrilli[i].y, coccodrilli[i].x);
-                    draw_crocodile(coccodrilli[index].x, coccodrilli[index].y);
-                break;
-                case (-1):
-                i = msg.index;  // Get the index from the message
-                // Use SIGTERM instead of SIGKILL to allow proper cleanup
-
-                info[i].direzione = msg.direzione;
-                
-                // Set the proper values in the info structure before respawning
-                // This is the key part that's missing
-                if (info[i].direzione == 1) {  // The direction is stored in velocita field when oggetto = -1
-                    info[i].x_pos = 0;  // Start from left
-                } else {
-                    info[i].x_pos = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Start from right
-                }
-                info[i].y_pos = msg.y;  // Keep the same y position
-                info[i].speed = msg.velocita;  // Get the actual speed
-
-                kill(msg.pid, SIGTERM);
-                waitpid(msg.pid, &status, 0);
-
-                clear_cocodrile(coccodrilli[getPidCoccodrillo(coccodrilli, msg.pid)].x, coccodrilli[getPidCoccodrillo(coccodrilli, msg.pid)].y, msg.direzione, msg.pid);
-                
-                // Now fork with the updated info
-                pid_coccodrillo[i] = fork();
-                if (pid_coccodrillo[i] == 0) {
-                    close(pipe_fd[READ]);
-                    crocodile(pipe_fd[WRITE], info, i);
-                    exit(EXIT_SUCCESS);
-                }
-                break;*/
-                
             }
         }
 
