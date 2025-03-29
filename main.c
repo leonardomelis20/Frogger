@@ -72,10 +72,7 @@ int main(){
    inizializza_coccodrilli(pipe_fd, coccodrilli);
     
     
-  close(pipe_fd[WRITE]);
-    //dovremo mettere uno switch case 
-
-    
+  close(pipe_fd[WRITE]);    
         while (1) {
         Messaggio msg;
         ssize_t bytes_read;
