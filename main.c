@@ -42,7 +42,10 @@ int main(){
     int vite = 5;
     int status = 0;
     int i= 0; 
+<<<<<<< HEAD
     
+=======
+>>>>>>> refs/remotes/origin/main
     
 
     
@@ -90,8 +93,48 @@ int main(){
                     prev_y_rana = msg.y;
                     draw_frog(msg.x, msg.y);
                     break;
+<<<<<<< HEAD
                 case ID_CROCODILE:
                 main_croc(pipe_fd, coccodrilli, msg);
+=======
+                    case ID_CROCODILE:
+                if (prev_x_coccodrillo != -1 && prev_y_coccodrillo != -1) {
+                    clear_cocodrile(prev_x_coccodrillo, prev_y_coccodrillo, msg.direzione, getpid());
+                }
+                prev_x_coccodrillo = msg.x;
+                prev_y_coccodrillo = msg.y;
+                draw_crocodile(msg.x, msg.y);
+                break;
+                case (-1):
+                i = msg.index;  // Get the index from the message
+                // Use SIGTERM instead of SIGKILL to allow proper cleanup
+
+                info[i].direzione = msg.direzione;
+                
+                // Set the proper values in the info structure before respawning
+                // This is the key part that's missing
+                if (info[i].direzione == 1) {  // The direction is stored in velocita field when oggetto = -1
+                    info[i].x_pos = 0;  // Start from left
+                } else {
+                    info[i].x_pos = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Start from right
+                }
+                info[i].y_pos = msg.y;  // Keep the same y position
+                info[i].speed = msg.velocita;  // Get the actual speed
+
+                kill(msg.pid, SIGTERM);
+                waitpid(msg.pid, &status, 0);
+
+                
+                
+                // Now fork with the updated info
+                pid_coccodrillo[i] = fork();
+                if (pid_coccodrillo[i] == 0) {
+                    close(pipe_fd[READ]);
+                    crocodile(pipe_fd[WRITE], info, i);
+                    exit(EXIT_SUCCESS);
+                }
+                break;
+>>>>>>> refs/remotes/origin/main
                 
             }
         }
