@@ -83,10 +83,7 @@ int main(){
         }
 
     }
- 
-
-   inizializza_coccodrilli(pipe_fd, coccodrilli);
-    
+     
     
     close(pipe_fd[WRITE]);    
         while (1) {
@@ -94,7 +91,7 @@ int main(){
         ssize_t bytes_read2;
             
         // Leggi tutti i messaggi disponibili dalla pipe
-        if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0)  {
+        while (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0)  {
             switch (msg.oggetto) {
                 case ID_RANA:
                     // Cancella la vecchia posizione della rana
@@ -122,26 +119,11 @@ int main(){
                 
                 
             }
-        }
-
-            
-        //printf("x %d y %d", prev_x_rana, prev_y_rana);
-    /*if (prev_x_rana != -1 && prev_y_rana != -1) {
-        int collisione = verifica_collisione(prev_x_rana, prev_y_rana, coccodrilli_x, coccodrilli_y);
-        if (!collisione) {  // Se la collisione è 0, la rana è caduta
-        printf("💀 La rana è caduta in acqua! GAME OVER.\n");
-        fflush(stdout);
-        sleep(3);  // Aspetta 10 secondo per permettere la stampa
-        endwin();
-        vite--;
-        exit(EXIT_SUCCESS);
-    }
-                
-            }*/
             refresh();
-             // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
+        }
+             
+        // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
         usleep(50000);  // 50ms
-
     }
 
     kill(pid_rana, SIGKILL);

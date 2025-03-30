@@ -86,6 +86,7 @@ void inizializza_coccodrilli(int pipe_fd[2], InfoCocc coccodrilli[NUM_CROC]){
 }
 
 
+//funzione per aggiornare il movimento del coccodrillo
 void movement_croc(Messaggio * croc){
     croc->x += croc->direzione;
 }
@@ -100,6 +101,7 @@ void movement_croc(Messaggio * croc){
     return false;
 }*/
 
+//funzione per cancellare i coccodrilli
 void clear_croc(Messaggio msg){
     for(int i = 0; i < ALTEZZA_COCCODRILLO; i++){
         for(int j = 0; j < LARGHEZZA_COCCODRILLO; j++){
@@ -108,6 +110,7 @@ void clear_croc(Messaggio msg){
     }
 }
 
+//funzione per recuperare l'indice corretto del coccodrillo
 int get_pid_croc(InfoCocc coccodrilli[], pid_t pid){
     for(int i = 0; i < NUM_CROC; i++){
         if(coccodrilli[i].pid == pid){
@@ -124,14 +127,14 @@ int main_croc(int pipe_fd[2],int num){
     InfoFlussi info[NUM_CROC];
     Messaggio msg;
     pid_t pid;
+
+    msg.index = num;
     //assegno la prima direzione in modo casuale
     if (num % 2 == 0){
         direzione = 1;
     } else {
         direzione = -1; 
     }
-
-  
 
     msg.oggetto = ID_CROCODILE;
     msg.pid = getpid();
@@ -153,14 +156,15 @@ int main_croc(int pipe_fd[2],int num){
      msg.y = 6 + (num * 3);  // Ogni y è distante 3 unità
      msg.velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
     // Velocità casuale tra i due estremi
-     msg.index = num;
+     
 
 
     while(1){
 
-
+        //aggiorno la posizione
         movement_croc(&msg);
         
+        //scrivo nella pipe
         write(pipe_fd[WRITE], &msg, sizeof(Messaggio));
         // if(write(pipe_fd[WRITE], &msg, sizeof(Messaggio)) == -1){
         //     perror("Error movement pipe");
