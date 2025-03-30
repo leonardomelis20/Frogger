@@ -70,41 +70,40 @@ void inizializza_coccodrilli(int pipe_fd[2], InfoCocc coccodrilli[NUM_CROC]){
         
         // Setto la y e la velocità
         coccodrilli[flusso].y = 6 + (flusso * 3);  // Ogni y è distante 3 unità
-        coccodrilli[flusso].velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1); // Velocità casuale tra i due estremi
-        write(pipe_fd[WRITE], coccodrilli, sizeof(InfoCocc));
+        coccodrilli[flusso].velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
+         // Velocità casuale tra i due estremi
+        msg.direzione = coccodrilli[flusso].direzione;
+        msg.x = coccodrilli[flusso].x;
+        msg.y = coccodrilli[flusso].y;
+        msg.velocita = coccodrilli[flusso].velocita;
+        msg.index = coccodrilli[flusso].index;
+
         write(pipe_fd[WRITE], &msg, sizeof(Messaggio));
         close(pipe_fd[WRITE]);
-        exit(EXIT_SUCCESS);
     }
     //usleep(200000);  // Ritardo di 200ms tra la creazione dei coccodrilli
     }
 }
 
 
-void movement_croc(InfoCocc* croc){
-
-    while (1)
-    {
-        croc->x += croc->direzione;
-
-  }
-    
+void movement_croc(Messaggio * croc){
+    croc->x += croc->direzione;
 }
 
 
-bool check_borders(InfoCocc* croc){
+/*bool check_borders(Messaggio croc){
 
     if (( croc->direzione == 1 && croc->x >= GAME_WIDTH) || (croc->direzione == -1 && croc->x <= -LARGHEZZA_COCCODRILLO)) {
         return true;
     }
 
     return false;
-}
+}*/
 
-void clear_croc(InfoCocc croc){
+void clear_croc(Messaggio msg){
     for(int i = 0; i < ALTEZZA_COCCODRILLO; i++){
         for(int j = 0; j < LARGHEZZA_COCCODRILLO; j++){
-            mvprintw(croc.y + i, croc.x + j, " ");
+            mvprintw(msg.y + i, msg.x + j, " ");
         }
     }
 }
@@ -119,27 +118,56 @@ int get_pid_croc(InfoCocc coccodrilli[], pid_t pid){
     return -1;
 }
 
-int main_croc(int pipe_fd[2], InfoCocc* croc, Messaggio msg){
+int main_croc(int pipe_fd[2],int num){
     int index = 0;
+    int direzione; // Memorizza la direzione attuale
+    InfoFlussi info[NUM_CROC];
+    Messaggio msg;
+    pid_t pid;
+    //assegno la prima direzione in modo casuale
+    if (num % 2 == 0){
+        direzione = 1;
+    } else {
+        direzione = -1; 
+    }
+
+  
+
+    msg.oggetto = ID_CROCODILE;
+    msg.pid = getpid();
+    
+    if (num % 2 == 0) {
+        msg.direzione = direzione;
+    } else {
+        msg.direzione = -direzione;
+    }
+    
+    // Setto la x in base alla posizione
+    if (msg.direzione == 1) {
+        msg.x = 0;  //Inizia d sinistra se si sta muovendo verso destra
+    } else {
+        msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Inizia da destra se si sta muovendo verso sinistra
+    }
+        
+    // // Setto la y e la velocità
+     msg.y = 6 + (num * 3);  // Ogni y è distante 3 unità
+     msg.velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
+    // Velocità casuale tra i due estremi
+     msg.index = num;
+
+
     while(1){
-        movement_croc(croc);
-        printf("%d, %d", croc->x, croc->y);
-        fflush(stdout);
-        
-        draw_crocodile(croc->x, croc->y);
-        if (check_borders(croc)){
-            index = get_pid_croc(croc, msg.pid);
-            clear_croc(croc[index]);
-            // kill e respwan
-        }
 
-        
-        
-        if(write(pipe_fd[WRITE], croc, sizeof(InfoCocc)) == -1){
-            perror("Error movement pipe");
-            exit(EXIT_FAILURE);
-        }
 
+        movement_croc(&msg);
+        
+        write(pipe_fd[WRITE], &msg, sizeof(Messaggio));
+        // if(write(pipe_fd[WRITE], &msg, sizeof(Messaggio)) == -1){
+        //     perror("Error movement pipe");
+        //     exit(EXIT_FAILURE);
+        // }
+
+        usleep(20000);
     }
     
 }

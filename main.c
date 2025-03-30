@@ -34,11 +34,14 @@ void termina_gioco(pid_t, pid_t*);
 int main(){
     srand(time(NULL));
     int pipe_fd[2];
-    InfoCocc coccodrilli[NUM_CROC];
+    Messaggio coccodrilli[NUM_CROC];    //array di coccodrilli
     pid_t pid_rana, pid_coccodrillo[NUM_STREAMS*COCCODRILLI_X_FLUSSO];
-    Messaggio msg;
+    Messaggio msg; //letto
     InfoFlussi info[NUM_STREAMS];
     int prev_x_rana = -1, prev_y_rana = -1; 
+    int prev_x_cocc = -1, prev_y_cocc = -1;
+
+
     int vite = 5;
     int status = 0;
     int i= 0; 
@@ -58,6 +61,7 @@ int main(){
 
     pid_rana = fork();
 
+
     if (pid_rana == -1){
         perror("Fork rana fallita");
         exit(EXIT_FAILURE);
@@ -66,19 +70,34 @@ int main(){
         frog(pipe_fd[WRITE]); //passo la pipe direttamente in scrittura
         exit(EXIT_SUCCESS);
     }
+
+    for(int i=0; i< NUM_CROC; i++){
+        pid_coccodrillo[i]= fork();
+        if (pid_coccodrillo[i] == -1){
+            perror("Fork Coccodrillo fallita");
+            exit(EXIT_FAILURE);
+        } else if (pid_coccodrillo[i] == 0){
+            close(pipe_fd[READ]);  //chiudo la pipe in lettura
+            main_croc(pipe_fd[WRITE], i); //passo la pipe direttamente in scrittura
+            exit(EXIT_SUCCESS);
+        }
+
+    }
+ 
+
    inizializza_coccodrilli(pipe_fd, coccodrilli);
     
     
-  close(pipe_fd[WRITE]);    
+    close(pipe_fd[WRITE]);    
         while (1) {
-        Messaggio msg;
         ssize_t bytes_read;
         ssize_t bytes_read2;
+            
         // Leggi tutti i messaggi disponibili dalla pipe
         if (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0)  {
             switch (msg.oggetto) {
                 case ID_RANA:
-                // Cancella la vecchia posizione della rana
+                    // Cancella la vecchia posizione della rana
                     if (prev_x_rana != -1 && prev_y_rana != -1) {
                         clear_frog(prev_x_rana, prev_y_rana);
                     }
@@ -87,48 +106,20 @@ int main(){
                     prev_y_rana = msg.y;
                     draw_frog(msg.x, msg.y);
                     break;
-<<<<<<< HEAD
                 case ID_CROCODILE:
-                main_croc(pipe_fd, coccodrilli, msg);
-=======
-                    case ID_CROCODILE:
-                if (prev_x_coccodrillo != -1 && prev_y_coccodrillo != -1) {
-                    clear_cocodrile(prev_x_coccodrillo, prev_y_coccodrillo, msg.direzione, getpid());
-                }
-                prev_x_coccodrillo = msg.x;
-                prev_y_coccodrillo = msg.y;
-                draw_crocodile(msg.x, msg.y);
-                break;
-                case (-1):
-                i = msg.index;  // Get the index from the message
-                // Use SIGTERM instead of SIGKILL to allow proper cleanup
-
-                info[i].direzione = msg.direzione;
+                    //cancello
+                    clear_croc(msg);
+                    //aggiorno
+                    for (int i = 0; i < NUM_CROC; i++)
+                    {
+                        if(coccodrilli[i].index == msg.index){
+                            coccodrilli[i] = msg;
+                        }
+                    }
+                    //disegno
+                    draw_crocodile(msg.x, msg.y);
+                    break;
                 
-                // Set the proper values in the info structure before respawning
-                // This is the key part that's missing
-                if (info[i].direzione == 1) {  // The direction is stored in velocita field when oggetto = -1
-                    info[i].x_pos = 0;  // Start from left
-                } else {
-                    info[i].x_pos = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Start from right
-                }
-                info[i].y_pos = msg.y;  // Keep the same y position
-                info[i].speed = msg.velocita;  // Get the actual speed
-
-                kill(msg.pid, SIGTERM);
-                waitpid(msg.pid, &status, 0);
-
-                
-                
-                // Now fork with the updated info
-                pid_coccodrillo[i] = fork();
-                if (pid_coccodrillo[i] == 0) {
-                    close(pipe_fd[READ]);
-                    crocodile(pipe_fd[WRITE], info, i);
-                    exit(EXIT_SUCCESS);
-                }
-                break;
->>>>>>> refs/remotes/origin/main
                 
             }
         }
