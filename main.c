@@ -40,6 +40,8 @@ int main(){
     InfoFlussi info[NUM_STREAMS];
     int prev_x_rana = -1, prev_y_rana = -1; 
     int prev_x_cocc = -1, prev_y_cocc = -1;
+    pid_t pid;
+    Messaggio msg_copy;
 
     int direzione;
     int vite = 5;
@@ -102,6 +104,58 @@ int main(){
         while (1) {
         // Leggi tutti i messaggi disponibili dalla pipe
         while (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0)  {
+            if (msg.oggetto == -1){
+                msg_copy.direzione = msg.direzione;
+                msg_copy.y = msg.y;
+                msg_copy.velocita = msg.velocita;
+                msg_copy.index = msg.index;
+
+                kill(msg.pid, SIGKILL);
+                waitpid(msg.pid, &status, 0);
+                
+                pid = fork();
+                if (pid == -1){
+                    perror("Fork Coccodrillo fallita");
+                    exit(EXIT_FAILURE);
+                } 
+                else if (pid == 0){
+                    close(pipe_fd[READ]);
+                    // Messaggio semplice su stderr (visibile anche senza file)
+                    fprintf(stderr, "🟢 ENTRATO in main_croc! PID=%d, index=%d, dir=%d\n", 
+                    getpid(), msg.index, msg.direzione);
+                
+                    //da inizializzare manualmente
+                    main_croc(pipe_fd[WRITE], msg.index, msg.direzione);
+    
+                    // Se arrivi qui, c'è un problema (main_croc non dovrebbe ritornare)
+                    /*fprintf(stderr, "🔴 ERRORE: main_croc è ritornato! PID=%d\n", getpid());
+                    exit(EXIT_FAILURE);
+                    printf("nuovo coccodrillo");
+                    fflush(stdout);*/
+                    msg.oggetto = ID_CROCODILE;
+                    /*FILE *debug = fopen("debug.txt", "a");
+                    fprintf(debug, "Before main_croc with PID %d at index %d and oggetto %d\n", pid, msg.index, msg.oggetto);
+                    fclose(debug);*/
+                    main_croc(pipe_fd[WRITE], msg.index, msg.direzione);
+                    
+                    exit(EXIT_SUCCESS);
+                } else {
+                    // Parent process - update the PID in the array with the new one
+                    pid_coccodrillo[msg.index] = pid;
+
+                    msg.direzione = -msg.direzione; // Reverse direction
+                    msg.x = (msg.direzione == 1) ? 0 : GAME_WIDTH - LARGHEZZA_COCCODRILLO;
+
+                    msg.oggetto = ID_CROCODILE;
+                    draw_crocodile(msg.x, msg.y);
+                    coccodrilli[msg.index] = msg;
+                    
+                    // For debugging, print to a file instead of stdout
+                    FILE *debug = fopen("debug.txt", "a");
+                    fprintf(debug, "Spawned new crocodile with PID %d at index %d and oggetto %d and y %d\n", pid, msg.index, msg.oggetto, msg.y);
+                    fclose(debug);
+                }
+            } else {
             switch (msg.oggetto) {
                 case ID_RANA:
                     // Cancella la vecchia posizione della rana
@@ -120,12 +174,12 @@ int main(){
                     coccodrilli[msg.index] = msg;
                     //disegno
                     draw_crocodile(msg.x, msg.y);
-                    break;
-                
-                
+                    break;           
             }
-            refresh();
         }
+        refresh();
+        
+    }
              
         // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
         usleep(50000);  // 50ms

@@ -40,14 +40,17 @@ void movement_croc(Messaggio * croc){
 }
 
 
-/*bool check_borders(Messaggio croc){
-
-    if (( croc->direzione == 1 && croc->x >= GAME_WIDTH) || (croc->direzione == -1 && croc->x <= -LARGHEZZA_COCCODRILLO)) {
-        return true;
+bool check_borders(Messaggio croc) {
+    // Aggiungi debug
+    //printf("Check borders: x=%d, dir=%d, LARGHEZZA=%d\n", 
+          // croc.x, croc.direzione, LARGHEZZA_COCCODRILLO);
+    
+    if(croc.direzione == 1) {
+        return (croc.x >= GAME_WIDTH);  // Destra: controlla solo x
+    } else {
+        return (croc.x <= -LARGHEZZA_COCCODRILLO); // Sinistra: considera la lunghezza
     }
-
-    return false;
-}*/
+}
 
 //funzione per cancellare i coccodrilli
 void clear_croc(Messaggio msg){
@@ -72,7 +75,8 @@ int get_pid_croc(InfoCocc coccodrilli[], pid_t pid){
 int main_croc(int pipe_fd, int num, int direzione){
     srand(getpid()); 
     Messaggio msg;
-    pid_t pid;
+    
+    int status;
 
     msg.index = num;
     msg.oggetto = ID_CROCODILE;
@@ -94,18 +98,22 @@ int main_croc(int pipe_fd, int num, int direzione){
     // Velocità casuale tra i due estremi
      
 
-
+    write(pipe_fd, &msg, sizeof(Messaggio));
     while(1){
 
         //aggiorno la posizione
         movement_croc(&msg);
+        if (check_borders(msg)){
+            msg.oggetto = -1;
+
+            write(pipe_fd, &msg, sizeof(Messaggio));
+            break;
+        }
         
         //scrivo nella pipe
+
         write(pipe_fd, &msg, sizeof(Messaggio));
-        // if(write(pipe_fd[WRITE], &msg, sizeof(Messaggio)) == -1){
-        //     perror("Error movement pipe");
-        //     exit(EXIT_FAILURE);
-        // }
+       
 
         usleep(msg.velocita);
     }
