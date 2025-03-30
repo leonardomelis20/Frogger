@@ -42,12 +42,6 @@ int main(){
     int vite = 5;
     int status = 0;
     int i= 0; 
-<<<<<<< HEAD
-    
-=======
->>>>>>> refs/remotes/origin/main
-    
-
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
