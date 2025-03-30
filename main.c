@@ -41,10 +41,11 @@ int main(){
     int prev_x_rana = -1, prev_y_rana = -1; 
     int prev_x_cocc = -1, prev_y_cocc = -1;
 
-
+    int direzione;
     int vite = 5;
     int status = 0;
     int i= 0; 
+    int direzioni[NUM_CROC];
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
@@ -71,6 +72,18 @@ int main(){
         exit(EXIT_SUCCESS);
     }
 
+    //assegno la prima direzione in modo casuale
+    
+   
+    if (rand() % 2 == 0){
+        direzioni[0] = 1;
+    } else {
+        direzioni[0] = -1;
+    }
+    for (int i = 1; i < NUM_CROC; i++) {
+        direzioni[i] = -direzioni[i - 1];  // Alterna rispetto al precedente
+    }
+
     for(int i=0; i< NUM_CROC; i++){
         pid_coccodrillo[i]= fork();
         if (pid_coccodrillo[i] == -1){
@@ -78,7 +91,7 @@ int main(){
             exit(EXIT_FAILURE);
         } else if (pid_coccodrillo[i] == 0){
             close(pipe_fd[READ]);  //chiudo la pipe in lettura
-            main_croc(pipe_fd[WRITE], i); //passo la pipe direttamente in scrittura
+            main_croc(pipe_fd[WRITE], i, direzioni[i]); //passo la pipe direttamente in scritturap
             exit(EXIT_SUCCESS);
         }
 
@@ -87,9 +100,6 @@ int main(){
     
     close(pipe_fd[WRITE]);    
         while (1) {
-        ssize_t bytes_read;
-        ssize_t bytes_read2;
-            
         // Leggi tutti i messaggi disponibili dalla pipe
         while (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0)  {
             switch (msg.oggetto) {
@@ -107,12 +117,7 @@ int main(){
                     //cancello
                     clear_croc(msg);
                     //aggiorno
-                    for (int i = 0; i < NUM_CROC; i++)
-                    {
-                        if(coccodrilli[i].index == msg.index){
-                            coccodrilli[i] = msg;
-                        }
-                    }
+                    coccodrilli[msg.index] = msg;
                     //disegno
                     draw_crocodile(msg.x, msg.y);
                     break;
