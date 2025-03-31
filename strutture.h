@@ -21,6 +21,8 @@
 #define MAX_MESSAGES 10
 #define READ 0 //macro da usare nelle pipe x codice più leggibile
 #define WRITE 1
+#define RESPAWN -1
+#define TANE -2
 
 
 

@@ -5,7 +5,9 @@
 
 
 void frog(int pipe_fd);
+bool is_inside (Messaggio);
 void tane(int, Messaggio);
+void start_frog(int pipe_fd);
 void draw_frog(int x, int y); // Nuova funzione per disegnare la rana
 void clear_frog(int x, int y);
 

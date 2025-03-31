@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
@@ -37,27 +38,77 @@ void clear_frog(int x, int y) {
 4: 56 63
 5: 73 80*/
 
-void tane(int pipe_fd, Messaggio msg){
-    Messaggio tana;
-    if (msg.y == 1 && (5>msg.x<12) || (22>msg.x<29) || (39>msg.x<46) || (56>msg.x<63) || (73>msg.x<80)){
-        draw_closed_burrows();
-       refresh();
+bool is_inside (Messaggio msg){
+if (msg.y == 0 &&
+    ((msg.x >= 5 && msg.x <= 13) ||
+     (msg.x >= 22 && msg.x <= 29) ||
+     (msg.x >= 39 && msg.x <= 46) ||
+     (msg.x >= 56 && msg.x <= 63) ||
+     (msg.x >= 73 && msg.x <= 80))) {
+        
+    return true;
 
-        msg.y = GAME_WIDTH - ALTEZZA_RANA;
-        msg.x = GAME_HEIGHT / 2;
-    write(write, &msg, sizeof(Messaggio));
+    } 
+    return false;
+}
+
+int num_tana(Messaggio msg){
+    int tana = -1;
+
+if (msg.y == 0) {
+    if (msg.x >= 5 && msg.x <= 13)
+        tana = 1;
+    else if (msg.x >= 22 && msg.x <= 29)
+        tana = 2;
+    else if (msg.x >= 39 && msg.x <= 46)
+        tana = 3;
+    else if (msg.x >= 56 && msg.x <= 63)
+        tana = 4;
+    else if (msg.x >= 73 && msg.x <= 80)
+        tana = 5;
+    else
+        tana = 0; 
+
+        return tana;
     }
 }
 
+void tane(int pipe_fd, Messaggio msg){
+    Messaggio tana;
+    tana.x = num_tana(msg);
+        if (is_inside(msg)){
+        draw_closed_burrows(tana);
+        clear_frog(msg.x, msg.y);
+        refresh();
+    }
+}
 
-void frog(int pipe_fd) {
-    
+void start_frog(int pipe_fd){
     Messaggio msg;
+  
+    int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
+    int centro_x = GAME_WIDTH    / 2;
     int input;
 
     msg.oggetto = ID_RANA;
-    msg.y= GAME_WIDTH - ALTEZZA_RANA;
-    msg.x = GAME_HEIGHT / 2;
+    msg.x = centro_x;
+    msg.y = centro_y;
+    msg.pid = getpid();
+
+    write(pipe_fd, &msg, sizeof(Messaggio));
+}
+void frog(int pipe_fd) {
+    // IMPORTANTE: Non inizializziamo ncurses qui
+    
+    Messaggio msg;
+  
+    int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
+    int centro_x = GAME_WIDTH    / 2;
+    int input;
+
+    msg.oggetto = ID_RANA;
+    msg.x = centro_x;
+    msg.y = centro_y;
     msg.pid = getpid();
     
     // Invia la posizione iniziale
@@ -108,8 +159,12 @@ void frog(int pipe_fd) {
                 break;
         }
 
-        tane(pipe_fd, msg);
-        
+        if(is_inside(msg)){
+            msg.oggetto = TANE;
+            write(pipe_fd, &msg, sizeof(Messaggio));
+            break;
+        }
+
         // Invia la posizione aggiornata
         write(pipe_fd, &msg, sizeof(Messaggio));
     }

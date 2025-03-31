@@ -7,8 +7,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "rana.h"
 #include "strutture.h"
+#include "rana.h"
 #include "coccodrilli.h"
 #include "disegni.h"
 #include "collisioni.h"
@@ -30,6 +30,7 @@
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
 void termina_gioco(pid_t, pid_t*);
+
 
 int main(){
     srand(time(NULL));
@@ -73,7 +74,9 @@ int main(){
     }
 
     //assegno la prima direzione in modo casuale
-    
+    box(stdscr, 0, 0); // Disegna un bordo attorno allo schermo
+    draw_safety_zones();
+    draw_burrows(); 
    
     if (rand() % 2 == 0){
         direzioni[0] = 1;
@@ -112,9 +115,7 @@ int main(){
                     prev_x_rana = msg.x;
                     prev_y_rana = msg.y;
                     draw_frog(msg.x, msg.y);
-                    box(stdscr, 0, 0); // Disegna un bordo attorno allo schermo
-                    draw_safety_zones();
-                    draw_burrows(); 
+                    //tane(pipe_fd[WRITE], msg);
                     break;
                 case ID_CROCODILE:
                     //cancello
@@ -124,7 +125,7 @@ int main(){
                     //disegno
                     draw_crocodile(msg.x, msg.y);
                     break;         
-                case -1: 
+                case RESPAWN: 
                     int direzione = msg.direzione;
                     int indice = msg.index;
                     kill(msg.pid, SIGKILL);
@@ -140,7 +141,28 @@ int main(){
                         main_croc(pipe_fd[WRITE], indice, direzione);
                         exit(EXIT_SUCCESS);
                     }
-                    break;                      
+                    break;    
+                case TANE:
+                
+                    tane(pipe_fd[WRITE], msg);
+                    kill(msg.pid, SIGKILL);
+                    waitpid(msg.pid, &status, 0);
+
+                    pid_t new = fork();
+                    if (new == -1 ){
+                        perror("errore fork ");
+                        exit(EXIT_FAILURE);
+                    } else if (new == 0) {
+                        close(pipe_fd[READ]);
+                        // nuovo processo figlio parte da capo
+                       // start_frog(pipe_fd[WRITE]);
+                       frog(pipe_fd[WRITE]);
+                        exit(EXIT_SUCCESS);
+                    }
+                    break;
+
+                    
+
             }
             refresh();
         }

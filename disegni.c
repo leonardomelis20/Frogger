@@ -40,19 +40,18 @@ void draw_burrows() {
     int spacing = GAME_WIDTH / NUM_BURROWS;
     for (int i = 0; i < NUM_BURROWS; i++) {
         int x = i * spacing + (spacing - LARGHEZZA_TANA) / 2;
-        mvprintw(1, x, "[     ]");
+        mvprintw(1, x, "[       ]");
     }
     attroff(COLOR_PAIR(4));
 }
 
-void draw_closed_burrows() {
+void draw_closed_burrows(Messaggio tana) {
     attron(COLOR_PAIR(4));
     int spacing = GAME_WIDTH / NUM_BURROWS;
-    for (int i = 0; i < NUM_BURROWS; i++) {
-        int x = i * spacing + (spacing - LARGHEZZA_TANA) / 2;
-        mvprintw(1, x, "[/////]");
-        mvprintw(1, x, "x: %d", x );
-    }
+        
+    int x = (tana.x-1) * spacing + (spacing - LARGHEZZA_TANA) / 2;
+        mvprintw(1, x, "[///////]");
+    
     attroff(COLOR_PAIR(4));
 }
 

@@ -3,7 +3,6 @@
 
 #define ID_CROCODILE 2
 
-
 int main_croc(int, int, int);
 void draw_crocodile(int , int ); 
 int get_pid_croc(Messaggio*, pid_t );
