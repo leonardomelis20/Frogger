@@ -97,10 +97,7 @@ int main_croc(int pipe_fd, int num, int direzione){
     // // Setto la y e la velocità
      msg.y = 6 + (num * 3);  // Ogni y è distante 3 unità
      msg.velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
-    // Velocità casuale tra i due estremi
-      mvprintw(3 + msg.index, 50, "START CROC %d oggetto=%d", msg.index, msg.oggetto);
-    
-     
+    // Velocità casuale tra i due estremi   
     usleep(50000);
     write(pipe_fd, &msg, sizeof(Messaggio));
     while(1){

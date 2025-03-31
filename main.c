@@ -51,9 +51,7 @@ int main(){
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
-    box(stdscr, 0, 0); // Disegna un bordo attorno allo schermo
-    draw_safety_zones();
-    draw_burrows(); 
+    
     //mvprintw(GAME_HEIGHT/2, GAME_WIDTH/2 - 10, "Caricamento in corso...");
     refresh();
     
@@ -114,6 +112,9 @@ int main(){
                     prev_x_rana = msg.x;
                     prev_y_rana = msg.y;
                     draw_frog(msg.x, msg.y);
+                    box(stdscr, 0, 0); // Disegna un bordo attorno allo schermo
+                    draw_safety_zones();
+                    draw_burrows(); 
                     break;
                 case ID_CROCODILE:
                     //cancello

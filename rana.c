@@ -9,6 +9,7 @@
 
 #include "strutture.h"
 #include "rana.h"
+#include "disegni.h"
 
 // Sprite della rana
 char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA + 1] = {
@@ -30,19 +31,33 @@ void clear_frog(int x, int y) {
     }
 }
 
+/*1: 5 13
+2: 22 29
+3: 39 46
+4: 56 63
+5: 73 80*/
+
+void tane(int pipe_fd, Messaggio msg){
+    Messaggio tana;
+    if (msg.y == 1 && (5>msg.x<12) || (22>msg.x<29) || (39>msg.x<46) || (56>msg.x<63) || (73>msg.x<80)){
+        draw_closed_burrows();
+       refresh();
+
+        msg.y = GAME_WIDTH - ALTEZZA_RANA;
+        msg.x = GAME_HEIGHT / 2;
+    write(write, &msg, sizeof(Messaggio));
+    }
+}
+
+
 void frog(int pipe_fd) {
-    // IMPORTANTE: Non inizializziamo ncurses qui
     
     Messaggio msg;
-    int x_max = GAME_WIDTH;
-    int y_max = GAME_HEIGHT;
-    int centro_y = y_max - ALTEZZA_RANA;
-    int centro_x = x_max / 2;
     int input;
 
     msg.oggetto = ID_RANA;
-    msg.x = centro_x;
-    msg.y = centro_y;
+    msg.y= GAME_WIDTH - ALTEZZA_RANA;
+    msg.x = GAME_HEIGHT / 2;
     msg.pid = getpid();
     
     // Invia la posizione iniziale
@@ -64,7 +79,7 @@ void frog(int pipe_fd) {
                 }
                 break;
             case KEY_DOWN:
-                if (msg.y < y_max - ALTEZZA_RANA) {
+                if (msg.y < GAME_HEIGHT - ALTEZZA_RANA) {
                     msg.y += 3;
                 }
                 break;
@@ -74,7 +89,7 @@ void frog(int pipe_fd) {
                 }
                 break;
             case KEY_RIGHT:
-                if (msg.x < x_max - LARGHEZZA_RANA) {
+                if (msg.x < GAME_WIDTH - LARGHEZZA_RANA) {
                     msg.x += 3;
                 }
                 break;
@@ -92,6 +107,8 @@ void frog(int pipe_fd) {
                 // per mantenere la comunicazione con il processo principale
                 break;
         }
+
+        tane(pipe_fd, msg);
         
         // Invia la posizione aggiornata
         write(pipe_fd, &msg, sizeof(Messaggio));

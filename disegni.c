@@ -45,6 +45,17 @@ void draw_burrows() {
     attroff(COLOR_PAIR(4));
 }
 
+void draw_closed_burrows() {
+    attron(COLOR_PAIR(4));
+    int spacing = GAME_WIDTH / NUM_BURROWS;
+    for (int i = 0; i < NUM_BURROWS; i++) {
+        int x = i * spacing + (spacing - LARGHEZZA_TANA) / 2;
+        mvprintw(1, x, "[/////]");
+        mvprintw(1, x, "x: %d", x );
+    }
+    attroff(COLOR_PAIR(4));
+}
+
 void draw_safety_zones() {
     attron(COLOR_PAIR(2));
     mvhline(SAFE_ZONE_END, 0, '=', GAME_WIDTH); // Prato superiore
