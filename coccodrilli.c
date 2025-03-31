@@ -62,9 +62,9 @@ void clear_croc(Messaggio msg){
 }
 
 //funzione per recuperare l'indice corretto del coccodrillo
-int get_pid_croc(InfoCocc coccodrilli[], pid_t pid){
+int get_pid_croc(Messaggio msg[], pid_t pid){
     for(int i = 0; i < NUM_CROC; i++){
-        if(coccodrilli[i].pid == pid){
+        if(msg[i].pid == pid){
             return i;
         }
     }
@@ -73,15 +73,17 @@ int get_pid_croc(InfoCocc coccodrilli[], pid_t pid){
 }
 
 int main_croc(int pipe_fd, int num, int direzione){
-    srand(getpid()); 
+    
+
+    
     Messaggio msg;
     
     int status;
-
     msg.index = num;
-    msg.oggetto = ID_CROCODILE;
     msg.pid = getpid();
+    msg.oggetto = ID_CROCODILE;
     srand(msg.pid); 
+    
     
    msg.direzione = direzione;
     
@@ -96,28 +98,26 @@ int main_croc(int pipe_fd, int num, int direzione){
      msg.y = 6 + (num * 3);  // Ogni y è distante 3 unità
      msg.velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
     // Velocità casuale tra i due estremi
+      mvprintw(3 + msg.index, 50, "START CROC %d oggetto=%d", msg.index, msg.oggetto);
+    
      
-
+    usleep(50000);
     write(pipe_fd, &msg, sizeof(Messaggio));
     while(1){
 
         //aggiorno la posizione
         movement_croc(&msg);
         if (check_borders(msg)){
-            msg.oggetto = -1;
-
+            msg.oggetto = -1; 
             write(pipe_fd, &msg, sizeof(Messaggio));
             break;
         }
         
         //scrivo nella pipe
-
+        
         write(pipe_fd, &msg, sizeof(Messaggio));
-       
-
         usleep(msg.velocita);
     }
-    
 }
 
 

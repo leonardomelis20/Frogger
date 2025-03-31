@@ -187,3 +187,57 @@ Spawned new crocodile with PID 16026 at index 0 and oggetto 2 and y 6
 Spawned new crocodile with PID 16027 at index 6 and oggetto 2 and y 24
 Spawned new crocodile with PID 16028 at index 8 and oggetto 2 and y 30
 Spawned new crocodile with PID 16029 at index 3 and oggetto 2 and y 15
+Spawned new crocodile with PID 2972 at index 0 and oggetto 2 and y 6
+Spawned new crocodile with PID 2979 at index 3 and oggetto 2 and y 15
+Spawned new crocodile with PID 2980 at index 7 and oggetto 2 and y 27
+Spawned new crocodile with PID 2981 at index 8 and oggetto 2 and y 30
+Spawned new crocodile with PID 2982 at index 1 and oggetto 2 and y 9
+Spawned new crocodile with PID 2983 at index 5 and oggetto 2 and y 21
+Spawned new crocodile with PID 2984 at index 6 and oggetto 2 and y 24
+Spawned new crocodile with PID 2991 at index 4 and oggetto 2 and y 18
+Spawned new crocodile with PID 2992 at index 2 and oggetto 2 and y 12
+Spawned new crocodile with PID 3148 at index 8 and oggetto 2 and y 30
+Spawned new crocodile with PID 3149 at index 2 and oggetto 2 and y 12
+Spawned new crocodile with PID 3150 at index 3 and oggetto 2 and y 15
+Spawned new crocodile with PID 3154 at index 5 and oggetto 2 and y 21
+Spawned new crocodile with PID 3158 at index 0 and oggetto 2 and y 6
+Spawned new crocodile with PID 3159 at index 1 and oggetto 2 and y 9
+Spawned new crocodile with PID 3160 at index 7 and oggetto 2 and y 27
+Spawned new crocodile with PID 3164 at index 6 and oggetto 2 and y 24
+Spawned new crocodile with PID 3168 at index 4 and oggetto 2 and y 18
+Spawned new crocodile with PID 3512 at index 8 and oggetto 2 and y 30
+Spawned new crocodile with PID 3519 at index 7 and oggetto 2 and y 27
+Spawned new crocodile with PID 3520 at index 3 and oggetto 2 and y 15
+Spawned new crocodile with PID 3521 at index 6 and oggetto 2 and y 24
+Spawned new crocodile with PID 3522 at index 2 and oggetto 2 and y 12
+Spawned new crocodile with PID 3523 at index 5 and oggetto 2 and y 21
+Spawned new crocodile with PID 3524 at index 1 and oggetto 2 and y 9
+Spawned new crocodile with PID 3525 at index 0 and oggetto 2 and y 6
+Spawned new crocodile with PID 3529 at index 4 and oggetto 2 and y 18
+Spawned new crocodile with PID 4112 at index 5 and oggetto -1 and y 21
+Spawned new crocodile with PID 4113 at index 2 and oggetto -1 and y 12
+Spawned new crocodile with PID 4120 at index 4 and oggetto -1 and y 18
+Spawned new crocodile with PID 4121 at index 8 and oggetto -1 and y 30
+Spawned new crocodile with PID 4122 at index 0 and oggetto -1 and y 6
+Spawned new crocodile with PID 4123 at index 1 and oggetto -1 and y 9
+Spawned new crocodile with PID 4124 at index 3 and oggetto -1 and y 15
+Spawned new crocodile with PID 4125 at index 7 and oggetto -1 and y 27
+Spawned new crocodile with PID 4126 at index 6 and oggetto -1 and y 24
+Spawned new crocodile with PID 4761 at index 2 with direction 1
+Spawned new crocodile with PID 4762 at index 6 with direction 1
+Spawned new crocodile with PID 4763 at index 3 with direction -1
+Spawned new crocodile with PID 4764 at index 1 with direction -1
+Spawned new crocodile with PID 4765 at index 0 with direction 1
+Spawned new crocodile with PID 4766 at index 7 with direction -1
+Spawned new crocodile with PID 4770 at index 8 with direction 1
+Spawned new crocodile with PID 4774 at index 4 with direction 1
+Spawned new crocodile with PID 4775 at index 5 with direction -1
+Spawned new crocodile with PID 5029 at index 4 and oggetto -1 and y 18
+Spawned new crocodile with PID 5030 at index 2 and oggetto -1 and y 12
+Spawned new crocodile with PID 5031 at index 5 and oggetto -1 and y 21
+Spawned new crocodile with PID 5032 at index 1 and oggetto -1 and y 9
+Spawned new crocodile with PID 5033 at index 0 and oggetto -1 and y 6
+Spawned new crocodile with PID 5034 at index 7 and oggetto -1 and y 27
+Spawned new crocodile with PID 5041 at index 3 and oggetto -1 and y 15
+Spawned new crocodile with PID 5042 at index 6 and oggetto -1 and y 24
+Spawned new crocodile with PID 5043 at index 8 and oggetto -1 and y 30
