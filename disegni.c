@@ -48,7 +48,6 @@ void draw_burrows() {
 void draw_closed_burrows(Messaggio tana) {
     attron(COLOR_PAIR(4));
     int spacing = GAME_WIDTH / NUM_BURROWS;
-        
     int x = (tana.x-1) * spacing + (spacing - LARGHEZZA_TANA) / 2;
         mvprintw(1, x, "[///////]");
     

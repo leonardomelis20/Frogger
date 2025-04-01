@@ -39,6 +39,7 @@ void clear_frog(int x, int y) {
 5: 73 80*/
 
 bool is_inside (Messaggio msg){
+    //per verificare quando la rana è dentro la tana a partire dall'inizio alla fine
 if (msg.y == 0 &&
     ((msg.x >= 5 && msg.x <= 13) ||
      (msg.x >= 22 && msg.x <= 29) ||
@@ -54,7 +55,7 @@ if (msg.y == 0 &&
 
 int num_tana(Messaggio msg){
     int tana = -1;
-
+    //in base alle coordinate della rana restituisco il nuemro della tana
 if (msg.y == 0) {
     if (msg.x >= 5 && msg.x <= 13)
         tana = 1;
@@ -67,7 +68,7 @@ if (msg.y == 0) {
     else if (msg.x >= 73 && msg.x <= 80)
         tana = 5;
     else
-        tana = 0; 
+        tana = -1; 
 
         return tana;
     }
@@ -75,6 +76,7 @@ if (msg.y == 0) {
 
 void tane(int pipe_fd, Messaggio msg){
     Messaggio tana;
+    //verifico il numero di tana e la riempio
     tana.x = num_tana(msg);
         if (is_inside(msg)){
         draw_closed_burrows(tana);
@@ -83,24 +85,11 @@ void tane(int pipe_fd, Messaggio msg){
     }
 }
 
-void start_frog(int pipe_fd){
-    Messaggio msg;
-  
-    int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
-    int centro_x = GAME_WIDTH    / 2;
-    int input;
-
-    msg.oggetto = ID_RANA;
-    msg.x = centro_x;
-    msg.y = centro_y;
-    msg.pid = getpid();
-
-    write(pipe_fd, &msg, sizeof(Messaggio));
-}
-void frog(int pipe_fd) {
+void frog(int pipe_fd, bool* flag) {
     // IMPORTANTE: Non inizializziamo ncurses qui
     
     Messaggio msg;
+    int num_tane;
   
     int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
     int centro_x = GAME_WIDTH    / 2;
@@ -144,23 +133,18 @@ void frog(int pipe_fd) {
                     msg.x += 3;
                 }
                 break;
-            case ' ':  // Spazio
-                if (msg.y > 0) {
-                    msg.y -= 3;
-                }
-                break;
             case 'q':  // Uscita
                 close(pipe_fd);
                 exit(EXIT_SUCCESS);
                 return;
-            default:
-                // Se non c'è input valido, invia comunque la posizione attuale
-                // per mantenere la comunicazione con il processo principale
                 break;
         }
 
-        if(is_inside(msg)){
+        num_tane = num_tana(msg);
+        //controlla se è dentro la tana oppure se entra in mezzo a due tane
+        if(is_inside(msg) || msg.y == 0 && num_tane == -1){
             msg.oggetto = TANE;
+            flag[num_tane] = true; //setto il flag a true per segnalare che non può più entrare in questa tana
             write(pipe_fd, &msg, sizeof(Messaggio));
             break;
         }

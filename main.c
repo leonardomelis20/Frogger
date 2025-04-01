@@ -43,7 +43,8 @@ int main(){
     int prev_x_cocc = -1, prev_y_cocc = -1;
     pid_t pid;
     Messaggio msg_copy;
-
+    bool flag[NUM_BURROWS] = {false};
+    int tana;
     int direzione;
     int vite = 5;
     int status = 0;
@@ -69,7 +70,7 @@ int main(){
         exit(EXIT_FAILURE);
     } else if (pid_rana == 0){
         close(pipe_fd[READ]);  //chiudo la pipe in lettura
-        frog(pipe_fd[WRITE]); //passo la pipe direttamente in scrittura
+        frog(pipe_fd[WRITE], flag); //passo la pipe direttamente in scrittura
         exit(EXIT_SUCCESS);
     }
 
@@ -142,34 +143,57 @@ int main(){
                         exit(EXIT_SUCCESS);
                     }
                     break;    
-                case TANE:
-                
-                    tane(pipe_fd[WRITE], msg);
-                    kill(msg.pid, SIGKILL);
-                    waitpid(msg.pid, &status, 0);
-
-                    pid_t new = fork();
-                    if (new == -1 ){
-                        perror("errore fork ");
-                        exit(EXIT_FAILURE);
-                    } else if (new == 0) {
-                        close(pipe_fd[READ]);
-                        // nuovo processo figlio parte da capo
-                       // start_frog(pipe_fd[WRITE]);
-                       frog(pipe_fd[WRITE]);
-                        exit(EXIT_SUCCESS);
-                    }
-                    break;
-
+                    case TANE: 
+                        int tana_idx = num_tana(msg);  // Calcola il numero della tana (1-5), o -1 se non è dentro una tana
                     
-
+                        if (tana_idx >= 1 && tana_idx <= NUM_BURROWS) {
+                            if (!flag[tana_idx]) {
+                                // Se la tana  è libera la chiudiamo e la rana viene respawnata senza perdere vita
+                                flag[tana_idx] = true;
+                                tane(pipe_fd[WRITE], msg);  // Chiude graficamente la tana
+                            } else {
+                                // Tana già raggiunta quindi la rana perde una vita
+                                vite--;
+                            }
+                        } else {
+                            // entra in mezzo a due tane e perde ujna vita
+                            vite--;
+                        }
+                    
+                        // Mostra vite in alto a sinistra
+                        mvprintw(0, 0, "VITE: %d  ", vite);
+                        refresh();
+                    
+                        // Killiamo il processo rana attuale
+                        kill(msg.pid, SIGKILL);
+                        waitpid(msg.pid, &status, 0);
+                    
+                        //se le vite sono maggiori di 0
+                        if (vite > 0) {
+                            // Respawna la rana
+                            pid_t new = fork();
+                            if (new == -1) {
+                                perror("Errore fork");
+                                exit(EXIT_FAILURE);
+                            } else if (new == 0) {
+                                close(pipe_fd[READ]);
+                                frog(pipe_fd[WRITE], flag); //funzione "main" della rana
+                                exit(EXIT_SUCCESS);
+                            }
+                        } else {
+                            endwin();
+                            printf("Hai perso tutte le vite. Game Over!\n");
+                            exit(EXIT_SUCCESS);
+                        }
+                        break;
+                }                  
+                refresh();
             }
-            refresh();
+            // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
+        usleep(50000);  // 50ms
         }
         
-        // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
-        usleep(50000);  // 50ms
-    }
+        
              
         
 
