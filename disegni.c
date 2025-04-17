@@ -27,6 +27,7 @@ int disegni() {
     return 0;
 }
 
+  
 void draw_river() {
     attron(COLOR_PAIR(1));
     for (int i = ALTEZZA_RANA; i < GAME_HEIGHT - ALTEZZA_RANA; i++) {

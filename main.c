@@ -30,6 +30,7 @@
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
 void termina_gioco(pid_t, pid_t*);
+void draw_map();
 
 
 int main(){
@@ -37,13 +38,25 @@ int main(){
     int pipe_fd[2];
     Messaggio coccodrilli[NUM_CROC];    //array di coccodrilli
     pid_t pid_rana, pid_coccodrillo[NUM_STREAMS*COCCODRILLI_X_FLUSSO];
-    Messaggio msg; //letto
+    Messaggio msg; 
     InfoFlussi info[NUM_STREAMS];
     int prev_x_rana = -1, prev_y_rana = -1; 
     int prev_x_cocc = -1, prev_y_cocc = -1;
     pid_t pid;
-    Messaggio msg_copy;
-    bool flag[NUM_BURROWS] = {false};
+    Messaggio frog_copy, croc_copy[NUM_CROC];
+    int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
+    int centro_x = GAME_WIDTH    / 2;
+    int input;
+
+    // Inizializza la rana
+    frog_copy.oggetto = ID_RANA;
+    frog_copy.x = centro_x;
+    frog_copy.y = centro_y;
+    frog_copy.on_croc = false;
+    frog_copy.croc_index = -1;
+    
+    
+    bool flag[NUM_BURROWS+1] = {false};
     int tana;
     int direzione;
     int vite = 5;
@@ -53,7 +66,9 @@ int main(){
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
-    
+    box(stdscr, 0, 0); // Crea un bordo attorno alla finestra
+    draw_burrows();
+    draw_safety_zones();
     //mvprintw(GAME_HEIGHT/2, GAME_WIDTH/2 - 10, "Caricamento in corso...");
     refresh();
     
@@ -74,10 +89,7 @@ int main(){
         exit(EXIT_SUCCESS);
     }
 
-    //assegno la prima direzione in modo casuale
-    box(stdscr, 0, 0); // Disegna un bordo attorno allo schermo
-    draw_safety_zones();
-    draw_burrows(); 
+  
    
     if (rand() % 2 == 0){
         direzioni[0] = 1;
@@ -100,98 +112,111 @@ int main(){
         }
 
     }
-     
+
+
+    for (int i = 0; i < NUM_CROC; i++) {
+        croc_copy[i].index = i;  // Inizializzazione indici
+        croc_copy[i].x = -100;   // Posizione off screen
+        croc_copy[i].y = -100;
+    }
     
-     
-        while (1) {
+
+    
+    while (1) {
         // Leggi tutti i messaggi disponibili dalla pipe
         while (read(pipe_fd[READ], &msg, sizeof(Messaggio)) > 0)  {
+            mvprintw(0, 0, "VITE %d ", vite);
             switch (msg.oggetto) {
                 case ID_RANA:
-                    // Cancella la vecchia posizione della rana
-                    if (prev_x_rana != -1 && prev_y_rana != -1) {
-                        clear_frog(prev_x_rana, prev_y_rana);
-                    }
-                    // Aggiorna e disegna la nuova posizione
-                    prev_x_rana = msg.x;
-                    prev_y_rana = msg.y;
-                    draw_frog(msg.x, msg.y);
-                    //tane(pipe_fd[WRITE], msg);
-                    break;
-                case ID_CROCODILE:
-                    //cancello
-                    clear_croc(msg);
-                    //aggiorno
-                    coccodrilli[msg.index] = msg;
-                    //disegno
-                    draw_crocodile(msg.x, msg.y);
-                    break;         
-                case RESPAWN: 
-                    int direzione = msg.direzione;
-                    int indice = msg.index;
-                    kill(msg.pid, SIGKILL);
-                    waitpid(msg.pid, &status, 0); // aspetta che il processo muoia
-                    // Ricrea un nuovo processo coccodrillo con le stesse proprietà
-                    pid_t nuovo_pid = fork();
-                    if (nuovo_pid == -1 ){
-                        perror("errore fork ");
-                        exit(EXIT_FAILURE);
-                    } else if (nuovo_pid == 0) {
-                        close(pipe_fd[READ]);
-                        // nuovo processo figlio parte da capo
-                        main_croc(pipe_fd[WRITE], indice, direzione);
+                // Cancella la vecchia posizione della rana
+                if (prev_x_rana != -1 && prev_y_rana != -1) {
+                    clear_frog(prev_x_rana, prev_y_rana);
+                }
+
+                // Copia il messaggio
+                if (frog_copy.x > 0 || frog_copy.x < GAME_WIDTH - LARGHEZZA_RANA) {
+                    frog_copy.x += msg.x;
+                } 
+                if (frog_copy.y >= -6) {
+                    frog_copy.y += msg.y;
+                }
+
+                // Verifica se la rana è su un coccodrillo e aggiorna le sue info
+                frog_with_croc(pipe_fd[WRITE], &frog_copy, croc_copy);
+                
+                // Salva la nuova posizione per la prossima clear
+                prev_x_rana = frog_copy.x;
+                prev_y_rana = frog_copy.y;
+
+                // Disegna la rana nella nuova posizione
+                draw_frog(frog_copy.x, frog_copy.y);
+             break;
+
+            case ID_CROCODILE:
+                //cancello
+                clear_croc(msg);
+                //aggiorno
+                coccodrilli[msg.index] = msg;
+                //disegno
+                croc_copy[msg.index] = msg;
+                croc_copy[msg.index].index = msg.index;
+                prev_x_cocc = msg.x;
+                prev_y_cocc = msg.y;
+                
+                draw_crocodile(msg.x, msg.y);
+                break;         
+            case RESPAWN: 
+                int direzione = msg.direzione;
+                int indice = msg.index;
+                kill(msg.pid, SIGKILL);
+                waitpid(msg.pid, &status, 0); // aspetta che il processo muoia
+                // Ricrea un nuovo processo coccodrillo con le stesse proprietà
+                pid_t nuovo_pid = fork();
+                if (nuovo_pid == -1 ){
+                    perror("errore fork ");
+                    exit(EXIT_FAILURE);
+                } else if (nuovo_pid == 0) {
+                    close(pipe_fd[READ]);
+                    // nuovo processo figlio parte da capo
+                    main_croc(pipe_fd[WRITE], indice, direzione);
+                    exit(EXIT_SUCCESS);
+                }
+                break;    
+            }    
+            //controlla se è dentro la tana oppure se entra in mezzo a due tane
+            if (is_inside(frog_copy)){
+                int num_tane = num_tana(frog_copy);
+                //se la rana è dentro una tana
+                if (flag[num_tane] == false && num_tane != 6){
+                    flag[num_tane] = true; //setto il flag a true per segnalare che non può più entrare in questa tana
+
+                    tane(frog_copy);  // Chiude graficamente la tana
+                    frog_copy.x = centro_x;
+                    frog_copy.y = centro_y;
+                    // Respawna la rana
+                } else{
+                    //se la tana è già occupata
+                    vite--;
+                    frog_copy.x = centro_x;
+                    frog_copy.y = centro_y;
+                    if (vite <= 0){
+                        endwin();
+                        printf("Hai perso tutte le vite. Game Over!\n");
                         exit(EXIT_SUCCESS);
                     }
-                    break;    
-                    case TANE: 
-                        int tana_idx = num_tana(msg);  // Calcola il numero della tana (1-5), o -1 se non è dentro una tana
-                    
-                        if (tana_idx >= 1 && tana_idx <= NUM_BURROWS) {
-                            if (!flag[tana_idx]) {
-                                // Se la tana  è libera la chiudiamo e la rana viene respawnata senza perdere vita
-                                flag[tana_idx] = true;
-                                tane(pipe_fd[WRITE], msg);  // Chiude graficamente la tana
-                            } else {
-                                // Tana già raggiunta quindi la rana perde una vita
-                                vite--;
-                            }
-                        } else {
-                            // entra in mezzo a due tane e perde ujna vita
-                            vite--;
-                        }
-                    
-                        // Mostra vite in alto a sinistra
-                        mvprintw(0, 0, "VITE: %d  ", vite);
-                        refresh();
-                    
-                        // Killiamo il processo rana attuale
-                        kill(msg.pid, SIGKILL);
-                        waitpid(msg.pid, &status, 0);
-                    
-                        //se le vite sono maggiori di 0
-                        if (vite > 0) {
-                            // Respawna la rana
-                            pid_t new = fork();
-                            if (new == -1) {
-                                perror("Errore fork");
-                                exit(EXIT_FAILURE);
-                            } else if (new == 0) {
-                                close(pipe_fd[READ]);
-                                frog(pipe_fd[WRITE], flag); //funzione "main" della rana
-                                exit(EXIT_SUCCESS);
-                            }
-                        } else {
-                            endwin();
-                            printf("Hai perso tutte le vite. Game Over!\n");
-                            exit(EXIT_SUCCESS);
-                        }
-                        break;
-                }                  
-                refresh();
+                   
+                   refresh();
+                }
             }
+
+            refresh();
+        }
             // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
         usleep(50000);  // 50ms
-        }
+    }
+
+
+        
         
         
              
@@ -212,9 +237,7 @@ int main(){
     
     endwin();
     return 0;
- }
-
-
+}
 
 void inizializza_schermo(){
     
@@ -240,3 +263,18 @@ void termina_gioco(pid_t pid_rana, pid_t pid_coccodrillo[]) {
     exit(EXIT_SUCCESS);
 }
 
+void log_coordinates(int frog_x, int crocodile_x) {
+    FILE *file = fopen("coordinates_log.txt", "a"); // Apri il file in modalità append
+    if (file == NULL) {
+        perror("Errore nell'apertura del file");
+        return;
+    }
+
+    // Scrivi i valori nel file
+    fprintf(file, "---------------\n");
+    fprintf(file, "frog_coord_x: %d\n", frog_x);
+    fprintf(file, "frog cord yx: %d\n", crocodile_x);
+    fprintf(file, "---------------\n");
+
+    fclose(file); // Chiudi il file
+}

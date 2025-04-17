@@ -1,0 +1,240 @@
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 30
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 30
+crocodile_coord_x: 27
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 33
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 57
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 56
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 55
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 54
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 53
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 52
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 51
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 50
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 49
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 48
+frog cord yx: 30
+---------------
+---------------
+frog_coord_x: 46
+frog cord yx: 30
+---------------

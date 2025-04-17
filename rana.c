@@ -11,6 +11,7 @@
 #include "strutture.h"
 #include "rana.h"
 #include "disegni.h"
+#include "collisioni.h"
 
 // Sprite della rana
 char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA + 1] = {
@@ -40,41 +41,36 @@ void clear_frog(int x, int y) {
 
 bool is_inside (Messaggio msg){
     //per verificare quando la rana è dentro la tana a partire dall'inizio alla fine
-if (msg.y == 0 &&
-    ((msg.x >= 5 && msg.x <= 13) ||
-     (msg.x >= 22 && msg.x <= 29) ||
-     (msg.x >= 39 && msg.x <= 46) ||
-     (msg.x >= 56 && msg.x <= 63) ||
-     (msg.x >= 73 && msg.x <= 80))) {
-        
-    return true;
-
-    } 
+    if (msg.y == 0 &&
+        ((msg.x >= 0 && msg.x <= 80))) {
+            
+            return true;
+        } 
     return false;
 }
 
 int num_tana(Messaggio msg){
-    int tana = -1;
+    int tana = 6; // 6 è un valore di default per indicare che non è dentro una tana
     //in base alle coordinate della rana restituisco il nuemro della tana
-if (msg.y == 0) {
-    if (msg.x >= 5 && msg.x <= 13)
-        tana = 1;
-    else if (msg.x >= 22 && msg.x <= 29)
-        tana = 2;
-    else if (msg.x >= 39 && msg.x <= 46)
-        tana = 3;
-    else if (msg.x >= 56 && msg.x <= 63)
-        tana = 4;
-    else if (msg.x >= 73 && msg.x <= 80)
-        tana = 5;
-    else
-        tana = -1; 
+    if (msg.y == 0) {
+        if (msg.x >= 5 && msg.x <= 13)
+            tana = 1;
+        else if (msg.x >= 22 && msg.x <= 29)
+            tana = 2;
+        else if (msg.x >= 39 && msg.x <= 46)
+            tana = 3;
+        else if (msg.x >= 56 && msg.x <= 63)
+            tana = 4;
+        else if (msg.x >= 73 && msg.x <= 80)
+            tana = 5;
+        else
+            tana = 6; 
 
-        return tana;
+            return tana;
     }
 }
 
-void tane(int pipe_fd, Messaggio msg){
+void tane(Messaggio msg){
     Messaggio tana;
     //verifico il numero di tana e la riempio
     tana.x = num_tana(msg);
@@ -86,19 +82,17 @@ void tane(int pipe_fd, Messaggio msg){
 }
 
 void frog(int pipe_fd, bool* flag) {
-    // IMPORTANTE: Non inizializziamo ncurses qui
-    
     Messaggio msg;
     int num_tane;
-  
-    int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
-    int centro_x = GAME_WIDTH    / 2;
-    int input;
 
+  
     msg.oggetto = ID_RANA;
-    msg.x = centro_x;
-    msg.y = centro_y;
     msg.pid = getpid();
+    int input;
+    msg.on_croc = false;
+    msg.croc_index = -1;
+    msg.x = 0;
+    msg.y = 0;
     
     // Invia la posizione iniziale
     write(pipe_fd, &msg, sizeof(Messaggio));
@@ -107,6 +101,10 @@ void frog(int pipe_fd, bool* flag) {
     while(1) {
         // Attendi un po' prima di controllare nuovamente l'input
         usleep(50000);
+
+        if (msg.on_croc) {
+            
+        }
         
         // Legge l'input (non bloccante)
         input = getch();
@@ -114,23 +112,23 @@ void frog(int pipe_fd, bool* flag) {
         // Gestiamo l'input
         switch (input) {
             case KEY_UP:
-                if (msg.y > 0) {
-                    msg.y -= 3;
+                {
+                    msg.y = -3;
                 }
                 break;
             case KEY_DOWN:
-                if (msg.y < GAME_HEIGHT - ALTEZZA_RANA) {
-                    msg.y += 3;
+                {
+                    msg.y = 3;
                 }
                 break;
             case KEY_LEFT:
-                if (msg.x > 0) {
-                    msg.x -= 3;
+                 {
+                    msg.x = -3;
                 }
                 break;
             case KEY_RIGHT:
-                if (msg.x < GAME_WIDTH - LARGHEZZA_RANA) {
-                    msg.x += 3;
+                {
+                    msg.x = 3;
                 }
                 break;
             case 'q':  // Uscita
@@ -140,16 +138,10 @@ void frog(int pipe_fd, bool* flag) {
                 break;
         }
 
-        num_tane = num_tana(msg);
-        //controlla se è dentro la tana oppure se entra in mezzo a due tane
-        if(is_inside(msg) || msg.y == 0 && num_tane == -1){
-            msg.oggetto = TANE;
-            flag[num_tane] = true; //setto il flag a true per segnalare che non può più entrare in questa tana
-            write(pipe_fd, &msg, sizeof(Messaggio));
-            break;
-        }
-
+        
         // Invia la posizione aggiornata
         write(pipe_fd, &msg, sizeof(Messaggio));
+        msg.x = 0;
+        msg.y = 0;
     }
 }

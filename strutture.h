@@ -53,6 +53,8 @@ typedef struct {
     int index;
     int direzione;
     int pid;
+    bool on_croc;
+    int croc_index;
 } Messaggio;
 
 typedef struct{
