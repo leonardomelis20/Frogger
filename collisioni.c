@@ -53,3 +53,18 @@ void frog_with_croc(int pipe_fd, Messaggio* frog, Messaggio* croc) {
 
     
 }
+
+bool check_borders_frog(Messaggio frog) {
+    if (frog.x < 0 || frog.x >= GAME_WIDTH - LARGHEZZA_RANA || 
+        frog.y < 0 || frog.y > GAME_HEIGHT - ALTEZZA_RANA) {
+        return true; //fuori dai bordi
+    }
+    return false;
+}
+
+bool check_safe_zone(Messaggio frog) {
+    if (frog.y >= 33 && frog.y <= 39) {
+        return true; // dentro la zona sicura
+    }
+    return false;
+}

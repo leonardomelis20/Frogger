@@ -63,6 +63,10 @@ int main(){
     int status = 0;
     int i= 0; 
     int direzioni[NUM_CROC];
+
+    bool in_safe_zone = false;
+    bool out_of_bounds = false;
+    int new_x, new_y;
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
@@ -134,13 +138,36 @@ int main(){
                 }
 
                 // Copia il messaggio
-                if (frog_copy.x > 0 || frog_copy.x < GAME_WIDTH - LARGHEZZA_RANA) {
-                    frog_copy.x += msg.x;
-                } 
-                if (frog_copy.y >= -6) {
-                    frog_copy.y += msg.y;
-                }
+               // calcola nuova posizione
+                 new_x = frog_copy.x + msg.x;
+                 new_y = frog_copy.y + msg.y;
 
+                // controlla se è nella safe zona
+                 in_safe_zone = (new_y >= 33 && new_y <= 39);
+
+                // controllo boundaries
+                out_of_bounds = (new_x < 0 || new_x >= GAME_WIDTH - LARGHEZZA_RANA || 
+                                    new_y < 0 || new_y >= GAME_HEIGHT - ALTEZZA_RANA);
+
+                // aggiorno
+                if (!out_of_bounds || in_safe_zone) {
+                    // se è dentro i bordi e nella safe zone muoviti
+                    if (in_safe_zone) {
+                        // se è nella safe zone non muoverti in x
+                        if (new_x >= 0 && new_x < GAME_WIDTH - LARGHEZZA_RANA) {
+                            frog_copy.x = new_x;
+                        }
+                        
+                        // controllo coordinate verticali nella safe zona
+                        if (new_y >= 33 && new_y <= GAME_HEIGHT - ALTEZZA_RANA) {
+                            frog_copy.y = new_y;
+                        }
+                    } else {
+                        //movimento normale fuori dalla safe zone
+                        frog_copy.x = new_x;
+                        frog_copy.y = new_y;
+                    }
+                }
                 // Verifica se la rana è su un coccodrillo e aggiorna le sue info
                 frog_with_croc(pipe_fd[WRITE], &frog_copy, croc_copy);
                 
@@ -150,6 +177,17 @@ int main(){
 
                 // Disegna la rana nella nuova posizione
                 draw_frog(frog_copy.x, frog_copy.y);
+
+                if (out_of_bounds && !in_safe_zone) {
+                    vite--;
+                    frog_copy.x = centro_x;
+                    frog_copy.y = centro_y;
+                    if (vite <= 0) {
+                        endwin();
+                        printf("Hai perso tutte le vite. Game Over!\n");
+                        exit(EXIT_SUCCESS);
+                    }
+                }
              break;
 
             case ID_CROCODILE:
@@ -207,20 +245,13 @@ int main(){
                    
                    refresh();
                 }
-            }
-
+            }           
+           
             refresh();
         }
             // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
         usleep(50000);  // 50ms
-    }
-
-
-        
-        
-        
-             
-        
+    }       
 
     kill(pid_rana, SIGKILL);
     waitpid(pid_rana, NULL, 0);

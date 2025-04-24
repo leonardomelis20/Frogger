@@ -3,5 +3,7 @@
 
 bool check_collision(int, Messaggio frog, Messaggio* croc);
 void frog_with_croc(int , Messaggio* frog, Messaggio* croc);
+bool check_borders_frog(Messaggio frog);
+bool check_safe_zone(Messaggio frog);
 
 #endif

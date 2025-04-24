@@ -137,7 +137,6 @@ void frog(int pipe_fd, bool* flag) {
                 return;
                 break;
         }
-
         
         // Invia la posizione aggiornata
         write(pipe_fd, &msg, sizeof(Messaggio));
