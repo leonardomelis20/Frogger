@@ -45,8 +45,9 @@ int main(){
     pid_t pid;
     Messaggio frog_copy, croc_copy[NUM_CROC];
     int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
-    int centro_x = GAME_WIDTH    / 2;
+    int centro_x = GAME_WIDTH / 2;
     int input;
+    int speed[NUM_STREAMS];
 
     // Inizializza la rana
     frog_copy.oggetto = ID_RANA;
@@ -100,9 +101,17 @@ int main(){
     } else {
         direzioni[0] = -1;
     }
-    for (int i = 1; i < NUM_CROC; i++) {
-        direzioni[i] = -direzioni[i - 1];  // Alterna rispetto al precedente
+    for (int i = 1; i < 9; i++) {
+        direzioni[i] = -direzioni[i - 1];  // Alterna rispetto al precedente     
     }
+        for (int i = 9; i < 18; i++)
+        {
+            direzioni[i] = direzioni[i -9];
+        }
+    
+
+
+
 
     for(int i=0; i< NUM_CROC; i++){
         pid_coccodrillo[i]= fork();
@@ -178,7 +187,8 @@ int main(){
                 // Disegna la rana nella nuova posizione
                 draw_frog(frog_copy.x, frog_copy.y);
 
-                if (out_of_bounds && !in_safe_zone) {
+                //se è fuori dallo schermo e fuori dalla safe zone perde vite e viene riposizionata
+                if (out_of_bounds && !in_safe_zone || river(frog_copy)) {
                     vite--;
                     frog_copy.x = centro_x;
                     frog_copy.y = centro_y;
@@ -188,6 +198,7 @@ int main(){
                         exit(EXIT_SUCCESS);
                     }
                 }
+                
              break;
 
             case ID_CROCODILE:
@@ -204,7 +215,7 @@ int main(){
                 draw_crocodile(msg.x, msg.y);
                 break;         
             case RESPAWN: 
-                int direzione = msg.direzione;
+               int direzione = msg.direzione;
                 int indice = msg.index;
                 kill(msg.pid, SIGKILL);
                 waitpid(msg.pid, &status, 0); // aspetta che il processo muoia
@@ -219,6 +230,8 @@ int main(){
                     main_croc(pipe_fd[WRITE], indice, direzione);
                     exit(EXIT_SUCCESS);
                 }
+                
+                
                 break;    
             }    
             //controlla se è dentro la tana oppure se entra in mezzo a due tane
@@ -303,8 +316,8 @@ void log_coordinates(int frog_x, int crocodile_x) {
 
     // Scrivi i valori nel file
     fprintf(file, "---------------\n");
-    fprintf(file, "frog_coord_x: %d\n", frog_x);
-    fprintf(file, "frog cord yx: %d\n", crocodile_x);
+    fprintf(file, "indice: %d\n", crocodile_x);
+    fprintf(file, "velocità: %d\n", frog_x);
     fprintf(file, "---------------\n");
 
     fclose(file); // Chiudi il file

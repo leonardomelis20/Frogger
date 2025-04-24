@@ -8,7 +8,7 @@
 #define LARGHEZZA_COCCODRILLO 11
 #define ALTEZZA_COCCODRILLO 3
 #define NUM_STREAMS 9
-#define NUM_CROC 9
+#define NUM_CROC 18
 #define COCCODRILLI_X_FLUSSO 1
 #define NUM_BURROWS 5
 #define MIN_COCCODRILLO 1
@@ -16,8 +16,8 @@
 #define SAFE_ZONE_START 33
 #define SAFE_ZONE_END 5
 #define LARGHEZZA_TANA 7
-#define MIN_VELOCITA 100000   // 0.1 secondi
-#define MAX_VELOCITA 150000  // 0.15 secondi
+#define MIN_VELOCITA 100000   // 0.1 secondi (100ms)
+#define MAX_VELOCITA 300000  // 0.3 secondi (300ms)
 #define MAX_MESSAGES 10
 #define READ 0 //macro da usare nelle pipe x codice più leggibile
 #define WRITE 1

@@ -68,3 +68,11 @@ bool check_safe_zone(Messaggio frog) {
     }
     return false;
 }
+
+bool river(Messaggio frog) {
+    if (!check_safe_zone(frog) && frog.on_croc == false) {
+       return true; // dentro il fiume
+    }
+    else false;
+}
+

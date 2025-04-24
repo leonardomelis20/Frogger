@@ -18,7 +18,6 @@ char sprite_coccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
     "  ~~~   ~~ "   
 };
 
-
 // Disegna il coccodrillo sullo schermo, ma solo se la parte da disegnare è visibile
 void draw_crocodile(int x, int y){
     // Scorre ogni riga del coccodrillo (3 righe in totale)
@@ -69,8 +68,9 @@ int get_pid_croc(Messaggio msg[], pid_t pid){
         }
     }
 
-    return -1;
+    return 1;
 }
+
 
 int main_croc(int pipe_fd, int num, int direzione){
     
@@ -79,13 +79,29 @@ int main_croc(int pipe_fd, int num, int direzione){
     Messaggio msg;
     
     int status;
+
+    int adjusted_num;
+    
+    // Handle the second set of crocodiles (indices 9-17)
+    if (num >= 9) {
+        // Convert to first 9 indices (0-8) to reuse the same stream positions
+        adjusted_num = num - 9;
+        
+        // Add delay for second crocodile in the stream
+        usleep(1500000); // 1.5 seconds delay for the second crocodile
+    } else {
+        adjusted_num = num;
+    }
     msg.index = num;
     msg.pid = getpid();
     msg.oggetto = ID_CROCODILE;
     srand(msg.pid); 
+    int num2 = 0;
     
     
    msg.direzione = direzione;
+
+   msg.y = 6 + (adjusted_num * 3);  // Ogni y è distante 3 unità
     
     // Setto la x in base alla posizione
     if (msg.direzione == 1) {
@@ -94,9 +110,8 @@ int main_croc(int pipe_fd, int num, int direzione){
         msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Inizia da destra se si sta muovendo verso sinistra
     }
         
-    // // Setto la y e la velocità
-     msg.y = 6 + (num * 3);  // Ogni y è distante 3 unità
-     msg.velocita = MIN_VELOCITA + rand() % (MAX_VELOCITA - MIN_VELOCITA + 1);
+    // Setto la y 
+     msg.velocita = MIN_VELOCITA + (rand() % (MAX_VELOCITA - MIN_VELOCITA + 1)); // Velocità casuale tra i due estremi
     // Velocità casuale tra i due estremi   
     usleep(50000);
     write(pipe_fd, &msg, sizeof(Messaggio));
