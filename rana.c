@@ -81,7 +81,7 @@ void tane(Messaggio msg){
     }
 }
 
-void frog(int pipe_fd, bool* flag) {
+void frog(int pipe_fd, bool* flag, int* speed ) {
     Messaggio msg;
     int num_tane;
 
@@ -93,18 +93,24 @@ void frog(int pipe_fd, bool* flag) {
     msg.croc_index = -1;
     msg.x = 0;
     msg.y = 0;
-    
+    int i = 0;
+    int cont = 0;
     // Invia la posizione iniziale
     write(pipe_fd, &msg, sizeof(Messaggio));
 
     // Loop principale per gestire l'input
     while(1) {
         // Attendi un po' prima di controllare nuovamente l'input
-        usleep(50000);
-
-        if (msg.on_croc) {
-            
+        if (i - 2 > 0) {
+            usleep(speed[i-2]);
+            mvprintw(0, 0, "VELOCITA %d ", speed[i-2]);
+        } else {
+            usleep(speed[0]);
+            mvprintw(0, 0, "VELOCITA %d ", speed[0]);
         }
+        
+        mvprintw(0, 20, "INDICE %d ", i);
+        
         
         // Legge l'input (non bloccante)
         input = getch();
@@ -114,11 +120,14 @@ void frog(int pipe_fd, bool* flag) {
             case KEY_UP:
                 {
                     msg.y = -3;
+                    i++;
                 }
                 break;
             case KEY_DOWN:
                 {
                     msg.y = 3;
+                    i--;
+                    
                 }
                 break;
             case KEY_LEFT:

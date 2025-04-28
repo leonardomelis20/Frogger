@@ -13,9 +13,9 @@
 #include "coccodrilli.h"
 
 char sprite_coccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
-    "  ~~~___~~ ",  
-    " (o)---(o) ",  
-    "  ~~~   ~~ "   
+    " ~~~~~___~~~~~ ",  
+    " (o)-------(o) ",  
+    " ~~~~~___~~~~~ "   
 };
 
 // Disegna il coccodrillo sullo schermo, ma solo se la parte da disegnare è visibile
@@ -72,8 +72,13 @@ int get_pid_croc(Messaggio msg[], pid_t pid){
 }
 
 
-int main_croc(int pipe_fd, int num, int direzione){
+
+
+int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
     
+    if(!flag){  
+        usleep(5000000); // 1.5 seconds delay for the second crocodile
+    }
 
     
     Messaggio msg;
@@ -88,14 +93,13 @@ int main_croc(int pipe_fd, int num, int direzione){
         adjusted_num = num - 9;
         
         // Add delay for second crocodile in the stream
-        usleep(1500000); // 1.5 seconds delay for the second crocodile
+        //usleep(speed); // 1.5 seconds delay for the second crocodile
     } else {
         adjusted_num = num;
     }
     msg.index = num;
     msg.pid = getpid();
     msg.oggetto = ID_CROCODILE;
-    srand(msg.pid); 
     int num2 = 0;
     
     
@@ -110,8 +114,14 @@ int main_croc(int pipe_fd, int num, int direzione){
         msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Inizia da destra se si sta muovendo verso sinistra
     }
         
+
+    
+    
     // Setto la y 
-     msg.velocita = MIN_VELOCITA + (rand() % (MAX_VELOCITA - MIN_VELOCITA + 1)); // Velocità casuale tra i due estremi
+     msg.velocita = speed;
+    
+     
+
     // Velocità casuale tra i due estremi   
     usleep(50000);
     write(pipe_fd, &msg, sizeof(Messaggio));
@@ -131,6 +141,3 @@ int main_croc(int pipe_fd, int num, int direzione){
         usleep(msg.velocita);
     }
 }
-
-
-

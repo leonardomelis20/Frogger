@@ -33,6 +33,8 @@ void termina_gioco(pid_t, pid_t*);
 void draw_map();
 
 
+int speed[NUM_STREAMS];
+
 int main(){
     srand(time(NULL));
     int pipe_fd[2];
@@ -47,7 +49,7 @@ int main(){
     int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
     int centro_x = GAME_WIDTH / 2;
     int input;
-    int speed[NUM_STREAMS];
+    
 
     // Inizializza la rana
     frog_copy.oggetto = ID_RANA;
@@ -58,6 +60,7 @@ int main(){
     
     
     bool flag[NUM_BURROWS+1] = {false};
+    bool flag_croc = true; //per i coccodrilli
     int tana;
     int direzione;
     int vite = 5;
@@ -68,6 +71,7 @@ int main(){
     bool in_safe_zone = false;
     bool out_of_bounds = false;
     int new_x, new_y;
+    int count[NUM_CROC];
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
@@ -82,6 +86,27 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
+    for (int i = 0; i < NUM_STREAMS; i++) {
+        switch (i) {
+            case 0: speed[i] = 120000; break;
+            case 1: speed[i] = 140000; break;
+            case 2: speed[i] = 115000; break;
+            case 3: speed[i] = 135000; break;
+            case 4: speed[i] = 125000; break;
+            case 5: speed[i] = 145000; break;
+            case 6: speed[i] = 110000; break;
+            case 7: speed[i] = 130000; break;
+            case 8: speed[i] = 150000; break;
+        }
+    }
+    for (int i = 0; i < NUM_CROC; i++)
+    {
+        if (i >= 9){
+            speed[i] = speed[i-9];
+        }   
+    }
+        
+
     pid_rana = fork();
 
 
@@ -90,7 +115,7 @@ int main(){
         exit(EXIT_FAILURE);
     } else if (pid_rana == 0){
         close(pipe_fd[READ]);  //chiudo la pipe in lettura
-        frog(pipe_fd[WRITE], flag); //passo la pipe direttamente in scrittura
+        frog(pipe_fd[WRITE], flag, speed); //passo la pipe direttamente in scrittura
         exit(EXIT_SUCCESS);
     }
 
@@ -104,14 +129,13 @@ int main(){
     for (int i = 1; i < 9; i++) {
         direzioni[i] = -direzioni[i - 1];  // Alterna rispetto al precedente     
     }
-        for (int i = 9; i < 18; i++)
-        {
+        for (int i = 9; i < 18; i++){
             direzioni[i] = direzioni[i -9];
         }
-    
 
 
-
+        
+        
 
     for(int i=0; i< NUM_CROC; i++){
         pid_coccodrillo[i]= fork();
@@ -120,7 +144,11 @@ int main(){
             exit(EXIT_FAILURE);
         } else if (pid_coccodrillo[i] == 0){
             close(pipe_fd[READ]);  //chiudo la pipe in lettura
-            main_croc(pipe_fd[WRITE], i, direzioni[i]); //passo la pipe direttamente in scritturap
+            if (i >= 9){
+                flag_croc = false;
+            }
+            main_croc(pipe_fd[WRITE], i, direzioni[i], speed[i], flag_croc); //passo la pipe direttamente in scritturap
+            
             exit(EXIT_SUCCESS);
         }
 
@@ -154,7 +182,7 @@ int main(){
                 // controlla se è nella safe zona
                  in_safe_zone = (new_y >= 33 && new_y <= 39);
 
-                // controllo boundaries
+                //controllo boundaries
                 out_of_bounds = (new_x < 0 || new_x >= GAME_WIDTH - LARGHEZZA_RANA || 
                                     new_y < 0 || new_y >= GAME_HEIGHT - ALTEZZA_RANA);
 
@@ -211,25 +239,29 @@ int main(){
                 croc_copy[msg.index].index = msg.index;
                 prev_x_cocc = msg.x;
                 prev_y_cocc = msg.y;
-                
+                log_coordinates(msg.index, msg.velocita);
                 draw_crocodile(msg.x, msg.y);
                 break;         
             case RESPAWN: 
                int direzione = msg.direzione;
                 int indice = msg.index;
+                int x = msg.x;
                 kill(msg.pid, SIGKILL);
                 waitpid(msg.pid, &status, 0); // aspetta che il processo muoia
                 // Ricrea un nuovo processo coccodrillo con le stesse proprietà
+              
                 pid_t nuovo_pid = fork();
+                flag_croc = true;
                 if (nuovo_pid == -1 ){
                     perror("errore fork ");
                     exit(EXIT_FAILURE);
                 } else if (nuovo_pid == 0) {
                     close(pipe_fd[READ]);
                     // nuovo processo figlio parte da capo
-                    main_croc(pipe_fd[WRITE], indice, direzione);
+                    main_croc(pipe_fd[WRITE], indice, direzione, speed[indice], flag_croc);
                     exit(EXIT_SUCCESS);
-                }
+            }
+        
                 
                 
                 break;    

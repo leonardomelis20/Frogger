@@ -5,7 +5,7 @@
 #define GAME_HEIGHT 39 // Altezza dell'area di gioco da fare da 30
 #define LARGHEZZA_RANA 5
 #define ALTEZZA_RANA 3 //usata sia per rana che per altezza tane
-#define LARGHEZZA_COCCODRILLO 11
+#define LARGHEZZA_COCCODRILLO 15
 #define ALTEZZA_COCCODRILLO 3
 #define NUM_STREAMS 9
 #define NUM_CROC 18
@@ -16,8 +16,8 @@
 #define SAFE_ZONE_START 33
 #define SAFE_ZONE_END 5
 #define LARGHEZZA_TANA 7
-#define MIN_VELOCITA 100000   // 0.1 secondi (100ms)
-#define MAX_VELOCITA 300000  // 0.3 secondi (300ms)
+#define MIN_VELOCITA 100000   // 0.1 secondi
+#define MAX_VELOCITA 150000  // 0.15 secondi
 #define MAX_MESSAGES 10
 #define READ 0 //macro da usare nelle pipe x codice più leggibile
 #define WRITE 1

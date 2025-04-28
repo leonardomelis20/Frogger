@@ -34,7 +34,7 @@ void frog_with_croc(int pipe_fd, Messaggio* frog, Messaggio* croc) {
 
     
     if (i != -1) {
-        frog->x = croc[i].x + (LARGHEZZA_COCCODRILLO - LARGHEZZA_RANA) / 2;
+        //frog->x = croc[i].x + (LARGHEZZA_COCCODRILLO - LARGHEZZA_RANA) / 2;
         frog->y = croc[i].y;
         frog->velocita = croc[i].velocita;
         frog->direzione = croc[i].direzione;

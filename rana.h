@@ -4,7 +4,7 @@
 #define ID_RANA 1
 
 
-void frog(int pipe_fd, bool*);
+void frog(int pipe_fd, bool*, int*);
 bool is_inside (Messaggio);
 void tane(Messaggio);
 int num_tana(Messaggio);
