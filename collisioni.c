@@ -27,7 +27,7 @@ int check_collision(Messaggio frog, Messaggio* croc){
     return flag;
 }
 
-void frog_with_croc(int pipe_fd, Messaggio* frog, Messaggio* croc) {
+void frog_with_croc(Messaggio* frog, Messaggio* croc) {
     int i = check_collision(*frog, croc);
     frog->on_croc = true;
     frog->croc_index = i;
@@ -35,13 +35,14 @@ void frog_with_croc(int pipe_fd, Messaggio* frog, Messaggio* croc) {
     
     if (i != -1) {
         //frog->x = croc[i].x + (LARGHEZZA_COCCODRILLO - LARGHEZZA_RANA) / 2;
-        frog->y = croc[i].y;
-        frog->velocita = croc[i].velocita;
-        frog->direzione = croc[i].direzione;
-        frog->oggetto = ID_RANA;
-        frog->on_croc = true;
-        frog->croc_index = i;
-        frog->x += croc[i].direzione;
+        //frog->y = croc[i].y;
+        //frog->velocita = croc[i].velocita;
+        //frog->direzione = croc[i].direzione;
+        //frog->oggetto = ID_RANA;
+        //frog->on_croc = true;
+        //frog->croc_index = i;
+
+        //frog->x += croc[i].direzione;
        
     } else {
         frog->on_croc = false;
@@ -49,7 +50,7 @@ void frog_with_croc(int pipe_fd, Messaggio* frog, Messaggio* croc) {
     }
 
     
-    write(pipe_fd, &frog, sizeof(Messaggio));
+   // write(pipe_fd, &frog, sizeof(Messaggio));
 
     
 }

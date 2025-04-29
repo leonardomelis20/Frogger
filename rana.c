@@ -100,16 +100,7 @@ void frog(int pipe_fd, bool* flag, int* speed ) {
 
     // Loop principale per gestire l'input
     while(1) {
-        // Attendi un po' prima di controllare nuovamente l'input
-        if (i - 2 > 0) {
-            usleep(speed[i-2]);
-            mvprintw(0, 0, "VELOCITA %d ", speed[i-2]);
-        } else {
-            usleep(speed[0]);
-            mvprintw(0, 0, "VELOCITA %d ", speed[0]);
-        }
-        
-        mvprintw(0, 20, "INDICE %d ", i);
+        usleep(100000); // 0.1 secondi di attesa
         
         
         // Legge l'input (non bloccante)
