@@ -57,7 +57,7 @@ void draw_closed_burrows(Messaggio tana) {
 
 void draw_safety_zones() {
     attron(COLOR_PAIR(2));
-    mvhline(SAFE_ZONE_END, 0, '=', GAME_WIDTH); // Prato superiore
-    mvhline(SAFE_ZONE_START, 0, '=', GAME_WIDTH); // Prato inferiore
+    mvhline(SAFE_ZONE_UP, 0, '=', GAME_WIDTH); // Prato superiore
+    mvhline(SAFE_ZONE_DOWN, 0, '=', GAME_WIDTH); // Prato inferiore
     attroff(COLOR_PAIR(2));
 }

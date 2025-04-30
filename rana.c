@@ -111,13 +111,12 @@ void frog(int pipe_fd, bool* flag, int* speed ) {
             case KEY_UP:
                 {
                     msg.y = -3;
-                    i++;
+                    
                 }
                 break;
             case KEY_DOWN:
                 {
                     msg.y = 3;
-                    i--;
                     
                 }
                 break;
@@ -140,6 +139,7 @@ void frog(int pipe_fd, bool* flag, int* speed ) {
         
         // Invia la posizione aggiornata
         write(pipe_fd, &msg, sizeof(Messaggio));
+        
         msg.x = 0;
         msg.y = 0;
     }

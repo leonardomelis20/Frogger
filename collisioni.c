@@ -17,8 +17,8 @@ int check_collision(Messaggio frog, Messaggio* croc){
     int flag = -1;
     for (int i = 0; i < NUM_CROC; i++)
     {
-        if (frog.x >= croc[i].x && frog.x <= (croc[i].x + LARGHEZZA_COCCODRILLO) &&
-        frog.y >= croc[i].y && frog.y <= (croc[i].y )) {        
+        if (frog.x >= croc[i].x && (frog.x + LARGHEZZA_RANA) <= (croc[i].x + LARGHEZZA_COCCODRILLO) &&
+        frog.y == croc[i].y && frog.y == (croc[i].y )) {        
         flag = i;
         return flag;
         } 
@@ -27,32 +27,27 @@ int check_collision(Messaggio frog, Messaggio* croc){
     return flag;
 }
 
+Messaggio correct_x_frog (Messaggio frog){
+    Messaggio new_cord;
+    new_cord.y = frog.y;
+
+    new_cord.x = (frog.x + (LARGHEZZA_RANA/2)) / LARGHEZZA_RANA * LARGHEZZA_RANA;
+
+    return new_cord;
+
+}
+
+
+
 void frog_with_croc(Messaggio* frog, Messaggio* croc) {
     int i = check_collision(*frog, croc);
     frog->on_croc = true;
     frog->croc_index = i;
-
     
-    if (i != -1) {
-        //frog->x = croc[i].x + (LARGHEZZA_COCCODRILLO - LARGHEZZA_RANA) / 2;
-        //frog->y = croc[i].y;
-        //frog->velocita = croc[i].velocita;
-        //frog->direzione = croc[i].direzione;
-        //frog->oggetto = ID_RANA;
-        //frog->on_croc = true;
-        //frog->croc_index = i;
-
-        //frog->x += croc[i].direzione;
-       
-    } else {
+    if (i == -1) {
         frog->on_croc = false;
         frog->croc_index = -1;
-    }
-
-    
-   // write(pipe_fd, &frog, sizeof(Messaggio));
-
-    
+    }    
 }
 
 bool check_borders_frog(Messaggio frog) {
@@ -64,16 +59,18 @@ bool check_borders_frog(Messaggio frog) {
 }
 
 bool check_safe_zone(Messaggio frog) {
-    if (frog.y >= 33 && frog.y <= 39) {
+    if (frog.y >= SAFE_ZONE_DOWN && frog.y <= SAFE_ZONE_DOWN_2) {
         return true; // dentro la zona sicura
+    } else if (frog.y >= 0 && frog.y <= SAFE_ZONE_UP) {
+        return true; // dentro la tana
     }
     return false;
 }
 
 bool river(Messaggio frog) {
-    if (!check_safe_zone(frog) && frog.on_croc == false) {
-       return true; // dentro il fiume
+    if (!check_safe_zone(frog) && !frog.on_croc) {
+        return true;
     }
-    else false;
+    return false;
 }
 

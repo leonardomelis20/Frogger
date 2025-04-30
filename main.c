@@ -175,10 +175,14 @@ int main(){
             continue;
         }
 
+        correct_x_frog(frog_copy);
+
         //cancello la vecchia posizione della rana
         if (prev_x_rana != -1 && prev_y_rana != -1) {
             clear_frog(prev_x_rana, prev_y_rana);
         }
+
+       
         
 
 
@@ -223,6 +227,7 @@ int main(){
 
             //QUESTO E BUGGATO FORTISSIMO VA TOLTO (MA NON VUOLE)
             frog_with_croc(&frog_copy, croc_copy);
+            
             // Salva la nuova posizione per la prossima clear
             prev_x_rana = frog_copy.x;
             prev_y_rana = frog_copy.y;
@@ -232,7 +237,7 @@ int main(){
             draw_frog(frog_copy.x, frog_copy.y);
 
             //se è fuori dallo schermo e fuori dalla safe zone perde vite e viene riposizionata
-            if ((out_of_bounds && !in_safe_zone) || (river(frog_copy) && !frog_copy.on_croc)) {
+            if ((out_of_bounds && !in_safe_zone) || river(frog_copy)) {
                 vite--;
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
@@ -267,23 +272,21 @@ int main(){
             //          V
             //aggiorno la posizione della rana se è sopra il coccodrillo
             if (frog_copy.on_croc && frog_copy.croc_index == msg.index) {
-                clear_frog(frog_copy.x, frog_copy.y); // Clear old position
-                // Move with the crocodile but maintain relative x position
-                int relative_x = frog_copy.x - (prev_x_cocc + LARGHEZZA_COCCODRILLO/2);
-                frog_copy.x = msg.x + LARGHEZZA_COCCODRILLO/2 + relative_x;
+                clear_frog(frog_copy.x, frog_copy.y); // cancella la posizione precedente
+            
+            
                 
-                // rana sul coccodrillo non può uscire dai bordi
-                if (frog_copy.x < msg.x) {
-                    frog_copy.x = msg.x;
-                } else if (frog_copy.x + LARGHEZZA_RANA > msg.x + LARGHEZZA_COCCODRILLO) {
-                    frog_copy.x = msg.x + LARGHEZZA_COCCODRILLO - LARGHEZZA_RANA;
-                }
-                
+                //la rana si muove con il coccodrillo
+                frog_copy.x += msg.direzione; // aggiorna la posizione verticale della rana
+
+            
+                // aggiorna anche le coordinate precedenti
                 prev_x_rana = frog_copy.x;
                 prev_y_rana = frog_copy.y;
-                draw_frog(frog_copy.x, frog_copy.y);
             }
+            // Se la rana era sopra questo coccodrillo ma ora non lo è più, azzera i flag
 
+            
             draw_crocodile(msg.x, msg.y);
             
             if (!frog_copy.on_croc && 
@@ -295,7 +298,10 @@ int main(){
                 frog_copy.on_croc = true;
                 frog_copy.croc_index = msg.index;
                 frog_copy.y = msg.y; 
-            }
+                
+            } 
+            
+                       
             break;         
         case RESPAWN: 
             int direzione = msg.direzione;
@@ -342,16 +348,19 @@ int main(){
                     exit(EXIT_SUCCESS);
                 }
                 
+                 
                 refresh();
             }
         }        
 
 
         
-
-        //disegnio la rana
+       
+        
+        //disegno la rana
         draw_frog(frog_copy.x, frog_copy.y);
 
+        mvprintw(1, 0, "ON_CROC: %d  SAFE_ZONE: %d  RIVER: %d     ", frog_copy.on_croc, in_safe_zone, river(frog_copy));
 
         refresh();
 

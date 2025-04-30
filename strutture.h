@@ -1,7 +1,7 @@
 #ifndef STRUTTURE_H
 #define STRUTTURE_H
 
-#define GAME_WIDTH 85  // Larghezza dell'area di gioco
+#define GAME_WIDTH 86  // Larghezza dell'area di gioco
 #define GAME_HEIGHT 39 // Altezza dell'area di gioco da fare da 30
 #define LARGHEZZA_RANA 5
 #define ALTEZZA_RANA 3 //usata sia per rana che per altezza tane
@@ -13,8 +13,9 @@
 #define NUM_BURROWS 5
 #define MIN_COCCODRILLO 1
 #define MAX_COCCODRILLO 100 
-#define SAFE_ZONE_START 33
-#define SAFE_ZONE_END 5
+#define SAFE_ZONE_DOWN 33
+#define SAFE_ZONE_DOWN_2 39
+#define SAFE_ZONE_UP 5
 #define LARGHEZZA_TANA 7
 #define MIN_VELOCITA 100000   // 0.1 secondi
 #define MAX_VELOCITA 150000  // 0.15 secondi
