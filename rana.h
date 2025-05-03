@@ -1,7 +1,7 @@
 #ifndef RANA_H
 #define RANA_H
 
-#define ID_RANA 1
+
 
 
 void frog(int pipe_fd, bool*, int*);

@@ -19,11 +19,15 @@
 #define LARGHEZZA_TANA 7
 #define MIN_VELOCITA 100000   // 0.1 secondi
 #define MAX_VELOCITA 150000  // 0.15 secondi
+#define BULLET_SPEED 100000 //velocità proiettile
 #define MAX_MESSAGES 10
 #define READ 0 //macro da usare nelle pipe x codice più leggibile
 #define WRITE 1
 #define RESPAWN -1
 #define TANE -2
+#define ID_RANA 1
+#define ID_CROCODILE 2
+#define ID_BULLET 3
 
 
 

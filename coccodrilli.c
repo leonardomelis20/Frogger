@@ -11,6 +11,7 @@
 
 #include "strutture.h"
 #include "coccodrilli.h"
+#include "proiettili.h"
 
 char sprite_coccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
     " ~~~~~___~~~~~ ",  
@@ -73,6 +74,21 @@ int get_pid_croc(Messaggio msg[], pid_t pid){
 
 
 
+void shoot_bullet(int pipe_fd, Messaggio* croc){
+    pid_t pid_bullet = fork();
+
+    if (pid_bullet == -1) {
+        perror("Errore fork proiettile");
+        exit(EXIT_FAILURE);
+    } else if (pid_bullet == 0) {
+        // Processo figlio per il proiettile
+        main_bullet(pipe_fd, *croc); // Passa il coccodrillo al processo del proiettile
+        exit(EXIT_SUCCESS);
+    }   
+    
+
+
+    }
 
 int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
     
@@ -92,17 +108,13 @@ int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
         // Convert to first 9 indices (0-8) to reuse the same stream positions
         adjusted_num = num - 9;
         
-        // Add delay for second crocodile in the stream
-        //usleep(speed); // 1.5 seconds delay for the second crocodile
-    } else {
-        adjusted_num = num;
+        } else {
+            adjusted_num = num;
     }
     msg.index = num;
     msg.pid = getpid();
     msg.oggetto = ID_CROCODILE;
-    int num2 = 0;
-    
-    
+
    msg.direzione = direzione;
 
    msg.y = 6 + (adjusted_num * 3);  // Ogni y è distante 3 unità
@@ -110,30 +122,26 @@ int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
     // Setto la x in base alla posizione
     if (msg.direzione == 1) {
         msg.x = 0;  //Inizia d sinistra se si sta muovendo verso destra
-    } else {
-        msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Inizia da destra se si sta muovendo verso sinistra
+        } else {
+            msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Inizia da destra se si sta muovendo verso sinistra
     }
-        
-
     
-    
-    // Setto la y 
-     msg.velocita = speed;
-    
-     
-
-    // Velocità casuale tra i due estremi   
+    msg.velocita = speed; 
     usleep(50000);
+
     write(pipe_fd, &msg, sizeof(Messaggio));
     while(1){
 
         //aggiorno la posizione
         movement_croc(&msg);
-        if (check_borders(msg)){
-            msg.oggetto = -1; 
-            write(pipe_fd, &msg, sizeof(Messaggio));
-            break;
+        if (rand() % 1000 < 20){
+            shoot_bullet(pipe_fd, &msg);
         }
+            if (check_borders(msg)){
+                msg.oggetto = -1; 
+                write(pipe_fd, &msg, sizeof(Messaggio));
+                break;
+            }
         
         //scrivo nella pipe
         

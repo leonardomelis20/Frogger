@@ -58,6 +58,14 @@ bool check_borders_frog(Messaggio frog) {
     return false;
 }
 
+bool check_borders_bullet(Messaggio bullet) {
+    if (bullet.x < 0 || bullet.x >= GAME_WIDTH || 
+        bullet.y < 0 || bullet.y > GAME_HEIGHT) {
+        return true; //fuori dai bordi
+    }
+    return false;
+}
+
 bool check_safe_zone(Messaggio frog) {
     if (frog.y >= SAFE_ZONE_DOWN && frog.y <= SAFE_ZONE_DOWN_2) {
         return true; // dentro la zona sicura

@@ -12,8 +12,12 @@
 #include "coccodrilli.h"
 #include "disegni.h"
 #include "collisioni.h"
+#include "proiettili.h"
 
-
+/*DA FARE: 
+- rivedere makefile
+- posizionare rana con i bordi
+*/
 
 
 //RANA = SPRITE 
@@ -224,8 +228,6 @@ int main(){
             }
 
             // Verifica se la rana è su un coccodrillo e aggiorna le sue info
-
-            //QUESTO E BUGGATO FORTISSIMO VA TOLTO (MA NON VUOLE)
             frog_with_croc(&frog_copy, croc_copy);
             
             // Salva la nuova posizione per la prossima clear
@@ -325,6 +327,11 @@ int main(){
     
             
             break;    
+        case ID_BULLET:
+            //cancello
+            clear_bullet(msg.x, msg.y);
+            draw_bullet(msg.x, msg.y);
+            break;
         }   
         //controlla se è dentro la tana oppure se entra in mezzo a due tane
         if (is_inside(frog_copy)){
