@@ -43,13 +43,13 @@ int main(){
     srand(time(NULL));
     int pipe_fd[2];
     Messaggio coccodrilli[NUM_CROC];    //array di coccodrilli
-    pid_t pid_rana, pid_coccodrillo[NUM_STREAMS*COCCODRILLI_X_FLUSSO];
+    pid_t pid_rana, pid_coccodrillo[NUM_STREAMS*COCCODRILLI_X_FLUSSO], pid_bullet;
     Messaggio msg; 
     InfoFlussi info[NUM_STREAMS];
     int prev_x_rana = -1, prev_y_rana = -1; 
     int prev_x_cocc = -1, prev_y_cocc = -1;
     pid_t pid;
-    Messaggio frog_copy, croc_copy[NUM_CROC];
+    Messaggio frog_copy, croc_copy[NUM_CROC], bullet_copy[NUM_CROC];
     int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
     int centro_x = GAME_WIDTH / 2;
     int input;
@@ -71,6 +71,7 @@ int main(){
     int status = 0;
     int i= 0; 
     int direzioni[NUM_CROC];
+    int croc_index;
 
     bool in_safe_zone = false;
     bool out_of_bounds = false;
@@ -112,8 +113,6 @@ int main(){
         
 
     pid_rana = fork();
-
-
     if (pid_rana == -1){
         perror("Fork rana fallita");
         exit(EXIT_FAILURE);
@@ -123,6 +122,9 @@ int main(){
         exit(EXIT_SUCCESS);
     }
 
+    
+
+    
   
    
     if (rand() % 2 == 0){
@@ -164,6 +166,22 @@ int main(){
         croc_copy[i].x = -100;   // Posizione off screen
         croc_copy[i].y = -100;
     }
+
+    /* IL PROBLEMA E' QUA ^!!!*/
+
+    
+    for (int i = 0; i < NUM_CROC; i++) {
+        pid_bullet = fork();
+        if (pid_bullet == -1){
+            perror("Fork proiettile fallita");
+            exit(EXIT_FAILURE);
+        } else if (pid_bullet == 0){
+            close(pipe_fd[READ]);
+            main_bullet(pipe_fd[WRITE], croc_copy[i]); // ogni processo gestisce un proiettile per un coccodrillo
+            exit(EXIT_SUCCESS);
+        }
+    }
+    
     
 
     
@@ -187,10 +205,7 @@ int main(){
         }
 
        
-        
-
-
-        mvprintw(0, 0, "VITE %d ", vite);
+       mvprintw(0, 0, "VITE %d ", vite);
         switch (msg.oggetto) {
             case ID_RANA:
 
@@ -329,6 +344,7 @@ int main(){
             break;    
         case ID_BULLET:
             //cancello
+            
             clear_bullet(msg.x, msg.y);
             draw_bullet(msg.x, msg.y);
             break;
@@ -425,8 +441,8 @@ void log_coordinates(int frog_x, int crocodile_x) {
 
     // Scrivi i valori nel file
     fprintf(file, "---------------\n");
-    fprintf(file, "indice: %d\n", crocodile_x);
-    fprintf(file, "velocità: %d\n", frog_x);
+    fprintf(file, "x: %d\n", crocodile_x);
+    fprintf(file, "y: %d\n", frog_x);
     fprintf(file, "---------------\n");
 
     fclose(file); // Chiudi il file

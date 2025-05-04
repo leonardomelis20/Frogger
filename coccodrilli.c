@@ -73,23 +73,6 @@ int get_pid_croc(Messaggio msg[], pid_t pid){
 }
 
 
-
-void shoot_bullet(int pipe_fd, Messaggio* croc){
-    pid_t pid_bullet = fork();
-
-    if (pid_bullet == -1) {
-        perror("Errore fork proiettile");
-        exit(EXIT_FAILURE);
-    } else if (pid_bullet == 0) {
-        // Processo figlio per il proiettile
-        main_bullet(pipe_fd, *croc); // Passa il coccodrillo al processo del proiettile
-        exit(EXIT_SUCCESS);
-    }   
-    
-
-
-    }
-
 int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
     
     if(!flag){  
@@ -98,10 +81,10 @@ int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
 
     
     Messaggio msg;
-    
     int status;
-
     int adjusted_num;
+    time_t last_shot_time = time(NULL);
+  
     
     // Handle the second set of crocodiles (indices 9-17)
     if (num >= 9) {
@@ -134,14 +117,25 @@ int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
 
         //aggiorno la posizione
         movement_croc(&msg);
-        if (rand() % 1000 < 20){
-            shoot_bullet(pipe_fd, &msg);
-        }
+
+         // Controllo se è il momento di sparare un proiettile (ogni 3 secondi)
+         time_t current_time = time(NULL);
+         if (current_time - last_shot_time >= 3) {
+            msg.is_shooting = true; // Indica che il coccodrillo sta sparando
+             msg.oggetto = ID_BULLET;
+             // Scrivo il proiettile nella pipe
+             write(pipe_fd, &msg, sizeof(Messaggio));
+             last_shot_time = current_time; // Aggiorno il tempo dell'ultimo sparo
+             msg.oggetto = ID_CROCODILE; // Ripristino l'oggetto a coccodrillo
+         }
+
             if (check_borders(msg)){
                 msg.oggetto = -1; 
                 write(pipe_fd, &msg, sizeof(Messaggio));
                 break;
             }
+
+        
         
         //scrivo nella pipe
         

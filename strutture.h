@@ -19,6 +19,8 @@
 #define LARGHEZZA_TANA 7
 #define MIN_VELOCITA 100000   // 0.1 secondi
 #define MAX_VELOCITA 150000  // 0.15 secondi
+#define MIN_SHOOT_DELAY 1  // secondi
+#define MAX_SHOOT_DELAY 5  // secondi
 #define BULLET_SPEED 100000 //velocità proiettile
 #define MAX_MESSAGES 10
 #define READ 0 //macro da usare nelle pipe x codice più leggibile
@@ -60,6 +62,7 @@ typedef struct {
     int pid;
     bool on_croc;
     int croc_index;
+    bool is_shooting;
 } Messaggio;
 
 typedef struct{
