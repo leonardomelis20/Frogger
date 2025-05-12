@@ -21,8 +21,11 @@
 #define MAX_VELOCITA 150000  // 0.15 secondi
 #define MIN_SHOOT_DELAY 1  // secondi
 #define MAX_SHOOT_DELAY 5  // secondi
-#define BULLET_SPEED 100000 //velocità proiettile
+#define BULLET_SPEED 100000
+#define GRENADE_SPEED 100000 //velocità proiettile
 #define MAX_MESSAGES 10
+#define MAX_BULLETS 100  // Numero massimo di proiettili attivi contemporaneamente
+#define MAX_GRENADE 100   // Numero massimo di granate attivi contemporaneamente
 #define READ 0 //macro da usare nelle pipe x codice più leggibile
 #define WRITE 1
 #define RESPAWN -1
@@ -30,6 +33,9 @@
 #define ID_RANA 1
 #define ID_CROCODILE 2
 #define ID_BULLET 3
+#define CREATE_BULLET 4
+#define CREATE_GRENADE 5
+#define ID_GRENADE 6
 
 
 
@@ -63,6 +69,7 @@ typedef struct {
     bool on_croc;
     int croc_index;
     bool is_shooting;
+    bool is_active;
 } Messaggio;
 
 typedef struct{
@@ -74,4 +81,4 @@ typedef struct{
     int index;
 } InfoCocc;
 
-#endif 
+#endif

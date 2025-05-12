@@ -113,27 +113,40 @@ int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
     usleep(50000);
 
     write(pipe_fd, &msg, sizeof(Messaggio));
+    bool shooting = false;
     while(1){
 
         //aggiorno la posizione
         movement_croc(&msg);
 
-         // Controllo se è il momento di sparare un proiettile (ogni 3 secondi)
-         time_t current_time = time(NULL);
-         if (current_time - last_shot_time >= 3) {
-            msg.is_shooting = true; // Indica che il coccodrillo sta sparando
-             msg.oggetto = ID_BULLET;
-             // Scrivo il proiettile nella pipe
-             write(pipe_fd, &msg, sizeof(Messaggio));
-             last_shot_time = current_time; // Aggiorno il tempo dell'ultimo sparo
-             msg.oggetto = ID_CROCODILE; // Ripristino l'oggetto a coccodrillo
-         }
 
-            if (check_borders(msg)){
-                msg.oggetto = -1; 
+
+
+         // Controllo se è il momento di sparare un proiettile (ogni 3 secondi)
+        
+        time_t current_time = time(NULL);
+        if (rand() % 100 < 3) {
+            msg.is_shooting = true; // Indica che il coccodrillo sta sparando
+            msg.oggetto = CREATE_BULLET; // Indica che il coccodrillo sta creando un proiettile
+            msg.index = num; // Passo l'indice del coccodrillo
+            // Scrivo il proiettile nella pipe
+
+            if(shooting == false) {
+                shooting = true; // Indica che il coccodrillo ha sparato
                 write(pipe_fd, &msg, sizeof(Messaggio));
-                break;
+
+
             }
+
+            //write(pipe_fd, &msg, sizeof(Messaggio));
+            msg.oggetto = ID_CROCODILE; // Ripristino l'oggetto a coccodrillo
+        }
+
+        if (check_borders(msg)){
+            msg.oggetto = RESPAWN; 
+            write(pipe_fd, &msg, sizeof(Messaggio));
+            break;
+        }
 
         
         

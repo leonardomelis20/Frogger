@@ -130,6 +130,13 @@ void frog(int pipe_fd, bool* flag, int* speed ) {
                     msg.x = 3;
                 }
                 break;
+            case ' ':
+                {
+                    // Invia un messaggio per creare un proiettile
+                    msg.oggetto = CREATE_GRENADE;
+                    write(pipe_fd, &msg, sizeof(Messaggio));
+                    break;
+                }
             case 'q':  // Uscita
                 close(pipe_fd);
                 exit(EXIT_SUCCESS);
@@ -137,6 +144,7 @@ void frog(int pipe_fd, bool* flag, int* speed ) {
                 break;
         }
         
+        msg.oggetto = ID_RANA; // Ripristina l'oggetto a rana
         // Invia la posizione aggiornata
         write(pipe_fd, &msg, sizeof(Messaggio));
         
