@@ -1,8 +1,10 @@
 #ifndef DISEGNI_H
 #define DISEGNI_H
 
+#include <ncurses.h>
+#include <stdlib.h>
 
-void draw_game_screen();
+#include "strutture.h"
 
 void draw_river();
 void draw_burrows();

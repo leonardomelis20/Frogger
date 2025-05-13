@@ -7,30 +7,13 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "strutture.h"
 #include "rana.h"
 #include "coccodrilli.h"
+#include "strutture.h"
 #include "disegni.h"
 #include "collisioni.h"
 #include "proiettili.h"
 #include "granate.h"
-/*DA FARE: 
-- rivedere makefile
-- posizionare rana con i bordi
-*/
-
-
-//RANA = SPRITE 
-//FROG = PARAMETRO
-
-/*prossimi passi: 1) coccodrilli
-                  2) modificare il main x coccodrilli
-                  3) collisione rana-coccodrillo
-                  4)proiettili.c
-                  5)collisione proiettili granate
-                  6)vite e punteggio
-                  7)tempo di manche
-                  8)tane */
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
 void termina_gioco(pid_t, pid_t*);
