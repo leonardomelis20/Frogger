@@ -78,6 +78,7 @@ typedef struct {
     int croc_index;
     bool is_shooting;
     bool is_active;
+    int pos_array;
 } Messaggio;
 
 typedef struct {

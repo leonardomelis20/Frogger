@@ -16,7 +16,7 @@
 
 int main_croc(int, int, int, int, bool);
 void draw_crocodile(int, int); 
-int get_pid_croc(Messaggio*, pid_t);
+int get_idx_croc(Messaggio*, pid_t);
 void movement_croc(Messaggio*);
 bool check_borders(Messaggio);
 void clear_croc(Messaggio);

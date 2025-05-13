@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "coccodrilli.h": "c"
+        "*.c": "c",
+        "coccodrilli.h": "c",
+        "cstdlib": "c"
     }
 }

@@ -145,12 +145,10 @@ int main(){
     for (int i = 1; i < 9; i++) {
         direzioni[i] = -direzioni[i - 1];  // Alterna rispetto al precedente     
     }
-        for (int i = 9; i < 18; i++){
-            direzioni[i] = direzioni[i -9];
-        }
-
-
-        
+    for (int i = 9; i < 18; i++){
+        direzioni[i] = direzioni[i -9];
+    }
+     
         
 
     for(int i=0; i< NUM_CROC; i++){
@@ -326,8 +324,12 @@ int main(){
                        
             break;         
         case RESPAWN: 
-            int direzione = msg.direzione;
-            int indice = msg.index;
+
+        //log_coordinates(msg.x, msg.y, msg.direzione);
+            int direzione =  0;
+            direzione = msg.direzione;
+            int indice = 0;
+            indice = msg.index;
             int x = msg.x;
             kill(msg.pid, SIGKILL);
             waitpid(msg.pid, &status, 0); // aspetta che il processo muoia
@@ -347,8 +349,8 @@ int main(){
     
             
             break;    
-        case CREATE_BULLET: 
-            // Cerca una posizione libera nell'array dei proiettili attivi
+        case CREATE_BULLET: {
+            // Cerca una posizione libera nell'array dei proiettili
             int free_slot = -1;
             for (int i = 0; i < MAX_BULLETS; i++) {
                 if (!active_bullets[i].is_active) {
@@ -357,54 +359,42 @@ int main(){
                 }
             }
             
-            // Se c'è una posizione libera, crea un nuovo proiettile
             if (free_slot != -1) {
+                // Inizializza il proiettile
+                active_bullets[free_slot] = msg; // Copia tutti i dati dal messaggio
                 active_bullets[free_slot].is_active = true;
-                active_bullets[free_slot].x = msg.x;
-                active_bullets[free_slot].y = msg.y;
-                active_bullets[free_slot].oggetto = ID_BULLET;
-                active_bullets[free_slot].direzione = msg.direzione;
-            
-                    mvprintw(20, 0, "%d", active_bullets[free_slot].direzione);
-                    refresh();
+                active_bullets[free_slot].index = msg.index;
                 
-                
-                active_bullets[free_slot].index = free_slot;
-                
-                // Aggiorna il contatore dei proiettili attivi
                 bullet_count++;
                 
-                // Crea un processo per il proiettile
+                // Crea il processo proiettile
                 pid_bullet = fork();
-                if (pid_bullet == -1){
+                if (pid_bullet == -1) {
                     perror("Fork proiettile fallita");
                     exit(EXIT_FAILURE);
-                } else if (pid_bullet == 0){
+                } else if (pid_bullet == 0) {
                     close(pipe_fd[READ]);
-                    
-                    // Passa l'indice del proiettile nell'array
-                    msg.index = free_slot;
-                    main_bullet(pipe_fd[WRITE], msg); 
+                    main_bullet(pipe_fd[WRITE], active_bullets[free_slot]);
                     exit(EXIT_SUCCESS);
                 }
                 
-                // Salva il PID del processo proiettile
                 active_bullets[free_slot].pid = pid_bullet;
             }
-            
             break;
+        }
 
         case ID_BULLET:
             // Aggiorna la posizione del proiettile nell'array
-            if (msg.index >= 0 && msg.index < MAX_BULLETS) {
+            
+            if (msg.index >= 0 && msg.index < NUM_CROC) {
                 // Cancella vecchia posizione
                 if (active_bullets[msg.index].is_active) {
                     if(msg.direzione == 1){
-                    clear_bullet(active_bullets[msg.index].x-1, active_bullets[msg.index].y);
-                } else {
-                    clear_bullet(active_bullets[msg.index].x+2, active_bullets[msg.index].y);
-                }
-            }
+                    clear_bullet(msg.x-1, msg.y);
+                    } else {
+                        clear_bullet(msg.x+2, msg.y);
+                    }
+                }      
                 
                 // Aggiorna la posizione
                 active_bullets[msg.index] = msg;
@@ -532,36 +522,35 @@ int main(){
                     if (active_grenades[msg.index].is_active) {
                          if (active_grenades[msg.index].is_active) {
                              clear_grenade(active_grenades[msg.index].x, active_grenades[msg.index].y);
-                }
-            }
-                
-                // Aggiorna la posizione
-                active_grenades[msg.index] = msg;
-                
-                // Verifica se la granata è uscita dai bordi
-                if (msg.x < 0 || msg.x >= GAME_WIDTH) {
-                    // Il proiettile è uscito, uccidi il processo
-                    kill(msg.pid, SIGKILL);
-                    waitpid(msg.pid, &status, 0);
-                    
-                    // Marca il proiettile come inattivo
-                    active_grenades[msg.index].is_active = false;
-                    active_grenades[msg.index].x = -100;
-                    active_grenades[msg.index].y = -100;
-                    
-                    // Decrementa il contatore dei proiettili attivi
-                    if (grenade_count > 0) {
-                        grenade_count--;
+                            }
                     }
-                } else {
+                
+                    // Aggiorna la posizione
+                    active_grenades[msg.index] = msg;
+                    
+                    // Verifica se la granata è uscita dai bordi
+                    if (msg.x < 0 || msg.x >= GAME_WIDTH) {
+                        // Il proiettile è uscito, uccidi il processo
+                        kill(msg.pid, SIGKILL);
+                        waitpid(msg.pid, &status, 0);
+                        
+                        // Marca il proiettile come inattivo
+                        active_grenades[msg.index].is_active = false;
+                        active_grenades[msg.index].x = -100;
+                        active_grenades[msg.index].y = -100;
+                        
+                        // Decrementa il contatore dei proiettili attivi
+                        if (grenade_count > 0) {
+                            grenade_count--;
+                        }
+                    }else {
                         // Disegna il proiettile nella nuova posizione
-                    draw_grenade(msg.x, msg.y);    
+                        draw_grenade(msg.x, msg.y);    
+                    }
                 }
+                break;
             }
-
-            break;
-        }
-        }   
+        } 
         //controlla se è dentro la tana oppure se entra in mezzo a due tane
         if (is_inside(frog_copy)){
             int num_tane = num_tana(frog_copy);
@@ -665,7 +654,7 @@ void termina_gioco(pid_t pid_rana, pid_t pid_coccodrillo[]) {
     exit(EXIT_SUCCESS);
 }
 
-void log_coordinates(int frog_x, int crocodile_x) {
+void log_coordinates(int pid, int frog_x, int crocodile_x, int direzione) {
     FILE *file = fopen("coordinates_log.txt", "a"); // Apri il file in modalità append
     if (file == NULL) {
         perror("Errore nell'apertura del file");
@@ -674,8 +663,10 @@ void log_coordinates(int frog_x, int crocodile_x) {
 
     // Scrivi i valori nel file
     fprintf(file, "---------------\n");
+     fprintf(file, "pid: %d\n",pid );
     fprintf(file, "x: %d\n",frog_x );
     fprintf(file, "y: %d\n",crocodile_x);
+    fprintf(file, "direzione: %d\n",direzione);
     fprintf(file, "---------------\n");
 
     fclose(file); // Chiudi il file
