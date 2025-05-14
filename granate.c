@@ -43,7 +43,7 @@ void movement_grenade_right(Messaggio* grenade) {
  * @return true se la granata è al di fuori dei bordi, false altrimenti
  */
 bool check_grenade_borders(Messaggio grenade) {
-    return (grenade.x < 0 || grenade.x >= GAME_WIDTH); //controllo se la coordinata x è fuori dai limiti dell'area di gioco
+    return (grenade.x <= 0 || grenade.x >= GAME_WIDTH); //controllo se la coordinata x è fuori dai limiti dell'area di gioco
 }
 
 /**
@@ -63,9 +63,10 @@ void main_grenade(int pipe_fd, Messaggio grenade) {
     grenade.oggetto = ID_GRENADE; //imposto l'ID dell'oggetto per identificarlo come granata 
     grenade.pid = getpid(); //salvo il PID del processo corrente nella struct Messaggio
 
-    /*ciclo infinito per il moviemnto della granata*/
-    
+    // Notifica la posizione iniziale
+    write(pipe_fd, &grenade, sizeof(Messaggio));
 
+    /*ciclo infinito per il moviemnto della granata*/
     while(1) {
         /*se la direzione della granata è 1, quinid destra*/
         
@@ -84,10 +85,12 @@ void main_grenade(int pipe_fd, Messaggio grenade) {
     
         /*controllo se la granata è uscita dai bordi*/
         if (check_grenade_borders(grenade)) {
-            log_coordinates(grenade.pid, grenade.x, grenade.y, grenade.velocita); 
+            grenade.is_active = false; // Marco la granata come non attiva
+            write(pipe_fd, &grenade, sizeof(Messaggio)); // Notifico che la granata è fuori dai bordi
             break; //se è uscita, termino il ciclo e termino il processo 
         }
-        //loggo le coordinate della granata
+
+        //scrivo le coordinate della granata
         write(pipe_fd, &grenade, sizeof(Messaggio)); //invio la posizione aggiornata della granata al processo principale attraverso la pipe
         usleep(GRENADE_SPEED); //attendo un periodo determinato in base alla velocità della granata prima di aggiornare nuovamente la posizione 
     }

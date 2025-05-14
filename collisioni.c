@@ -88,3 +88,26 @@ bool river(Messaggio frog) {
 
     return false; //altrimenti ritorno false se è al sicuro
 }
+
+void collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int count_grenade) {
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if(bullet[i].x == grenade[i].x && bullet[i].y == grenade[i].y) {
+        clear_bullet(bullet[i].x, bullet[i].y); 
+        clear_grenade(grenade[i].x, grenade[i].y); 
+
+
+        mvprintw(GAME_HEIGHT/2, GAME_WIDTH/2, "proiettile killato: %d, granata killata %d", bullet[i].pid, grenade[i].pid);
+        refresh();
+
+        kill(bullet[i].pid, SIGKILL); 
+        waitpid(bullet[i].pid, NULL, 0);
+
+        kill(grenade[i].pid, SIGKILL); 
+        waitpid(grenade[i].pid, NULL, 0);
+
+        count_bullet--; 
+        count_grenade--; 
+        
+        }
+    }
+}

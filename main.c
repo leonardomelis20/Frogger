@@ -210,7 +210,6 @@ int main(){
 
        
        mvprintw(0, 0, "VITE %d ", vite);
-       mvprintw(0, 20, "PROIETTILI ATTIVI: %d ", bullet_count);
         
         switch (msg.oggetto) {
             case ID_RANA:
@@ -492,107 +491,124 @@ case ID_BULLET:
         }
     }
     break;
-            case CREATE_GRENADE:{
+            // Prima modifica: Assicurarsi che entrambe le granate siano inizializzate correttamente
+// Modifica nel case CREATE_GRENADE in main.c:
 
-                int free_slot = -1;
-                for (int i = 0; i < MAX_GRENADE; i++) {
-                    if (!active_grenades[i].is_active) {
-                        free_slot = i;
-                        break;
-                    }
-                }
-                
-                // Se c'è una posizione libera, crea un nuovo proiettile
-                if (free_slot != -1) {
-                    active_grenades[free_slot].is_active = true;
-                    active_grenades[free_slot].x = msg.x;
-                    active_grenades[free_slot].y = msg.y;
-                    active_grenades[free_slot].oggetto = ID_GRENADE;
-                    
-                
-                    
-                    active_grenades[free_slot].index = free_slot;
-                    
-                    // Aggiorna il contatore dei proiettili attivi
-                    grenade_count++;
-                    
-                    
-                    // Crea un processo per il proiettile
-                    pid_grenade_lx = fork();
-                    if (pid_grenade_lx == -1){
-                        perror("Fork granata fallita");
-                        exit(EXIT_FAILURE);
-                    } else if (pid_grenade_lx== 0){
-                        close(pipe_fd[READ]);
-                        msg.direzione = -1;
-                        msg.x = frog_copy.x+2;
-                        msg.y = frog_copy.y+1;
-                        // Passa l'indice del proiettile nell'array
-                        msg.index = free_slot;
-                        main_grenade(pipe_fd[WRITE], msg); 
-                        exit(EXIT_SUCCESS);
-                    }
+case CREATE_GRENADE: {
+    int free_slot = -1;
+    // Cerchiamo due slot liberi consecutivi
+    for (int i = 0; i < MAX_GRENADE - 1; i++) {
+        if (!active_grenades[i].is_active && !active_grenades[i+1].is_active) {
+            free_slot = i;
+            break;
+        }
+    }
+    
+    if (free_slot != -1) {
+        // Inizializza la granata sinistra
+        active_grenades[free_slot].is_active = true;
+        active_grenades[free_slot].x = frog_copy.x;
+        active_grenades[free_slot].y = frog_copy.y + 1;
+        active_grenades[free_slot].oggetto = ID_GRENADE;
+        active_grenades[free_slot].direzione = -1;
+        active_grenades[free_slot].index = free_slot;
+        
+        // Inizializza la granata destra
+        active_grenades[free_slot+1].is_active = true;
+        active_grenades[free_slot+1].x = frog_copy.x + 2;
+        active_grenades[free_slot+1].y = frog_copy.y + 1;
+        active_grenades[free_slot+1].oggetto = ID_GRENADE;
+        active_grenades[free_slot+1].direzione = 1;
+        active_grenades[free_slot+1].index = free_slot + 1;
+        
+        // Aggiorna il contatore delle granate attive
+        grenade_count += 2;
+        
+        // Crea processo per granata sinistra
+        pid_grenade_lx = fork();
+        if (pid_grenade_lx == -1) {
+            perror("Fork granata fallita");
+            exit(EXIT_FAILURE);
+        } else if (pid_grenade_lx == 0) {
+            close(pipe_fd[READ]);
+            msg.direzione = -1;
+            msg.x = frog_copy.x;
+            msg.y = frog_copy.y + 1;
+            msg.index = free_slot;
+            main_grenade(pipe_fd[WRITE], msg); 
+            exit(EXIT_SUCCESS);
+        }
+        
+        // Crea processo per granata destra
+        pid_grenade_rx = fork();
+        if (pid_grenade_rx == -1) {
+            perror("Fork granata fallita");
+            exit(EXIT_FAILURE);
+        } else if (pid_grenade_rx == 0) {
+            close(pipe_fd[READ]);
+            msg.direzione = 1;
+            msg.x = frog_copy.x + 2;
+            msg.y = frog_copy.y + 1;
+            msg.index = free_slot + 1;
+            main_grenade(pipe_fd[WRITE], msg); 
+            exit(EXIT_SUCCESS);
+        }
+        
+        // Salva i PID dei processi
+        active_grenades[free_slot].pid = pid_grenade_lx;
+        active_grenades[free_slot+1].pid = pid_grenade_rx;
+    }
+    break;
+}
+            // Seconda modifica: Migliorare la gestione delle granate nel main loop
+// Modifica ancora più completa al case ID_GRENADE in main.c:
 
-                    pid_grenade_rx = fork();
-                    if (pid_grenade_rx == -1){
-                        perror("Fork granata fallita");
-                        exit(EXIT_FAILURE);
-                    } else if (pid_grenade_rx== 0){
-                        close(pipe_fd[READ]);
-                        msg.direzione = 1;
-                        msg.x = frog_copy.x;
-                        msg.y = frog_copy.y+1;
-                        
-                        // Passa l'indice del proiettile nell'array
-                        msg.index = free_slot+1;
-                        main_grenade(pipe_fd[WRITE], msg); 
-                        exit(EXIT_SUCCESS);
-                    }
-
+case ID_GRENADE:
+{
+    
+    // Cancella vecchia posizione indipendentemente dall'indice
+    clear_grenade(msg.x, msg.y);
+    
+    // Verifica se la granata è uscita dai bordi
+    if (msg.x <= 0 || msg.x >= GAME_WIDTH) {
+        // La granata è uscita, uccidi il processo
+        kill(msg.pid, SIGKILL);
+        waitpid(msg.pid, &status, 0);
+        
+        // Assicurati che venga cancellata dallo schermo
+        clear_grenade(msg.x, msg.y);
+        
+        // Trova e aggiorna la granata nell'array
+        for (int i = 0; i < MAX_GRENADE; i++) {
+            if (active_grenades[i].pid == msg.pid) {
+                active_grenades[i].is_active = false;
+                active_grenades[i].x = -100;
+                active_grenades[i].y = -100;
                 
-                    
-                    // Salva il PID del processo granata
-                    active_grenades[free_slot].pid = pid_grenade_lx;
-                    active_grenades[free_slot+1].pid = pid_grenade_rx;
-                }
-
-            }
-            case ID_GRENADE:
-            {
-                 // Aggiorna la posizione del proiettile nell'array
-                if (msg.index >= 0 && msg.index < MAX_GRENADE) {
-                    // Cancella vecchia posizione
-                         if (active_grenades[msg.index].is_active) {
-                             clear_grenade(active_grenades[msg.index].x, active_grenades[msg.index].y);
-                            }
-                    
-                
-                    // Aggiorna la posizione
-                    active_grenades[msg.index] = msg;
-                    
-                    // Verifica se la granata è uscita dai bordi
-                    if (msg.x <= 0 || msg.x >= GAME_WIDTH -2) {
-                        // Il proiettile è uscito, uccidi il processo
-                        kill(msg.pid, SIGKILL);
-                        waitpid(msg.pid, &status, 0);
-                        
-                        // Marca il proiettile come inattivo
-                        active_grenades[msg.index].is_active = false;
-                        active_grenades[msg.index].x = -100;
-                        active_grenades[msg.index].y = -100;
-                        
-                        // Decrementa il contatore dei proiettili attivi
-                        if (grenade_count > 0) {
-                            grenade_count--;
-                        }
-                    }else {
-                        // Disegna il proiettile nella nuova posizione
-                        draw_grenade(msg.x, msg.y);    
-                    }
+                // Decrementa il contatore
+                if (grenade_count > 0) {
+                    grenade_count--;
                 }
                 break;
             }
-        } 
+        }
+    } else {
+        // Aggiorna la posizione nell'array
+        for (int i = 0; i < MAX_GRENADE; i++) {
+            if (active_grenades[i].pid == msg.pid) {
+                active_grenades[i].x = msg.x;
+                active_grenades[i].y = msg.y;
+                active_grenades[i].is_active = true;
+                break;
+            }
+        }
+        
+        // Disegna la granata nella nuova posizione
+        draw_grenade(msg.x, msg.y);
+    }
+    break;
+}
+} 
         //controlla se è dentro la tana oppure se entra in mezzo a due tane
         if (is_inside(frog_copy)){
             int num_tane = num_tana(frog_copy);
@@ -614,6 +630,8 @@ case ID_BULLET:
                     printf("Hai perso tutte le vite. Game Over!\n");
                     exit(EXIT_SUCCESS);
                 }
+
+
                 
                  
                 refresh();
@@ -626,6 +644,7 @@ case ID_BULLET:
         
         //disegno la rana
         draw_frog(frog_copy.x, frog_copy.y);
+
         
         // Disegna tutti i proiettili attivi
         for (int i = 0; i < MAX_BULLETS; i++) {
@@ -639,7 +658,7 @@ case ID_BULLET:
             }
         }
 
-        mvprintw(1, 0, "ON_CROC: %d  SAFE_ZONE: %d  RIVER: %d     ", frog_copy.on_croc, in_safe_zone, river(frog_copy));
+        collision_b_g(active_bullets, active_grenades, cont_bullets, grenade_count); 
 
         refresh();
 
