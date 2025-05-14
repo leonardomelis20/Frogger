@@ -7,8 +7,13 @@ char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA + 1] = {
     "\\-|-/"
 };
 
-/*disegna la rana alla posizione (x, y)*/
+/**
+ * funzione che disegna la rana alla posizione (x, y)
+ * @param x coordinata orizzontale della rana
+ * @param y coordinata verticale della rana
+ */
 void draw_frog(int x, int y) {
+    /*ciclo che scorre*/
     for (int i = 0; i < ALTEZZA_RANA; i++) {
         mvprintw(y + i, x, "%s", spriteRana[i]);
     }

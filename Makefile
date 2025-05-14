@@ -22,5 +22,8 @@ proiettili.o: proiettili.c proiettili.h strutture.h
 granate.o: granate.c granate.h strutture.h
 	gcc -c granate.c -o granate.o -lncurses
 
+utility.o: utility.c utility.h strutture.h
+	gcc -c utility.c -o utility.o -lncurses
+
 clean:
 	rm -f *.o programma

@@ -16,7 +16,8 @@
 
 void draw_bullet(int x, int y);
 void clear_bullet(int x, int y);
-void movement_bullet(Messaggio * croc, Messaggio *bullet);
-void main_bullet(int pipe_fd, Messaggio croc);
+void movement_bullet(Messaggio* croc, Messaggio* bullet); 
+bool check_bullet_borders(Messaggio bullet); 
+void main_bullet(int pipe_fd, Messaggio copy);
 
 #endif

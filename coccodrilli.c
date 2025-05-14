@@ -1,32 +1,24 @@
-#include <stdio.h>
-#include <ncurses.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <fcntl.h> 
-#include <stdbool.h>
-
-#include "strutture.h"
 #include "coccodrilli.h"
-#include "proiettili.h"
 
+/*sprite del coccodrillo*/
 char sprite_coccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
     " ~~~~~___~~~~~ ",  
     " (o)-------(o) ",  
     " ~~~~~___~~~~~ "   
 };
 
-// Disegna il coccodrillo sullo schermo, ma solo se la parte da disegnare è visibile
-void draw_crocodile(int x, int y){
-    // Scorre ogni riga del coccodrillo (3 righe in totale)
-    for (int i = 0; i < ALTEZZA_COCCODRILLO; i++){
-          // Scorre ogni carattere della riga corrente (11 colonne)
-        for (int j = 0; j < LARGHEZZA_COCCODRILLO; j++){
-            int colonna = x + j; // Calcola la posizione
-            // Se la colonna è dentro lo schermo, allora disegna il carattere
+/*funzione che disegna il coccodrillo alla posizione specificata*/
+void draw_crocodile(int x, int y) {
+    int colonna = 0; 
+
+    /*scorre ogni riga del coccodrillo*/
+    for (int i = 0; i < ALTEZZA_COCCODRILLO; i++) {
+
+        /*scorre ogni carattere della riga corrente*/
+        for (int j = 0; j < LARGHEZZA_COCCODRILLO; j++) {
+            colonna = x + j; //calcolo della posizione corrente
+
+            /*se il carattere è dentro lo schermo allora lo disegna*/
             if (colonna >= 0 && colonna < GAME_WIDTH) {
                 mvaddch(y + i, colonna, sprite_coccodrillo[i][j]);
             }
@@ -34,126 +26,117 @@ void draw_crocodile(int x, int y){
     }
 }
 
-//funzione per aggiornare il movimento del coccodrillo
-void movement_croc(Messaggio * croc){
-    croc->x += croc->direzione;
+/*funzione che aggiorna il movimento del coccodrillo*/
+void movement_croc(Messaggio* croc) {
+    croc->x += croc->direzione; //aggiorna la posizione orizzontale
 }
 
-
+/*funzione che controlla se il coccodrillo ha superato i bordi dello schermo*/
 bool check_borders(Messaggio croc) {
-    // Aggiungi debug
-    //printf("Check borders: x=%d, dir=%d, LARGHEZZA=%d\n", 
-          // croc.x, croc.direzione, LARGHEZZA_COCCODRILLO);
-    
+    /*se va verso destra*/
     if(croc.direzione == 1) {
-        return (croc.x >= GAME_WIDTH);  // Destra: controlla solo x
-    } else {
-        return (croc.x <= -LARGHEZZA_COCCODRILLO); // Sinistra: considera la lunghezza
+        return (croc.x >= GAME_WIDTH); //controllo che non superi la larghezza dell'area di gioco
+    } 
+    /*altrimenti, se va verso sinistra*/
+    else {
+        return (croc.x <= -LARGHEZZA_COCCODRILLO); //considero lo sprite
     }
 }
 
-//funzione per cancellare i coccodrilli
-void clear_croc(Messaggio msg){
-    for(int i = 0; i < ALTEZZA_COCCODRILLO; i++){
-        for(int j = 0; j < LARGHEZZA_COCCODRILLO; j++){
+/*funzione che cancella lo sprite del coccodrillo dallo schermo*/
+void clear_croc(Messaggio msg) {
+    /*scorro le righe*/
+    for(int i = 0; i < ALTEZZA_COCCODRILLO; i++) {
+        
+        /*scorro le colonne*/
+        for(int j = 0; j < LARGHEZZA_COCCODRILLO; j++) {
             mvprintw(msg.y + i, msg.x + j, " ");
         }
     }
 }
 
-//funzione per recuperare l'indice corretto del coccodrillo
-int get_pid_croc(Messaggio msg[], pid_t pid){
-    for(int i = 0; i < NUM_CROC; i++){
-        if(msg[i].pid == pid){
-            return i;
+/*funzione che trova l'indice di un coccodrillo dato il suo pid*/
+int get_index_croc(Messaggio msg[], pid_t pid) {
+    /*scorro tutti i coccodrilli*/
+    for(int i = 0; i < NUM_CROC; i++) {
+
+        /*se trovo il pid corrispondente*/
+        if(msg[i].pid == pid) {
+            return i; //restituisco l'indice
         }
     }
 
     return 1;
 }
 
+/*funzione principale del processo coccodrillo*/
+int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag) {
+    Messaggio msg; //struct Messaggio da inviare tramite pipe
+    int adjusted_num; //numero modificato per il posizionamento 
+    bool shooting = false; //falg che controlla se ha già sparato 
 
-int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag){
-    
-    if(!flag){  
-        usleep(5000000); // 1.5 seconds delay for the second crocodile
+    /*se non è il primo gruppo di coccodrilli*/
+    if(!flag) {  
+        usleep(5000000); //attendo 5 secondi prima di iniziare
     }
 
-    
-    Messaggio msg;
-    int status;
-    int adjusted_num;
-    time_t last_shot_time = time(NULL);
-  
-    
-    // Handle the second set of crocodiles (indices 9-17)
+    /*se è uno dei secondi coccodrilli, quelli da 9 a 17*/
     if (num >= 9) {
-        // Convert to first 9 indices (0-8) to reuse the same stream positions
-        adjusted_num = num - 9;
-        
-        } else {
-            adjusted_num = num;
+        adjusted_num = num - 9; //lo riporto nell'intervallo da 0 a 8
+    } 
+    /*altrimenti lo lascio normale*/
+    else {
+        adjusted_num = num;
     }
-    msg.index = num;
-    msg.pid = getpid();
-    msg.oggetto = ID_CROCODILE;
 
+    /*assegnamenti*/
+    msg.index = num; //impostazione dell'indice del coccodrillo
+    msg.pid = getpid(); //salvo il pid del processo
+    msg.oggetto = ID_CROCODILE; //identifico il tipo dell'oggetto
     msg.direzione = direzione;
-
-    msg.y = 6 + (adjusted_num * 3);  // Ogni y è distante 3 unità
+    msg.y = 6 + (adjusted_num * 3); //posizione verticale, è distante ogni 3 righe
     
-    // Setto la x in base alla posizione
+    /*se la direzione sta partendo da destra*/
     if (msg.direzione == 1) {
-        msg.x = 0;  //Inizia d sinistra se si sta muovendo verso destra
-        } else {
-            msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO;  // Inizia da destra se si sta muovendo verso sinistra
+        msg.x = 0; //lo faccio partire da sinistra
+    } 
+    /*altrimenti se sta partendo da sinistra*/
+    else {
+        msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO; //lo faccio iniziare da destra
     }
     
-    msg.velocita = speed; 
-    usleep(50000);
+    msg.velocita = speed; //imposto la velocità 
+    usleep(50000); //faccio attendere prima dell'inizio
 
-    write(pipe_fd, &msg, sizeof(Messaggio));
-    bool shooting = false;
-    while(1){
+    write(pipe_fd, &msg, sizeof(Messaggio)); //invio il messaggio alla pipe
 
-        //aggiorno la posizione
+    while(1) {
+        /*aggiorno la posizione*/
         movement_croc(&msg);
 
-
-
-
-         // Controllo se è il momento di sparare un proiettile (ogni 3 secondi)
-        
-        time_t current_time = time(NULL);
+        /*gli do il 3% di possibilità di sparo*/
         if (rand() % 100 < 3) {
-            msg.is_shooting = true; // Indica che il coccodrillo sta sparando
-            msg.oggetto = CREATE_BULLET; // Indica che il coccodrillo sta creando un proiettile
-            msg.index = num; // Passo l'indice del coccodrillo
-            // Scrivo il proiettile nella pipe
+            msg.is_shooting = true; //il coccodrillo sta sparando
+            msg.oggetto = CREATE_BULLET; //il coccodrillo sta creando un proiettile
+            msg.index = num; //passo l'indice del coccodrillo
 
-            
-
+            /*se il coccodrillo non ha sparato*/
             if(shooting == false) {
-                shooting = true; // Indica che il coccodrillo ha sparato
-                write(pipe_fd, &msg, sizeof(Messaggio));
+                shooting = true; //il coccodrillo ha sparato
+                write(pipe_fd, &msg, sizeof(Messaggio)); //invio il messaggio alla pipe
             }
 
-            //write(pipe_fd, &msg, sizeof(Messaggio));
-            msg.oggetto = ID_CROCODILE; // Ripristino l'oggetto a coccodrillo
-            
+            msg.oggetto = ID_CROCODILE; //ripristino l'oggetto a coccodrillo
         }
 
-        if (check_borders(msg)){
-            msg.oggetto = RESPAWN; 
-            write(pipe_fd, &msg, sizeof(Messaggio));
-            break;
-        }
+        /*se non ha superato i limiti*/
+        if (check_borders(msg)) {
+            msg.oggetto = RESPAWN; //imposto l'oggetto a respawn
+            write(pipe_fd, &msg, sizeof(Messaggio)); //invio la richiesta di respawn
+            break; //serve per uscire dal ciclo infitio
+        } 
 
-        
-        
-        //scrivo nella pipe
-        
-        write(pipe_fd, &msg, sizeof(Messaggio));
-        usleep(msg.velocita);
+        write(pipe_fd, &msg, sizeof(Messaggio)); //scrivo nella pipe
+        usleep(msg.velocita); //attendo in base alla velocità
     }
 }

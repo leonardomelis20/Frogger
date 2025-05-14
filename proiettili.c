@@ -1,13 +1,23 @@
 #include "proiettili.h"
 
-char bullet = 'P';
+char bullet = 'P'; //definizione del carattere che rappresenta il proiettile 
 
+/**
+ * funzione che disegna il proiettile alla posizione (x, y)
+ * @param x coordinata orizzontale del proiettile
+ * @param y coordinata verticale del proiettile
+ */
 void draw_bullet(int x, int y) {
-    mvaddch(y, x, bullet);
+    mvaddch(y, x, bullet); //uso la funzione ncurses per disegnare il proiettile nella coordinata (x,y)
 }
 
+/**
+ * funzione che cancella il proiettile dalla posizione (x, y) sostituendolo con uno spazio
+ * @param x coordinata orizzontale del proiettile
+ * @param y coordinata verticale del proiettile
+ */
 void clear_bullet(int x, int y) {
-    mvaddch(y, x, ' ');
+    mvaddch(y, x, ' '); //uso la funzione ncurses per disegnare lo spazio vuoto nella coordinata (x,y)
 }
 
 /*funzione per aggiornare il movimento del proiettile*/
@@ -15,6 +25,9 @@ void movement_bullet(Messaggio *croc, Messaggio *bullet) {
     bullet->x += croc->direzione;
 }
 
+/*!!!!!!!!!!*/
+/*questa funzione si potrebbe mettere nel file delel collisioni*/
+/*!!!!!!!!!!*/
 /*funzione per controllare se un proiettile è uscito dai bordi dello schermo*/
 bool check_bullet_borders(Messaggio bullet) {
     return (bullet.x < 0 || bullet.x >= GAME_WIDTH);
@@ -55,7 +68,7 @@ void main_bullet(int pipe_fd, Messaggio copy) {
 
     bullets.y = 6 + (adjusted_i * 3) + 1; //centro verticale del coccodrillo
 
-    log_coordinates(bullets.pid, bullets.x, bullets.y, bullets.direzione);
+    //log_coordinates(bullets.pid, bullets.x, bullets.y, bullets.direzione);
     
     /*ciclo principale*/
     while(1) {

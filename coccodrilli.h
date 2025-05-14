@@ -14,11 +14,11 @@
 
 #include "strutture.h"
 
-int main_croc(int, int, int, int, bool);
-void draw_crocodile(int, int); 
-int get_idx_croc(Messaggio*, pid_t);
-void movement_croc(Messaggio*);
-bool check_borders(Messaggio);
-void clear_croc(Messaggio);
+void draw_crocodile(int x, int y);
+void movement_croc(Messaggio* croc);
+bool check_borders(Messaggio croc);
+void clear_croc(Messaggio msg);
+int get_index_croc(Messaggio msg[], pid_t pid);
+int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag);
 
 #endif
