@@ -12,7 +12,7 @@ void log_coordinates(int pid, int frog_x, int crocodile_x, int direzione) {
      fprintf(file, "pid: %d\n",pid );
     fprintf(file, "x: %d\n",frog_x );
     fprintf(file, "y: %d\n",crocodile_x);
-    fprintf(file, "direzione: %d\n",direzione);
+    fprintf(file, "velocita: %d\n",direzione);
     fprintf(file, "---------------\n");
 
     fclose(file); // Chiudi il file

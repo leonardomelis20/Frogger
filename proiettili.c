@@ -58,15 +58,9 @@ void main_bullet(int pipe_fd, Messaggio copy) {
     }
     
     /*calcola la posizione y del proiettile, ovvero il centro del coccodrillo*/
-    i = copy.index;
-    if (i >= 9) {
-        adjusted_i = i - 9;
-    } 
-    else {
-        adjusted_i = i;
-    }
+    
 
-    bullets.y = 6 + (adjusted_i * 3) + 1; //centro verticale del coccodrillo
+    bullets.y = copy.y +1; //centro verticale del coccodrillo
 
     //log_coordinates(bullets.pid, bullets.x, bullets.y, bullets.direzione);
     
@@ -76,17 +70,20 @@ void main_bullet(int pipe_fd, Messaggio copy) {
         bullets.x += bullets.direzione;
 
 
-        write(pipe_fd, &bullets, sizeof(Messaggio));
+        
 
         /*controllo se il proiettile è uscito dai bordi*/
         if (check_bullet_borders(bullets)) {
+            bullets.is_active = false;  // Marca come inattivo
+            write(pipe_fd, &bullets, sizeof(Messaggio));  // Comunica la disattivazione
             break; //è uscito dallo schermo quindi termina
         }
         
-        //write(pipe_fd, &bullets, sizeof(Messaggio)); //invio la posizione aggiornata del proiettile
+        write(pipe_fd, &bullets, sizeof(Messaggio));
         usleep(bullets.velocita); //attendo prima del prossimo aggiornamento
     }
     
-    bullets.is_active = false; //aggiorna lo stato del proiettile
-    write(pipe_fd, &bullets, sizeof(Messaggio));
+    
+    //bullets.is_active = false; //aggiorna lo stato del proiettile
+   
 }

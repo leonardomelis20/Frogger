@@ -29,7 +29,7 @@
 /*!!!!!!!*/
 
 /*macro proiettili*/
-#define BULLET_SPEED 100000
+#define BULLET_SPEED 50000
 #define MAX_BULLETS 100 //numero massimo di proiettili attivi contemporaneamente
 
 /*macro grante*/

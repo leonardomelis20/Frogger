@@ -19,11 +19,9 @@ collisioni.o: collisioni.c collisioni.h strutture.h
 proiettili.o: proiettili.c proiettili.h strutture.h
 	gcc -c proiettili.c -o proiettili.o -lncurses
 
-granate.o: granate.c granate.h strutture.h
+granate.o: granate.c granate.h strutture.h 
 	gcc -c granate.c -o granate.o -lncurses
 
-utility.o: utility.c utility.h strutture.h
-	gcc -c utility.c -o utility.o -lncurses
 
 clean:
 	rm -f *.o programma

@@ -13,6 +13,7 @@
 #include <stdbool.h>
 
 #include "strutture.h"
+//#include "utility.h"
 
 void draw_grenade(int x, int y);
 void clear_grenade(int x, int y); 

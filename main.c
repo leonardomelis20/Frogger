@@ -14,7 +14,7 @@
 #include "collisioni.h"
 #include "proiettili.h"
 #include "granate.h"
-#include "util.h"
+#include "utility.h"
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
 void termina_gioco(pid_t, pid_t*);
@@ -350,55 +350,95 @@ int main(){
     
             
             break;    
-        case CREATE_BULLET: {
-            // Cerca una posizione libera nell'array dei proiettili
-            int free_slot = -1;
-            for (int i = 0; i < MAX_BULLETS; i++) {
-                if (!active_bullets[i].is_active) {
-                    free_slot = i;
-                    break;
-                }
-            }
-            
-            if (free_slot != -1) {
-                // Inizializza il proiettile
-                active_bullets[free_slot] = msg; // Copia tutti i dati dal messaggio
-                active_bullets[free_slot].is_active = true;
-                active_bullets[free_slot].index = msg.index;
-                
-                bullet_count++;
-                
-                // Crea il processo proiettile
-                pid_bullet = fork();
-                if (pid_bullet == -1) {
-                    perror("Fork proiettile fallita");
-                    exit(EXIT_FAILURE);
-                } else if (pid_bullet == 0) {
-                    close(pipe_fd[READ]);
-                    main_bullet(pipe_fd[WRITE], active_bullets[free_slot]);
-                    exit(EXIT_SUCCESS);
-                }
-                
-                active_bullets[free_slot].pid = pid_bullet;
-            }
+       
+
+// Modifica nella sezione CREATE_BULLET del main.c
+// Questo codice rappresenta come dovrebbe essere implementato nel main.c
+
+case CREATE_BULLET: {
+    // Cerca una posizione libera nell'array dei proiettili
+    int free_slot = -1;
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (!active_bullets[i].is_active) {
+            free_slot = i;
             break;
         }
-
-        case ID_BULLET:
-            // Aggiorna la posizione del proiettile nell'array
+    }
+    
+    if (free_slot != -1) {
+        // Prima di creare un nuovo proiettile, verifica se il coccodrillo ha già un proiettile attivo
+        bool already_has_bullet = false;
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (active_bullets[i].is_active && active_bullets[i].index == msg.index) {
+                already_has_bullet = true;
+                break;
+            }
+        }
+        
+        // Se il coccodrillo non ha già un proiettile attivo, ne crea uno nuovo
+        if (!already_has_bullet) {
+            // Inizializza il proiettile
+            active_bullets[free_slot].is_active = true;
+            active_bullets[free_slot].x = msg.x;
+            active_bullets[free_slot].y = msg.y;
+            active_bullets[free_slot].direzione = msg.direzione;
+            active_bullets[free_slot].oggetto = ID_BULLET;
+            active_bullets[free_slot].index = msg.index;  // Indice del coccodrillo che ha sparato
             
-            if (msg.index >= 0 && msg.index < NUM_CROC) {
-                // Cancella vecchia posizione
-                if (active_bullets[msg.index].is_active) {
-                    if(msg.direzione == 1){
-                    clear_bullet(msg.x-1, msg.y);
-                    } else {
-                        clear_bullet(msg.x+2, msg.y);
-                    }
-                }      
+            bullet_count++;
+            
+            // Crea il processo proiettile
+            pid_bullet = fork();
+            if (pid_bullet == -1) {
+                perror("Fork proiettile fallita");
+                exit(EXIT_FAILURE);
+            } else if (pid_bullet == 0) {
+                close(pipe_fd[READ]);
+                main_bullet(pipe_fd[WRITE], msg);
+                exit(EXIT_SUCCESS);
+            }
+            
+            active_bullets[free_slot].pid = pid_bullet;
+        }
+    }
+    break;
+}
+
+case ID_BULLET:
+    // Aggiorna la posizione del proiettile nell'array
+    
+    if (msg.index >= 0 && msg.index < NUM_CROC) {
+        int bullet_idx = -1;
+        
+        // Trova il proiettile con il pid corrispondente
+        for (int i = 0; i < MAX_BULLETS; i++) {
+            if (active_bullets[i].is_active && active_bullets[i].pid == msg.pid) {
+                bullet_idx = i;
+                break;
+            }
+        }
+        
+        if (bullet_idx != -1) {
+            // Cancella vecchia posizione
+            clear_bullet(active_bullets[bullet_idx].x, active_bullets[bullet_idx].y);
+            
+            // Se il proiettile non è più attivo, rimuovilo e decrementare il contatore
+            if (!msg.is_active) {
+                active_bullets[bullet_idx].is_active = false;
+                active_bullets[bullet_idx].x = -100;
+                active_bullets[bullet_idx].y = -100;
                 
-                // Aggiorna la posizione
-                active_bullets[msg.index] = msg;
+                if (bullet_count > 0) {
+                    bullet_count--;
+                }
+                
+                // Termina il processo associato
+                kill(msg.pid, SIGKILL);
+                waitpid(msg.pid, &status, 0);
+            } else {
+                // Aggiorna la posizione del proiettile
+                active_bullets[bullet_idx].x = msg.x;
+                active_bullets[bullet_idx].y = msg.y;
                 
                 // Verifica se il proiettile è uscito dai bordi
                 if (msg.x < 0 || msg.x >= GAME_WIDTH) {
@@ -407,9 +447,9 @@ int main(){
                     waitpid(msg.pid, &status, 0);
                     
                     // Marca il proiettile come inattivo
-                    active_bullets[msg.index].is_active = false;
-                    active_bullets[msg.index].x = -100;
-                    active_bullets[msg.index].y = -100;
+                    active_bullets[bullet_idx].is_active = false;
+                    active_bullets[bullet_idx].x = -100;
+                    active_bullets[bullet_idx].y = -100;
                     
                     // Decrementa il contatore dei proiettili attivi
                     if (bullet_count > 0) {
@@ -432,9 +472,9 @@ int main(){
                         // Disattiva il proiettile
                         kill(msg.pid, SIGKILL);
                         waitpid(msg.pid, &status, 0);
-                        active_bullets[msg.index].is_active = false;
-                        active_bullets[msg.index].x = -100;
-                        active_bullets[msg.index].y = -100;
+                        active_bullets[bullet_idx].is_active = false;
+                        active_bullets[bullet_idx].x = -100;
+                        active_bullets[bullet_idx].y = -100;
                         
                         // Decrementa il contatore dei proiettili attivi
                         if (bullet_count > 0) {
@@ -449,7 +489,9 @@ int main(){
                     }
                 }
             }
-            break;
+        }
+    }
+    break;
             case CREATE_GRENADE:{
 
                 int free_slot = -1;
@@ -483,8 +525,8 @@ int main(){
                     } else if (pid_grenade_lx== 0){
                         close(pipe_fd[READ]);
                         msg.direzione = -1;
-                        msg.x = frog_copy.x;
-                        msg.y = frog_copy.y;
+                        msg.x = frog_copy.x+2;
+                        msg.y = frog_copy.y+1;
                         // Passa l'indice del proiettile nell'array
                         msg.index = free_slot;
                         main_grenade(pipe_fd[WRITE], msg); 
@@ -499,7 +541,7 @@ int main(){
                         close(pipe_fd[READ]);
                         msg.direzione = 1;
                         msg.x = frog_copy.x;
-                        msg.y = frog_copy.y;
+                        msg.y = frog_copy.y+1;
                         
                         // Passa l'indice del proiettile nell'array
                         msg.index = free_slot+1;
@@ -520,17 +562,16 @@ int main(){
                  // Aggiorna la posizione del proiettile nell'array
                 if (msg.index >= 0 && msg.index < MAX_GRENADE) {
                     // Cancella vecchia posizione
-                    if (active_grenades[msg.index].is_active) {
                          if (active_grenades[msg.index].is_active) {
                              clear_grenade(active_grenades[msg.index].x, active_grenades[msg.index].y);
                             }
-                    }
+                    
                 
                     // Aggiorna la posizione
                     active_grenades[msg.index] = msg;
                     
                     // Verifica se la granata è uscita dai bordi
-                    if (msg.x < 0 || msg.x >= GAME_WIDTH) {
+                    if (msg.x <= 0 || msg.x >= GAME_WIDTH -2) {
                         // Il proiettile è uscito, uccidi il processo
                         kill(msg.pid, SIGKILL);
                         waitpid(msg.pid, &status, 0);
@@ -653,4 +694,22 @@ void termina_gioco(pid_t pid_rana, pid_t pid_coccodrillo[]) {
     endwin();
     printf("Gioco terminato!\n");
     exit(EXIT_SUCCESS);
+}
+
+void log_coordinates(int pid, int frog_x, int crocodile_x, int direzione) {
+    FILE *file = fopen("coordinates_log.txt", "a"); // Apri il file in modalità append
+    if (file == NULL) {
+        perror("Errore nell'apertura del file");
+        return;
+    }
+
+    // Scrivi i valori nel file
+    fprintf(file, "---------------\n");
+     fprintf(file, "pid: %d\n",pid );
+    fprintf(file, "x: %d\n",frog_x );
+    fprintf(file, "y: %d\n",crocodile_x);
+    fprintf(file, "velocita: %d\n",direzione);
+    fprintf(file, "---------------\n");
+
+    fclose(file); // Chiudi il file
 }

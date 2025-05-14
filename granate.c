@@ -1,5 +1,6 @@
 #include "granate.h"
 
+
 char grenade = 'G'; //definizione del carattere che rappresenta la granata 
 
 /**
@@ -63,22 +64,32 @@ void main_grenade(int pipe_fd, Messaggio grenade) {
     grenade.pid = getpid(); //salvo il PID del processo corrente nella struct Messaggio
 
     /*ciclo infinito per il moviemnto della granata*/
+    
+
     while(1) {
         /*se la direzione della granata è 1, quinid destra*/
+        
+        // Muovi la granata di 2 posizioni
         if (grenade.direzione == 1) {
-            movement_grenade_right(&grenade); //allora richiamo la funzione apposita per il movimento della granata verso destra
-        } 
-        /*altrimenti se la direzione è verso sinistra*/
-        else {
-            movement_grenade_left(&grenade); //richiamo la funzione apposita per il movimetno della granata verso sinistra 
+            grenade.x += 2;
+        } else {
+            grenade.x -= 2;
         }
-
+        // Movimento normale
+        if (grenade.direzione == 1) {
+            movement_grenade_right(&grenade);
+        } else {
+            movement_grenade_left(&grenade);
+        }
+    
         /*controllo se la granata è uscita dai bordi*/
         if (check_grenade_borders(grenade)) {
+            log_coordinates(grenade.pid, grenade.x, grenade.y, grenade.velocita); 
             break; //se è uscita, termino il ciclo e termino il processo 
         }
-
+        //loggo le coordinate della granata
         write(pipe_fd, &grenade, sizeof(Messaggio)); //invio la posizione aggiornata della granata al processo principale attraverso la pipe
-        usleep(grenade.velocita); //attendo un periodo determinato in base alla velocità della granata prima di aggiornare nuovamente la posizione 
+        usleep(GRENADE_SPEED); //attendo un periodo determinato in base alla velocità della granata prima di aggiornare nuovamente la posizione 
     }
+    
 }

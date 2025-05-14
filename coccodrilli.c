@@ -74,6 +74,11 @@ int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag) {
     Messaggio msg; //struct Messaggio da inviare tramite pipe
     int adjusted_num; //numero modificato per il posizionamento 
     bool shooting = false; //falg che controlla se ha già sparato 
+    /*Il problema nasce dal fatto che i due processi coccodrillo per ogni flusso vengono creati quasi contemporaneamente e quindi ereditano lo stesso stato del generatore di numeri casuali (rand()), producendo la stessa sequenza di numeri casuali, almeno all'inizio. Questo fa sì che sparino nello stesso momento.
+
+    Soluzione:
+    Aggiungi una chiamata a srand() con un valore diverso per ogni processo coccodrillo, ad esempio usando il pid e magari anche il tempo corrente per maggiore casualità.*/
+    srand(time(NULL) ^ getpid());
 
     /*se non è il primo gruppo di coccodrilli*/
     if(!flag) {  
