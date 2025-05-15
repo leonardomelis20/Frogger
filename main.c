@@ -76,10 +76,10 @@ int main(){
     init_pair(5, COLOR_RED, COLOR_BLACK);    // Rosso per tempo <= 10s
     
     // Aggiungi la variabile per tenere traccia del PID del timer
-    pid_t pid_timer = -1;
+    
     
     // Avvia il timer
-    reset_timer(pipe_fd[WRITE], &pid_timer);
+    //reset_timer(pipe_fd[WRITE], &pid_timer);
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
@@ -277,7 +277,6 @@ int main(){
                 frog_copy.y = centro_y;
                 frog_copy.on_croc = false;
                 frog_copy.croc_index = -1;
-                reset_timer(pipe_fd[WRITE], &pid_timer); // Reset del timer
                 if (vite <= 0) {
                     endwin();
                     printf("Hai perso tutte le vite. Game Over!\n");
@@ -480,7 +479,6 @@ case ID_BULLET:
                         frog_copy.y = centro_y;
                         frog_copy.on_croc = false;
                         frog_copy.croc_index = -1;
-                        reset_timer(pipe_fd[WRITE], &pid_timer);
 
                         // Disattiva il proiettile
                         kill(msg.pid, SIGKILL);
@@ -622,31 +620,6 @@ case ID_GRENADE:
     }
     break;
 }
-    case ID_TIMER:
-    // Disegna la barra del tempo
-    draw_time_bar(msg.tempo_rimanente);
-    refresh();
-    break;
-    
-case TIMER_TIMEOUT:
-    // Il tempo è scaduto, la rana perde una vita
-    vite--;
-    // Riposiziona la rana
-    frog_copy.x = centro_x;
-    frog_copy.y = centro_y;
-    frog_copy.on_croc = false;
-    frog_copy.croc_index = -1;
-    
-    // Avvia un nuovo timer
-    reset_timer(pipe_fd[WRITE], &pid_timer);
-    
-    // Verifica se il gioco è finito
-    if (vite <= 0) {
-        endwin();
-        printf("Hai perso tutte le vite. Game Over!\n");
-        exit(EXIT_SUCCESS);
-    }
-    break;
 } 
         //controlla se è dentro la tana oppure se entra in mezzo a due tane
         if (is_inside(frog_copy)){
@@ -658,7 +631,7 @@ case TIMER_TIMEOUT:
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
                 count_burrows++;
-                reset_timer(pipe_fd[WRITE], &pid_timer);
+               
                 // Respawna la rana
             } else{
                 //se la tana è già occupata
