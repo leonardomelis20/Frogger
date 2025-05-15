@@ -1,7 +1,7 @@
 #ifndef STRUTTURE_H
 #define STRUTTURE_H
 
-/*macro area di gioco */
+/*macro area di gioco*/
 #define GAME_WIDTH 86 //larghezza dell'area di gioco
 #define GAME_HEIGHT 39 //altezza dell'area di gioco
 #define SAFE_ZONE_DOWN 33
@@ -24,9 +24,9 @@
 /*macro tane*/
 /*!!!!!!!*/
 //fare una define apposita solo per l'altezza delle tane 
+/*!!!!!!!*/
 #define NUM_BURROWS 5
 #define LARGHEZZA_TANA 7
-/*!!!!!!!*/
 
 /*macro proiettili*/
 #define BULLET_SPEED 50000
@@ -81,6 +81,7 @@ typedef struct {
     int pos_array;
 } Messaggio;
 
+/*questa non la usiamo*/
 typedef struct {
     int direzione; 
     int velocita; 
