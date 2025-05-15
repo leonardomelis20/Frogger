@@ -3,21 +3,21 @@
 
 #include <stdio.h>
 #include <ncurses.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <fcntl.h> 
 #include <stdbool.h>
 
 #include "strutture.h"
 
+// Disegna la barra del tempo con i secondi rimanenti
+void draw_timer_bar(int seconds_left);
 
-// Prototipi delle funzioni
-int main_timer(int pipe_write);
-void draw_time_bar(int seconds);
-int reset_timer(int pipe_fd, pid_t *pid_timer);
+// Inizializza la struttura del timer
+void init_timer(TimerInfo* timer);
+
+// Aggiorna il timer e restituisce true se il tempo è scaduto
+bool update_timer(TimerInfo* timer);
+
+// Resetta il timer al valore iniziale
+void reset_timer(TimerInfo* timer);
 
 #endif

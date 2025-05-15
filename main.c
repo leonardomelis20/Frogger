@@ -45,6 +45,8 @@ int main(){
     int centro_y = GAME_HEIGHT - ALTEZZA_RANA;
     int centro_x = GAME_WIDTH / 2;
     int input;
+
+    TimerInfo game_timer;
     
 
     // Inizializza la rana
@@ -82,6 +84,10 @@ int main(){
     //reset_timer(pipe_fd[WRITE], &pid_timer);
     
     inizializza_schermo();
+
+    init_timer(&game_timer);
+draw_timer_bar(game_timer.seconds_left);
+
     //getmaxyx(stdscr, y, x);
     box(stdscr, 0, 0); // Crea un bordo attorno alla finestra
     draw_burrows();
@@ -632,6 +638,8 @@ case ID_GRENADE:
                 frog_copy.y = centro_y;
                 count_burrows++;
                
+                reset_timer(&game_timer);
+                
                 // Respawna la rana
             } else{
                 //se la tana è già occupata
@@ -672,6 +680,24 @@ case ID_GRENADE:
         }
 
         collision_b_g(active_bullets, active_grenades, cont_bullets, grenade_count); 
+
+        if (update_timer(&game_timer)) {
+    // Tempo scaduto
+    vite--;
+    frog_copy.x = centro_x;
+    frog_copy.y = centro_y;
+    frog_copy.on_croc = false;
+    frog_copy.croc_index = -1;
+    
+    if (vite <= 0) {
+        endwin();
+        printf("Tempo scaduto! Game Over!\n");
+        exit(EXIT_SUCCESS);
+    }
+    
+    // Resetta il timer
+    reset_timer(&game_timer);
+}
 
         refresh();
 

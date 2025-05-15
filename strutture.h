@@ -36,6 +36,11 @@
 #define GRENADE_SPEED 100000 
 #define MAX_GRENADE 100 //numero massimo di granate attive contemporaneamente
 
+#define TIMER_BAR_WIDTH 30
+#define TIMER_BAR_HEIGHT 2
+#define TIMER_BAR_Y 40
+#define TIMER_BAR_X 0
+
 /*macro da usare nelle pipe per codice più leggibile*/
 #define READ 0 
 #define WRITE 1
@@ -89,5 +94,11 @@ typedef struct {
     int tempo_rimanente; // Tempo  per il timer
 } Messaggio;
 
+// Struttura per tenere traccia dello stato del timer
+typedef struct {
+    int seconds_left;     // Secondi rimanenti
+    time_t last_update;   // Ultimo aggiornamento
+    bool is_active;       // Indica se il timer è attivo
+} TimerInfo;
 
 #endif
