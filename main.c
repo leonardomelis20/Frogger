@@ -218,7 +218,7 @@ int main(){
         }
 
         //cancello tutti i proiettili attivi
-        for (int i = 0; i < MAX_BULLETS; i++) {
+        /*for (int i = 0; i < MAX_BULLETS; i++) {
             if (active_bullets[i].is_active) {
                 clear_bullet(active_bullets[i].x, active_bullets[i].y);
             }
@@ -227,7 +227,7 @@ int main(){
             if (active_grenades[i].is_active) {
                 clear_grenade(active_grenades[i].x, active_grenades[i].y);
             }
-        }
+        }*/
 
 
 
@@ -442,8 +442,17 @@ case ID_BULLET:
         }
         
         if (bullet_idx != -1) {
-            // Cancella vecchia posizione
+            // Cancella vecchia posizione SOLO se la posizione è cambiata
+        if (active_bullets[bullet_idx].x != msg.x || active_bullets[bullet_idx].y != msg.y) {
             clear_bullet(active_bullets[bullet_idx].x, active_bullets[bullet_idx].y);
+
+            // Aggiorna la posizione del proiettile
+            active_bullets[bullet_idx].x = msg.x;
+            active_bullets[bullet_idx].y = msg.y;
+            
+            // Disegna il proiettile nella nuova posizione
+            draw_bullet(msg.x, msg.y);
+        }
             
             // Se il proiettile non è più attivo, rimuovilo e decrementare il contatore
             if (!msg.is_active) {
@@ -589,9 +598,29 @@ case CREATE_GRENADE: {
 
 case ID_GRENADE:
 {
+    // Trova la granata nell'array
+    int grenade_idx = -1;
+    for (int i = 0; i < MAX_GRENADE; i++) {
+        if (active_grenades[i].pid == msg.pid) {
+            grenade_idx = i;
+            break;
+        }
+    }
     
-    // Cancella vecchia posizione indipendentemente dall'indice
-    clear_grenade(msg.x, msg.y);
+    if (grenade_idx != -1) {
+        // Cancella vecchia posizione SOLO se la posizione è cambiata
+        if (active_grenades[grenade_idx].x != msg.x || active_grenades[grenade_idx].y != msg.y) {
+            clear_grenade(active_grenades[grenade_idx].x, active_grenades[grenade_idx].y);
+            
+            // Aggiorna la posizione nell'array
+            active_grenades[grenade_idx].x = msg.x;
+            active_grenades[grenade_idx].y = msg.y;
+            active_grenades[grenade_idx].is_active = true;
+            
+            // Disegna la granata nella nuova posizione
+            draw_grenade(msg.x, msg.y);
+        }
+    }
     
     // Verifica se la granata è uscita dai bordi
     if (msg.x <= 0 || msg.x >= GAME_WIDTH) {
@@ -599,36 +628,19 @@ case ID_GRENADE:
         kill(msg.pid, SIGKILL);
         waitpid(msg.pid, &status, 0);
         
-        // Assicurati che venga cancellata dallo schermo
-        clear_grenade(msg.x, msg.y);
-        
-        // Trova e aggiorna la granata nell'array
-        for (int i = 0; i < MAX_GRENADE; i++) {
-            if (active_grenades[i].pid == msg.pid) {
-                active_grenades[i].is_active = false;
-                active_grenades[i].x = -100;
-                active_grenades[i].y = -100;
-                
-                // Decrementa il contatore
-                if (grenade_count > 0) {
-                    grenade_count--;
-                }
-                break;
+        if (grenade_idx != -1) {
+            // Assicurati che venga cancellata dallo schermo
+            clear_grenade(active_grenades[grenade_idx].x, active_grenades[grenade_idx].y);
+            
+            active_grenades[grenade_idx].is_active = false;
+            active_grenades[grenade_idx].x = -100;
+            active_grenades[grenade_idx].y = -100;
+            
+            // Decrementa il contatore
+            if (grenade_count > 0) {
+                grenade_count--;
             }
         }
-    } else {
-        // Aggiorna la posizione nell'array
-        for (int i = 0; i < MAX_GRENADE; i++) {
-            if (active_grenades[i].pid == msg.pid) {
-                active_grenades[i].x = msg.x;
-                active_grenades[i].y = msg.y;
-                active_grenades[i].is_active = true;
-                break;
-            }
-        }
-        
-        // Disegna la granata nella nuova posizione
-        draw_grenade(msg.x, msg.y);
     }
     break;
 }
