@@ -3,10 +3,11 @@
 
 /*macro area di gioco*/
 #define GAME_WIDTH 86 //larghezza dell'area di gioco
-#define GAME_HEIGHT 39 //altezza dell'area di gioco
+#define GAME_HEIGHT 45//altezza dell'area di gioco
 #define SAFE_ZONE_DOWN 33
 #define SAFE_ZONE_DOWN_2 39
 #define SAFE_ZONE_UP 5
+#define MAP_HEIGHT 39
 
 /*macro rana*/
 #define LARGHEZZA_RANA 5 
@@ -36,10 +37,10 @@
 #define GRENADE_SPEED 100000 
 #define MAX_GRENADE 100 //numero massimo di granate attive contemporaneamente
 
-#define TIMER_BAR_WIDTH 30
-#define TIMER_BAR_HEIGHT 2
-#define TIMER_BAR_Y 40
-#define TIMER_BAR_X 0
+#define TIMER_BAR_WIDTH 32
+#define TIMER_BAR_HEIGHT 3
+#define TIMER_BAR_Y 39
+#define TIMER_BAR_X 1
 
 /*macro da usare nelle pipe per codice più leggibile*/
 #define READ 0 
@@ -58,6 +59,14 @@
 #define TIMER_DURATION 30 // Timer di 30 secondi
 #define ID_TIMER 7 // ID per il messaggio del timer
 #define TIMER_TIMEOUT 8 // ID per il messaggio di timeout del timer
+
+#define POINT_GRENADE 50
+#define POINT_BURROWS 500
+#define POINT_BULLETS (-25)
+#define POINT_WATER (-200)
+#define POINT_CROCODILE 10
+#define POINT_TIME (-500)
+#define POINT_TAKEN_BURROWS (-1000)
 
 
 enum oggetto {FROG, COCCODRILLO};

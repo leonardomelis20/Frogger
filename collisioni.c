@@ -125,8 +125,9 @@ bool river(Messaggio frog) {
  * @param count_bullet numero totale dei proiettili
  * @param count_grenade numero totale delle granate
  */
-void collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int count_grenade) {
+bool collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int count_grenade) {
     int status = 0; 
+    bool flag =  false;
 
     /*cicliamo per tutti i proiettili*/
     for (int i = 0; i < MAX_BULLETS; i++) {
@@ -139,6 +140,7 @@ void collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int 
                     /*verifichiamo se gli oggetti sono a una distanza massima di 2 unità orizzontali e 1 unità verticale*/
                     if (abs(bullet[i].x - grenade[j].x) <= 2 && abs(bullet[i].y - grenade[j].y) <= 1) {
                         /*cancelliamo entrambi gli oggetti dallo schermo*/
+                        flag = true; //impostiamo il flag a true per indicare che è avvenuta una collisione
                         clear_bullet(bullet[i].x, bullet[i].y); 
                         clear_grenade(grenade[j].x, grenade[j].y); 
                         
@@ -172,4 +174,5 @@ void collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int 
             }
         }
     }
+    return flag; //ritorniamo il flag che indica se è avvenuta una collisione
 }

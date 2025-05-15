@@ -7,6 +7,9 @@ main.o: main.c rana.h coccodrilli.h strutture.h disegni.h  collisioni.h proietti
 collisioni.o: collisioni.c collisioni.h strutture.h proiettili.h granate.h
 	gcc -c collisioni.c -o collisioni.o -lncurses
 
+gestione_partita.o: gestione_partita.c gestione_partita.h strutture.h utility.h
+	gcc -c gestione_partita.c -o gestione_partita.o -lncurses
+
 rana.o: rana.c rana.h strutture.h disegni.h
 	gcc -c rana.c -o rana.o -lncurses
 
@@ -22,8 +25,8 @@ proiettili.o: proiettili.c proiettili.h strutture.h
 granate.o: granate.c granate.h strutture.h 
 	gcc -c granate.c -o granate.o -lncurses
 
-gestione_partita.o: gestione_partita.c gestione_partita.h strutture.h 
-	gcc -c gestione_partita.c -o gestione_partita.o -lncurses
+utility.o: utility.c utility.h strutture.h
+	gcc -c utility.c -o utility.o -lncurses
 
 clean:
 	rm -f *.o programma

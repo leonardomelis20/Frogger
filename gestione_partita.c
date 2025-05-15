@@ -1,30 +1,34 @@
+
 #include "gestione_partita.h" 
 
-#include <curses.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include "strutture.h"
+// Definizione degli sprite per la barra del tempo
+char sprite_timer_full[TIMER_BAR_HEIGHT][TIMER_BAR_WIDTH+1] = {
+    "|------------------------------|",
+    "||||||||||||||||||||||||||||||||",
+    "|------------------------------|"
+};
 
-#define TIMER_BAR_WIDTH 30
-#define TIMER_BAR_HEIGHT 2
-#define TIMER_BAR_Y 40
-#define TIMER_BAR_X 0
+char sprite_timer_empty[TIMER_BAR_HEIGHT][TIMER_BAR_WIDTH+1] = {
+    "|------------------------------|",
+    "|                              |",
+    "|------------------------------|"
+};
 
 // Funzione che disegna la barra del tempo
 void draw_timer_bar(int seconds_left) {
+
+    
+
     int i, j;
-    int bar_length = (seconds_left * TIMER_BAR_WIDTH) / TIMER_DURATION;
+    int bar_length = (seconds_left * (TIMER_BAR_WIDTH - 2)) / TIMER_DURATION;
     
     // Prima pulisci l'area della barra
     for (j = 0; j < TIMER_BAR_HEIGHT; j++) {
-        for (i = 0; i < TIMER_BAR_WIDTH; i++) {
-            mvaddch(TIMER_BAR_Y + j, TIMER_BAR_X + i, ' ');
-        }
+        mvprintw(TIMER_BAR_Y + j, TIMER_BAR_X, "%*s", TIMER_BAR_WIDTH, "");
     }
     
     // Ora disegna la barra del tempo
-    attron(A_BOLD);
+    
     
     // Scegli il colore in base al tempo rimanente
     if (seconds_left > 20) {
@@ -35,37 +39,27 @@ void draw_timer_bar(int seconds_left) {
         attron(COLOR_PAIR(5));  // Rosso
     }
     
-    // Disegna la barra superiore
-    mvaddch(TIMER_BAR_Y, TIMER_BAR_X, ACS_ULCORNER);
-    for (i = 1; i < TIMER_BAR_WIDTH - 1; i++) {
-        mvaddch(TIMER_BAR_Y, TIMER_BAR_X + i, ACS_HLINE);
-    }
-    mvaddch(TIMER_BAR_Y, TIMER_BAR_X + TIMER_BAR_WIDTH - 1, ACS_URCORNER);
+    // Disegna la barra superiore e inferiore
+    mvprintw(TIMER_BAR_Y, TIMER_BAR_X, "%s", sprite_timer_empty[0]);
+    mvprintw(TIMER_BAR_Y + 2, TIMER_BAR_X, "%s", sprite_timer_empty[0]);
     
-    // Disegna la parte interna della barra
-    for (i = 0; i < bar_length; i++) {
-        mvaddch(TIMER_BAR_Y + 1, TIMER_BAR_X + i, '#');
+    // Disegna la barra centrale con la parte riempita
+    mvprintw(TIMER_BAR_Y + 1, TIMER_BAR_X, "|");
+    for (i = 0; i < TIMER_BAR_WIDTH - 2; i++) {
+        if (i < bar_length) {
+            mvaddch(TIMER_BAR_Y + 1, TIMER_BAR_X + 1 + i, '|');
+        } else {
+            mvaddch(TIMER_BAR_Y + 1, TIMER_BAR_X + 1 + i, ' ');
+        }
     }
-    
-    // Disegna la barra inferiore
-    mvaddch(TIMER_BAR_Y + TIMER_BAR_HEIGHT - 1, TIMER_BAR_X, ACS_LLCORNER);
-    for (i = 1; i < TIMER_BAR_WIDTH - 1; i++) {
-        mvaddch(TIMER_BAR_Y + TIMER_BAR_HEIGHT - 1, TIMER_BAR_X + i, ACS_HLINE);
-    }
-    mvaddch(TIMER_BAR_Y + TIMER_BAR_HEIGHT - 1, TIMER_BAR_X + TIMER_BAR_WIDTH - 1, ACS_LRCORNER);
-    
-    // Disegna i lati verticali
-    for (j = 1; j < TIMER_BAR_HEIGHT - 1; j++) {
-        mvaddch(TIMER_BAR_Y + j, TIMER_BAR_X, ACS_VLINE);
-        mvaddch(TIMER_BAR_Y + j, TIMER_BAR_X + TIMER_BAR_WIDTH - 1, ACS_VLINE);
-    }
+    mvprintw(TIMER_BAR_Y + 1, TIMER_BAR_X + TIMER_BAR_WIDTH - 1, "|");
     
     // Scrivi il tempo rimanente
     char time_str[10];
-    sprintf(time_str, "%2d sec", seconds_left);
+    //sprintf(time_str, "%2d sec", seconds_left);
     mvprintw(TIMER_BAR_Y + 1, TIMER_BAR_X + TIMER_BAR_WIDTH + 2, time_str);
     
-    attroff(A_BOLD);
+    
     if (seconds_left > 20) {
         attroff(COLOR_PAIR(3));
     } else if (seconds_left > 10) {
@@ -117,4 +111,36 @@ void reset_timer(TimerInfo* timer) {
     timer->seconds_left = TIMER_DURATION;
     timer->last_update = time(NULL);
     timer->is_active = true;
+}
+
+
+void kill_everything (int pipe_fd, Messaggio croc[NUM_CROC], Messaggio bullet[MAX_BULLETS], Messaggio grenade[MAX_GRENADE], Messaggio frog) {
+    
+
+
+    for (int i = 0; i < NUM_CROC; i++) {
+        kill(croc[i].pid, SIGKILL);
+       
+        //waitpid(croc[i].pid, NULL, 0);
+    }
+
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (bullet[i].is_active) {
+            kill(bullet[i].pid, SIGKILL);
+            //waitpid(bullet[i].pid, NULL, 0);
+        }
+    }
+    
+    for (int i = 0; i < MAX_GRENADE; i++)
+    {
+        if (grenade[i].is_active) {
+            kill(grenade[i].pid, SIGKILL);
+            //waitpid(grenade[i].pid, NULL, 0);
+        }
+    }
+
+    kill(frog.pid, SIGKILL);
+    //waitpid(frog.pid, NULL, 0);
+
 }

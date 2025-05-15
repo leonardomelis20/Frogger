@@ -12,10 +12,6 @@ int disegni() {
     curs_set(0); //nascondiamo il cursore
     start_color(); //abilitiamo l'uso dei colori
 
-    /*inizializziamo le coppie di colori*/
-    init_pair(1, COLOR_BLUE, COLOR_BLACK); //colore per il fiume (blu)
-    init_pair(2, COLOR_GREEN, COLOR_BLACK); //colore per le zone sicure (verde)
-    init_pair(4, COLOR_YELLOW, COLOR_BLACK); //colore per le tane (giallo)
 
     /*loop principale di disegno*/
     while (1) { 
@@ -96,10 +92,10 @@ void draw_closed_burrows(Messaggio tana) {
  * dove la rana può stare senza pericolo, uno sopra e uno sotto il fiume.
  */
 void draw_safety_zones() {
-    attron(COLOR_PAIR(2)); //attiviamo il colore verde
+    //attron(COLOR_PAIR(1)); //attiviamo il colore verde
  
     mvhline(SAFE_ZONE_UP, 0, '=', GAME_WIDTH); //disegniamo la linea superiroe per il marciapiede superiore
     mvhline(SAFE_ZONE_DOWN, 0, '=', GAME_WIDTH); //disegniamo la line ainferiore per il marciapiede superiore
 
-    attroff(COLOR_PAIR(2)); //disattiviamo il colore
+    //attroff(COLOR_PAIR(1)); //disattiviamo il colore
 }

@@ -8,7 +8,10 @@ char grenade = 'G'; //definizione del carattere che rappresenta la granata
  * @param y coordinata verticale della granata
  */
 void draw_grenade(int x, int y) {
+
+    attron(COLOR_PAIR(5)); //attiviamo il colore rosso per la granata
     mvaddch(y, x, grenade); //usiamo la funzione ncurses per disegnare la granata nella coordinata (x,y)
+    attroff(COLOR_PAIR(5)); //disattiviamo il colore rosso
 }
 
 /**

@@ -14,9 +14,13 @@ char spriteRana[ALTEZZA_RANA][LARGHEZZA_RANA + 1] = {
  */
 void draw_frog(int x, int y) {
     /*ciclo che scorre*/
+    attron(COLOR_PAIR(3)); //attiviamo il colore verde
     for (int i = 0; i < ALTEZZA_RANA; i++) {
         mvprintw(y + i, x, "%s", spriteRana[i]);
     }
+
+    attroff(COLOR_PAIR(3)); //disattiviamo il colore
+
 }
 
 void clear_frog(int x, int y) {

@@ -22,6 +22,6 @@ bool check_borders_frog(Messaggio frog);
 bool check_borders_bullet(Messaggio bullet);
 bool check_safe_zone(Messaggio frog);
 bool river(Messaggio frog);
-void collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int count_grenade);
+bool collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int count_grenade);
 
 #endif

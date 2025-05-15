@@ -8,7 +8,10 @@ char bullet = 'P'; //definizione del carattere che rappresenta il proiettile
  * @param y coordinata verticale del proiettile
  */
 void draw_bullet(int x, int y) {
+
+    attron(COLOR_PAIR(7)); //attiviamo il colore m,agente per il proiettile
     mvaddch(y, x, bullet); //uso la funzione ncurses per disegnare il proiettile nella coordinata (x,y)
+    attroff(COLOR_PAIR(7)); //disattiviamo il colore magenta
 }
 
 /**

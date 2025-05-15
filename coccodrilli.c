@@ -16,6 +16,8 @@ char sprite_coccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
  * @param y coordinata verticale dell'angolo superiore sinistro del coccodrillo
  */
 void draw_crocodile(int x, int y) {
+
+    attron(COLOR_PAIR(6)); //attiviamo il colore verde per il coccodrillo
     int colonna = 0; //variabile per memorizzare la posizione orizzontale corrente
 
     /*scorriamo ogni riga del coccodrillo*/
@@ -31,6 +33,7 @@ void draw_crocodile(int x, int y) {
             }
         }
     }
+    attroff(COLOR_PAIR(6)); //disattiviamo il colore verde
 }
 
 /**
