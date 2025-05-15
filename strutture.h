@@ -48,6 +48,13 @@
 #define CREATE_GRENADE 5
 #define ID_GRENADE 6
 
+
+// Costanti specifiche per il timer
+#define TIMER_DURATION 30 // Timer di 30 secondi
+#define ID_TIMER 7 // ID per il messaggio del timer
+#define TIMER_TIMEOUT 8 // ID per il messaggio di timeout del timer
+
+
 enum oggetto {FROG, COCCODRILLO};
 
 /*!!!!!!!*/
@@ -79,16 +86,8 @@ typedef struct {
     bool is_shooting;
     bool is_active;
     int pos_array;
+    int tempo_rimanente; // Tempo  per il timer
 } Messaggio;
 
-/*questa non la usiamo*/
-typedef struct {
-    int direzione; 
-    int velocita; 
-    pid_t pid; 
-    int x; 
-    int y; 
-    int index;
-} InfoCocc;
 
 #endif

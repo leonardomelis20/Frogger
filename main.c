@@ -15,6 +15,7 @@
 #include "proiettili.h"
 #include "granate.h"
 #include "utility.h"
+#include "gestione_partita.h"
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
 void termina_gioco(pid_t, pid_t*);
@@ -64,10 +65,21 @@ int main(){
     int direzioni[NUM_CROC];
     int croc_index;
     int cont_bullets = 0;
+    int count_burrows = 0;
     bool in_safe_zone = false;
     bool out_of_bounds = false;
     int new_x, new_y;
     int count[NUM_CROC];
+
+    init_pair(3, COLOR_GREEN, COLOR_BLACK);  // Verde per tempo > 20s
+    init_pair(4, COLOR_YELLOW, COLOR_BLACK); // Giallo per tempo > 10s
+    init_pair(5, COLOR_RED, COLOR_BLACK);    // Rosso per tempo <= 10s
+    
+    // Aggiungi la variabile per tenere traccia del PID del timer
+    pid_t pid_timer = -1;
+    
+    // Avvia il timer
+    reset_timer(pipe_fd[WRITE], &pid_timer);
     
     inizializza_schermo();
     //getmaxyx(stdscr, y, x);
@@ -265,6 +277,7 @@ int main(){
                 frog_copy.y = centro_y;
                 frog_copy.on_croc = false;
                 frog_copy.croc_index = -1;
+                reset_timer(pipe_fd[WRITE], &pid_timer); // Reset del timer
                 if (vite <= 0) {
                     endwin();
                     printf("Hai perso tutte le vite. Game Over!\n");
@@ -467,7 +480,8 @@ case ID_BULLET:
                         frog_copy.y = centro_y;
                         frog_copy.on_croc = false;
                         frog_copy.croc_index = -1;
-                        
+                        reset_timer(pipe_fd[WRITE], &pid_timer);
+
                         // Disattiva il proiettile
                         kill(msg.pid, SIGKILL);
                         waitpid(msg.pid, &status, 0);
@@ -608,6 +622,31 @@ case ID_GRENADE:
     }
     break;
 }
+    case ID_TIMER:
+    // Disegna la barra del tempo
+    draw_time_bar(msg.tempo_rimanente);
+    refresh();
+    break;
+    
+case TIMER_TIMEOUT:
+    // Il tempo è scaduto, la rana perde una vita
+    vite--;
+    // Riposiziona la rana
+    frog_copy.x = centro_x;
+    frog_copy.y = centro_y;
+    frog_copy.on_croc = false;
+    frog_copy.croc_index = -1;
+    
+    // Avvia un nuovo timer
+    reset_timer(pipe_fd[WRITE], &pid_timer);
+    
+    // Verifica se il gioco è finito
+    if (vite <= 0) {
+        endwin();
+        printf("Hai perso tutte le vite. Game Over!\n");
+        exit(EXIT_SUCCESS);
+    }
+    break;
 } 
         //controlla se è dentro la tana oppure se entra in mezzo a due tane
         if (is_inside(frog_copy)){
@@ -615,10 +654,11 @@ case ID_GRENADE:
             //se la rana è dentro una tana
             if (flag[num_tane] == false && num_tane != 6){
                 flag[num_tane] = true; //setto il flag a true per segnalare che non può più entrare in questa tana
-
                 tane(frog_copy);  // Chiude graficamente la tana
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
+                count_burrows++;
+                reset_timer(pipe_fd[WRITE], &pid_timer);
                 // Respawna la rana
             } else{
                 //se la tana è già occupata

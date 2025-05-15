@@ -148,7 +148,7 @@ void collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int 
                             waitpid(bullet[i].pid, &status, 0); //attendiamo la terminazione del processo
                         }
 
-                        /*ermina il processo della granata se il PID è valido*/
+                        /*determina il processo della granata se il PID è valido*/
                         if (grenade[j].pid > 1) {
                             kill(grenade[j].pid, SIGKILL); //inviamo un segnale SIGKILL al processo del proiettile
                             waitpid(grenade[j].pid, &status, 0); //attendiamo la terminazione del processo

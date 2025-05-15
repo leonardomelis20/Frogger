@@ -1,7 +1,7 @@
-programma: main.o rana.o coccodrilli.o disegni.o collisioni.o proiettili.o granate.o
-	gcc -o programma main.o rana.o coccodrilli.o disegni.o collisioni.o proiettili.o granate.o -lncurses
+programma: main.o rana.o coccodrilli.o disegni.o collisioni.o proiettili.o granate.o gestione_partita.o 
+	gcc -o programma main.o rana.o coccodrilli.o disegni.o collisioni.o proiettili.o granate.o gestione_partita.o -lncurses
 
-main.o: main.c rana.h coccodrilli.h strutture.h disegni.h  collisioni.h proiettili.h granate.h
+main.o: main.c rana.h coccodrilli.h strutture.h disegni.h  collisioni.h proiettili.h granate.h gestione_partita.h 
 	gcc -c main.c -o main.o -lncurses
 
 collisioni.o: collisioni.c collisioni.h strutture.h proiettili.h granate.h
@@ -22,6 +22,8 @@ proiettili.o: proiettili.c proiettili.h strutture.h
 granate.o: granate.c granate.h strutture.h 
 	gcc -c granate.c -o granate.o -lncurses
 
+gestione_partita.o: gestione_partita.c gestione_partita.h strutture.h 
+	gcc -c gestione_partita.c -o gestione_partita.o -lncurses
 
 clean:
 	rm -f *.o programma
