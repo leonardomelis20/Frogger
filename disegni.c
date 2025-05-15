@@ -34,14 +34,14 @@ int disegni() {
  * nella zona centrale dello schermo tra le due zone sicure.
  */
 void draw_river() {
-    attron(COLOR_PAIR(1)); //attiviamo la coppia di colore blu
+    attron(COLOR_PAIR(9)); //attiviamo la coppia di colore blu
 
     /*cicliamo sulle righe centrali*/
     for (int i = ALTEZZA_RANA; i < GAME_HEIGHT - ALTEZZA_RANA; i++) {
         mvhline(i, 0, '~', GAME_WIDTH); //disegniamo '~' per simulare l'acqua
     }
 
-    attroff(COLOR_PAIR(1)); //disattiviamo il colore
+    attroff(COLOR_PAIR(9)); //disattiviamo il colore
 }
 
 /**
@@ -53,7 +53,7 @@ void draw_burrows() {
     int spacing = 0; //variabile che serve per salvare lo spazio far una tana e un'altra
     int x = 0; //variabile che serve per salvare la tana al centro del suo spazio
 
-    attron(COLOR_PAIR(4)); //attiviamo la coppia di colore giallo
+    attron(COLOR_PAIR(5)); //attiviamo la coppia di colore giallo
 
     spacing = GAME_WIDTH / NUM_BURROWS; //calcoliamo lo spazio fra una tana e l'altra
 
@@ -63,7 +63,7 @@ void draw_burrows() {
         mvprintw(1, x, "[       ]"); //stampiamo la tana aperta
     }
 
-    attroff(COLOR_PAIR(4)); //disattiviamo il colore
+    attroff(COLOR_PAIR(5)); //disattiviamo il colore
 }
 
 /**
@@ -76,14 +76,14 @@ void draw_closed_burrows(Messaggio tana) {
     int spacing = 0; //variabile che serve per salvare lo spazio far una tana e un'altra
     int x = 0; //variabile che serve per salvare la tana chiusa nella posizione x 
 
-    attron(COLOR_PAIR(4)); //attiviamo il colore giallo
+    attron(COLOR_PAIR(5)); //attiviamo il colore giallo
 
     spacing = GAME_WIDTH / NUM_BURROWS; //calcoliamo lo spazio fra le tane
 
     x = (tana.x-1) * spacing + (spacing - LARGHEZZA_TANA) / 2; //calcoliamo la posizione x della tana chiusa
     mvprintw(1, x, "[///////]"); //stampiamo la tana chiusa
     
-    attroff(COLOR_PAIR(4)); //disattiviamo il colore
+    attroff(COLOR_PAIR(5)); //disattiviamo il colore
 }
 
 /**
@@ -93,9 +93,9 @@ void draw_closed_burrows(Messaggio tana) {
  */
 void draw_safety_zones() {
     //attron(COLOR_PAIR(1)); //attiviamo il colore verde
- 
+    //attron(COLOR_PAIR(10)); //attiviamo il colore verde
     mvhline(SAFE_ZONE_UP, 0, '=', GAME_WIDTH); //disegniamo la linea superiroe per il marciapiede superiore
     mvhline(SAFE_ZONE_DOWN, 0, '=', GAME_WIDTH); //disegniamo la line ainferiore per il marciapiede superiore
-
+    //attroff(COLOR_PAIR(10)); //disattiviamo il colore verde
     //attroff(COLOR_PAIR(1)); //disattiviamo il colore
 }

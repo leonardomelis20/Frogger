@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <locale.h>
 
 #include "rana.h"
 #include "coccodrilli.h"
@@ -230,10 +231,14 @@ int main(){
 
 
 
-       
-       mvprintw(40, 36, "VITE %d ", vite);
-       mvprintw(40, 50, "PUNTI %d ", punteggio_totale);
-         mvprintw(40, 65, "MANCHE %d ", manche);
+       draw_hearts(vite); // Disegna le vite
+        attron(COLOR_PAIR(7));  // Celeste pastello per il punteggio
+        mvprintw(40, 55, "PUNTI %d ", punteggio_totale);
+        attroff(COLOR_PAIR(7));
+
+        attron(COLOR_PAIR(8));  // Pesca pastello per le manche
+        mvprintw(40, 70, "MANCHE %d ", manche);
+        attroff(COLOR_PAIR(8));
         
         switch (msg.oggetto) {
             case ID_RANA:
@@ -292,9 +297,7 @@ int main(){
                 frog_copy.on_croc = false;
                 frog_copy.croc_index = -1;
                 if (vite <= 0) {
-                    endwin();
-                    printf("Hai perso tutte le vite. Game Over!\n");
-                    exit(EXIT_SUCCESS);
+                    exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
                 }
             }
             break;
@@ -504,9 +507,7 @@ case ID_BULLET:
                         }
                         
                         if (vite <= 0) {
-                            endwin();
-                            printf("Hai perso tutte le vite. Game Over!\n");
-                            exit(EXIT_SUCCESS);
+                           exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
                         }
                     }
                 }
@@ -655,9 +656,7 @@ case ID_GRENADE:
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
                 if (vite <= 0){
-                    endwin();
-                    printf("Hai perso tutte le vite. Game Over!\n");
-                    exit(EXIT_SUCCESS);
+                    exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
                 }
 
 
@@ -703,9 +702,7 @@ case ID_GRENADE:
     frog_copy.croc_index = -1;
     
     if (vite <= 0) {
-        endwin();
-        printf("Tempo scaduto! Game Over!\n");
-        exit(EXIT_SUCCESS);
+        exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
     }
     
     // Resetta il timer
@@ -719,21 +716,20 @@ case ID_GRENADE:
         //usleep(50000);  // 50ms
     }       
     
-    // Termina i processi figliki
-    kill_everything(pipe_fd[WRITE], croc_copy, active_bullets, active_grenades, frog_copy);
-    
-    // Processo padre chiude scrittura e legge dalla pipe
-    close(pipe_fd[WRITE]);
-    close(pipe_fd[READ]);
-    
+    // Prima di uscire, assicuriamoci di chiudere tutti i processi
+    terminate_all_processes(pipe_fd[WRITE], croc_copy, active_bullets, active_grenades, frog_copy);
+
+    // Ora possiamo terminare ncurses
     endwin();
 
-    
+    printf("Gioco terminato con successo!\n");
     return 0;
 }
 
 void inizializza_schermo(){
-    
+
+    // Inizializza il supporto per i caratteri wide
+    setlocale(LC_ALL, "");
     initscr();
     noecho();
     cbreak();
@@ -744,15 +740,46 @@ void inizializza_schermo(){
     clear();
 
     start_color();
-    init_pair(3, COLOR_GREEN, COLOR_BLACK);  // Verde per tempo > 20s
-    init_pair(4, COLOR_YELLOW, COLOR_BLACK); // Giallo per tempo > 10s
-    init_pair(5, COLOR_RED, COLOR_BLACK);    // Rosso per tempo <= 10s
-    init_pair(6, COLOR_BLUE, COLOR_BLACK); // Blu per i coccodrilli
-    init_color(8, (101*1000/255), (67*1000/255), (33*1000/255)); // marrone per le tane
-    init_pair(7, 8, COLOR_BLACK); // marrone per le tane
-
+    
+    // Verde menta per la rana - RGB(179, 236, 197)
+    init_color(1, 702, 925, 773);
+    init_pair(1, 1, COLOR_BLACK);
+    
+    // Blu pervinca pastello per i coccodrilli - RGB(138, 173, 209)
+    init_color(2, 541, 678, 820);
+    init_pair(2, 2, COLOR_BLACK);
+    
+    // Giallo ambra per i proiettili - RGB(253, 235, 170)
+    init_color(3, 992, 922, 667);
+    init_pair(3, 3, COLOR_BLACK);
+    
+    // Rosa corallo per le granate - RGB(255, 189, 189)
+    init_color(4, 1000, 741, 741);
+    init_pair(4, 4, COLOR_BLACK);
+    
+    // Lavanda chiaro per le tane - RGB(220, 208, 255)
+    init_color(5, 863, 816, 1000);
+    init_pair(5, 5, COLOR_BLACK);
+    
+    // Arancione pesca pastello per le vite - RGB(255, 203, 164)
+    init_color(6, 1000, 796, 643);
+    init_pair(6, 6, COLOR_BLACK);
+    
+    // Celeste pastello per il punteggio - RGB(190, 228, 248)
+    init_color(7, 745, 894, 973);
+    init_pair(7, 7, COLOR_BLACK);
+    
+    // Pesca pastello per le manche - RGB(255, 229, 204)
+    init_color(8, 1000, 898, 800);
+    init_pair(8, 8, COLOR_BLACK);
+    
+    // Colori per il fiume e aree di gioco
+    init_color(9, 195*1000/255, 242*1000/255, 232*1000/255);  // Menta acqua
+    init_pair(9, 9, COLOR_BLACK);  // Per il fiume
+    
+    init_color(10, 217*1000/255, 195*1000/255, 255*1000/255);  // Lilla pastello
+    init_pair(10, 10, COLOR_BLACK);  // Per le zone sicure
 }
-
 
 /* dobbiamo creare un processo che si occupi solo di chiudere gli altri processi chiamando questa funzione*/
 void termina_gioco(pid_t pid_rana, pid_t pid_coccodrillo[]) {

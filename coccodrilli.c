@@ -17,7 +17,7 @@ char sprite_coccodrillo[ALTEZZA_COCCODRILLO][LARGHEZZA_COCCODRILLO+1] = {
  */
 void draw_crocodile(int x, int y) {
 
-    attron(COLOR_PAIR(6)); //attiviamo il colore verde per il coccodrillo
+    attron(COLOR_PAIR(2)); //attiviamo il colore verde per il coccodrillo
     int colonna = 0; //variabile per memorizzare la posizione orizzontale corrente
 
     /*scorriamo ogni riga del coccodrillo*/
@@ -33,7 +33,7 @@ void draw_crocodile(int x, int y) {
             }
         }
     }
-    attroff(COLOR_PAIR(6)); //disattiviamo il colore verde
+    attroff(COLOR_PAIR(2)); //disattiviamo il colore verde
 }
 
 /**
