@@ -291,6 +291,7 @@ int main(){
             if ((out_of_bounds && !in_safe_zone) || river(frog_copy)) {
                 punteggio_totale += POINT_WATER;
                 vite--;
+                reset_timer(&game_timer);
                 manche++;
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
@@ -298,6 +299,7 @@ int main(){
                 frog_copy.croc_index = -1;
                 if (vite <= 0) {
                     exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                //terminate_all_processes(pipe_fd[WRITE], coccodrilli, active_bullets, active_grenades, frog_copy);
                 }
             }
             break;
@@ -497,6 +499,7 @@ case ID_BULLET:
                         // Collisione! La rana perde una vita
                         punteggio_totale += POINT_BULLETS;
                         vite--;
+                        reset_timer(&game_timer);
                         manche++;
                         frog_copy.x = centro_x;
                         frog_copy.y = centro_y;
@@ -516,7 +519,8 @@ case ID_BULLET:
                         }
                         
                         if (vite <= 0) {
-                           exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                    //terminate_all_processes(pipe_fd[WRITE], coccodrilli, active_bullets, active_grenades, frog_copy);                    
                         }
                     }
                 }
@@ -664,12 +668,14 @@ case ID_GRENADE:
                 //se la tana è già occupata
                 punteggio_totale += POINT_TAKEN_BURROWS;
                 vite--;
+                reset_timer(&game_timer);
                 manche++;
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
                 if (vite <= 0){
-                    exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-                }
+exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                    //terminate_all_processes(pipe_fd[WRITE], coccodrilli, active_bullets, active_grenades, frog_copy);  
+                                  }
 
 
                 
@@ -714,14 +720,17 @@ case ID_GRENADE:
     frog_copy.croc_index = -1;
     
     if (vite <= 0) {
-        exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                   // terminate_all_processes(pipe_fd[WRITE], coccodrilli, active_bullets, active_grenades, frog_copy);    }
     }
+    
     
     // Resetta il timer
     reset_timer(&game_timer);
     punteggio_totale += POINT_TIME;
 
 }
+
         
 
         // Aggiungi un piccolo ritardo per evitare di sovraccaricare la CPU
@@ -753,43 +762,43 @@ void inizializza_schermo(){
 
     start_color();
     
-    // Verde menta per la rana - RGB(179, 236, 197)
-    init_color(1, 702, 925, 773);
+    // Verde fluo per la rana - RGB(0, 255, 0)
+    init_color(1, 0, 1000, 0);
     init_pair(1, 1, COLOR_BLACK);
     
-    // Blu pervinca pastello per i coccodrilli - RGB(138, 173, 209)
-    init_color(2, 541, 678, 820);
+    // Blu elettrico per i coccodrilli - RGB(0, 140, 255)
+    init_color(2, 0, 549, 1000);
     init_pair(2, 2, COLOR_BLACK);
     
-    // Giallo ambra per i proiettili - RGB(253, 235, 170)
-    init_color(3, 992, 922, 667);
+    // Giallo fluo per i proiettili - RGB(255, 255, 0)
+    init_color(3, 1000, 1000, 0);
     init_pair(3, 3, COLOR_BLACK);
     
-    // Rosa corallo per le granate - RGB(255, 189, 189)
-    init_color(4, 1000, 741, 741);
+    // Rosa fluo per le granate - RGB(255, 0, 255)
+    init_color(4, 1000, 0, 1000);
     init_pair(4, 4, COLOR_BLACK);
     
-    // Lavanda chiaro per le tane - RGB(220, 208, 255)
-    init_color(5, 863, 816, 1000);
+    // Viola fluo per le tane - RGB(170, 0, 255)
+    init_color(5, 667, 0, 1000);
     init_pair(5, 5, COLOR_BLACK);
     
-    // Arancione pesca pastello per le vite - RGB(255, 203, 164)
-    init_color(6, 1000, 796, 643);
+    // Arancione fluo per le vite - RGB(255, 128, 0)
+    init_color(6, 1000, 502, 0);
     init_pair(6, 6, COLOR_BLACK);
     
-    // Celeste pastello per il punteggio - RGB(190, 228, 248)
-    init_color(7, 745, 894, 973);
+    // Azzurro fluo per il punteggio - RGB(0, 255, 255)
+    init_color(7, 0, 1000, 1000);
     init_pair(7, 7, COLOR_BLACK);
     
-    // Pesca pastello per le manche - RGB(255, 229, 204)
-    init_color(8, 1000, 898, 800);
+    // Rosso fluo per le manche - RGB(255, 0, 0)
+    init_color(8, 1000, 0, 0);
     init_pair(8, 8, COLOR_BLACK);
     
     // Colori per il fiume e aree di gioco
-    init_color(9, 195*1000/255, 242*1000/255, 232*1000/255);  // Menta acqua
+    init_color(9, 0, 1000, 700);  // Ciano fluo
     init_pair(9, 9, COLOR_BLACK);  // Per il fiume
     
-    init_color(10, 217*1000/255, 195*1000/255, 255*1000/255);  // Lilla pastello
+    init_color(10, 800, 0, 1000);  // Viola-blu fluo
     init_pair(10, 10, COLOR_BLACK);  // Per le zone sicure
 }
 

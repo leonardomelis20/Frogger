@@ -1,5 +1,5 @@
 programma: main.o rana.o coccodrilli.o disegni.o collisioni.o proiettili.o granate.o gestione_partita.o 
-	gcc -o programma main.o rana.o coccodrilli.o disegni.o collisioni.o proiettili.o granate.o gestione_partita.o -lncurses
+	gcc -o programma main.o rana.o coccodrilli.o disegni.o collisioni.o proiettili.o granate.o gestione_partita.o -lncursesw
 
 main.o: main.c rana.h coccodrilli.h strutture.h disegni.h  collisioni.h proiettili.h granate.h gestione_partita.h 
 	gcc -c main.c -o main.o -lncursesw

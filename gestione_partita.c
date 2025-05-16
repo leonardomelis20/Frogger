@@ -17,7 +17,6 @@ char sprite_timer_empty[TIMER_BAR_HEIGHT][TIMER_BAR_WIDTH+1] = {
 // Funzione che disegna la barra del tempo
 void draw_timer_bar(int seconds_left) {
 
-    
 
     int i, j;
     int bar_length = (seconds_left * (TIMER_BAR_WIDTH - 2)) / TIMER_DURATION;
@@ -54,11 +53,12 @@ void draw_timer_bar(int seconds_left) {
     }
     mvprintw(TIMER_BAR_Y + 1, TIMER_BAR_X + TIMER_BAR_WIDTH - 1, "|");
     
+    /*
     // Scrivi il tempo rimanente
     char time_str[10];
     //sprintf(time_str, "%2d sec", seconds_left);
     mvprintw(TIMER_BAR_Y + 1, TIMER_BAR_X + TIMER_BAR_WIDTH + 2, time_str);
-    
+    */
     
     if (seconds_left > 20) {
         attroff(COLOR_PAIR(3));
@@ -117,26 +117,25 @@ void reset_timer(TimerInfo* timer) {
  * Funzione che disegna i cuori rappresentanti le vite rimaste
  * @param vite numero di vite rimaste
  */
-/**
- * Funzione che disegna i cuori rappresentanti le vite rimaste
- * @param vite numero di vite rimaste
- */
 void draw_hearts(int vite) {
     int hearts_x = 36;  // Posizione x iniziale dei cuori
     int hearts_y = 40;  // Posizione y dei cuori
     int heart_spacing = 3;  // Spazio tra un cuore e l'altro 
     char* heart = "<3";  // Simbolo 
     
-    // PPulisco l'area
-    attron(COLOR_PAIR(0));  // Colore di default (bianco su nero)
-    attroff(COLOR_PAIR(0));
+    //attron(COLOR_PAIR(0));  // Colore di default (bianco su nero)
+    //attroff(COLOR_PAIR(0));
   
     // Disegno i cuori
     attron(COLOR_PAIR(6));  // Arancione pastello per le vite
     for (int i = 0; i < vite && i < 5; i++) {
+        mvprintw(hearts_y, hearts_x + (i * heart_spacing),"<");
+        mvprintw(hearts_y, hearts_x + (i * heart_spacing)+1,"3");
         mvprintw(hearts_y, hearts_x + (i * heart_spacing), "%s", heart);
     }
+
     attroff(COLOR_PAIR(6));
+    
     
     // Mostro i cuori persi in grigio
     if (vite < 5) {
@@ -146,6 +145,7 @@ void draw_hearts(int vite) {
         }
         attroff(A_DIM);
     }
+    
 }
 
 
@@ -303,7 +303,7 @@ void exit_game(int pipe_fd_write, int pipe_fd_read,
     
     // Stampa ogni riga dell'ASCII art
     for (int i = 0; i < ALTEZZA_SPRITE; i++) {
-        mvaddstr(start_y + i, start_x, spriteSconfitta[i]);
+        mvaddwstr(start_y + i, start_x, spriteSconfitta[i]);
     }
     
     // Aggiungi il messaggio specifico sotto l'ASCII art
@@ -313,6 +313,7 @@ void exit_game(int pipe_fd_write, int pipe_fd_read,
     mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - 23) / 2, "Premi un tasto per uscire");
     
     attroff(COLOR_PAIR(4));
+    
     
     // Aggiorna lo schermo e attendi l'input dell'utente
     refresh();
