@@ -6,6 +6,9 @@
 #include <time.h>
 #include <stdbool.h>
 #include <signal.h>
+#include <wchar.h>
+#include <string.h>
+
 
 #include "strutture.h"
 #include "utility.h"

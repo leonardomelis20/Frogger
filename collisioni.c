@@ -168,7 +168,7 @@ bool collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int 
                         grenade[j].x = -100; 
                         grenade[j].y = -100;
             
-                        return;
+                        return flag;
                     }
                 }
             }

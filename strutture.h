@@ -1,6 +1,9 @@
 #ifndef STRUTTURE_H
 #define STRUTTURE_H
 
+#include <unistd.h>
+#include <time.h>
+
 /*macro area di gioco*/
 #define GAME_WIDTH 86 //larghezza dell'area di gioco
 #define GAME_HEIGHT 45//altezza dell'area di gioco

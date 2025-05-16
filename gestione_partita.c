@@ -303,7 +303,7 @@ void exit_game(int pipe_fd_write, int pipe_fd_read,
     
     // Stampa ogni riga dell'ASCII art
     for (int i = 0; i < ALTEZZA_SPRITE; i++) {
-        mvaddwstr(start_y + i, start_x, spriteSconfitta[i]);
+        mvaddstr(start_y + i, start_x, spriteSconfitta[i]);
     }
     
     // Aggiungi il messaggio specifico sotto l'ASCII art
