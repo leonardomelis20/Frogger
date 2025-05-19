@@ -714,6 +714,7 @@ exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grena
     // Tempo scaduto
     punteggio_totale += POINT_TIME;
     vite--;
+    manche++;
     frog_copy.x = centro_x;
     frog_copy.y = centro_y;
     frog_copy.on_croc = false;
@@ -725,11 +726,16 @@ exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grena
     }
     
     
+    
     // Resetta il timer
     reset_timer(&game_timer);
     punteggio_totale += POINT_TIME;
 
 }
+
+ if (manche >= 5 || punteggio_totale <= -1000){
+        exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+    }
 
         
 

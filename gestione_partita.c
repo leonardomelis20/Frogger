@@ -299,7 +299,7 @@ void exit_game(int pipe_fd_write, int pipe_fd_read,
     int start_x = (GAME_WIDTH - wcslen(spriteSconfitta[0])) / 2;
     
     // Imposta colorazione per il messaggio di Game Over
-    attron(COLOR_PAIR(4));  // Rosa corallo per l'effetto drammatico
+    attron(COLOR_PAIR(4));  // Rosa fluo per l'effetto drammatico
     
     // Stampa ogni riga dell'ASCII art
     for (int i = 0; i < ALTEZZA_SPRITE; i++) {
@@ -314,24 +314,56 @@ void exit_game(int pipe_fd_write, int pipe_fd_read,
     
     attroff(COLOR_PAIR(4));
     
-    
     // Aggiorna lo schermo e attendi l'input dell'utente
     refresh();
-    sleep(4);
-    getch();  // Attende che l'utente prema un tasto
+    timeout(-1); // Disabilita il timeout per attendere l'input dell'utente
+    getch();
     
-    // Terminazione ordinata
-    terminate_all_processes(pipe_fd_write, crocs, bullets, grenades, frog);
+    // Terminazione ordinata - chiama direttamente le funzioni di chiusura
+    // invece di usare terminate_all_processes
+    
+    // Chiudi tutti i processi coccodrillo
+    for (int i = 0; i < NUM_CROC; i++) {
+        if (crocs[i].pid > 1) {
+            kill(crocs[i].pid, SIGKILL);
+            waitpid(crocs[i].pid, NULL, 0);
+        }
+    }
+    
+    // Chiudi tutti i proiettili
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullets[i].is_active && bullets[i].pid > 1) {
+            kill(bullets[i].pid, SIGKILL);
+            waitpid(bullets[i].pid, NULL, 0);
+        }
+    }
+    
+    // Chiudi tutte le granate
+    for (int i = 0; i < MAX_GRENADE; i++) {
+        if (grenades[i].is_active && grenades[i].pid > 1) {
+            kill(grenades[i].pid, SIGKILL);
+            waitpid(grenades[i].pid, NULL, 0);
+        }
+    }
+    
+    // Termina il processo della rana
+    if (frog.pid > 1) {
+        kill(frog.pid, SIGKILL);
+        waitpid(frog.pid, NULL, 0);
+    }
     
     // Chiudiamo la pipe
     close(pipe_fd_write);
     close(pipe_fd_read);
     
     // Chiudiamo ncurses
+    clear();
+    refresh();
     endwin();
     
     // Mostriamo il messaggio finale (nella console, dopo aver chiuso ncurses)
     printf("Gioco terminato.\n");
+    fflush(stdout);
     
     // Usciamo dal programma
     exit(EXIT_SUCCESS);
