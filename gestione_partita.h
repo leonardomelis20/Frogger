@@ -28,15 +28,22 @@ void reset_timer(TimerInfo* timer);
 void kill_everything (int pipe_fd, Messaggio* croc, Messaggio* bullet, Messaggio* grenade, Messaggio frog);
 void draw_hearts(int vite);
 
-void terminate_all_processes(int pipe_fd, Messaggio croc_array[NUM_CROC], 
-                           Messaggio bullet_array[MAX_BULLETS], 
-                           Messaggio grenade_array[MAX_GRENADE], 
-                           Messaggio frog);
-void exit_game(int pipe_fd_write, int pipe_fd_read, 
+bool menu_iniziale();
+bool victory(int pipe_fd_write, int pipe_fd_read, 
               Messaggio crocs[NUM_CROC], 
               Messaggio bullets[MAX_BULLETS], 
               Messaggio grenades[MAX_GRENADE], 
               Messaggio frog, 
               const char* message);
+bool exit_game(int pipe_fd_write, int pipe_fd_read, 
+              Messaggio crocs[NUM_CROC], 
+              Messaggio bullets[MAX_BULLETS], 
+              Messaggio grenades[MAX_GRENADE], 
+              Messaggio frog, 
+              const char* message);
+void terminate_all_processes(int pipe_fd, Messaggio croc_array[NUM_CROC], 
+                           Messaggio bullet_array[MAX_BULLETS], 
+                           Messaggio grenade_array[MAX_GRENADE], 
+                           Messaggio frog) ;
 
 #endif

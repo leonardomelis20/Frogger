@@ -4,6 +4,9 @@
 #include <unistd.h>
 #include <time.h>
 
+
+#define VITE 5
+
 /*macro area di gioco*/
 #define GAME_WIDTH 86 //larghezza dell'area di gioco
 #define GAME_HEIGHT 45//altezza dell'area di gioco
@@ -82,13 +85,6 @@ typedef struct {
 } Processi;
 /*!!!!!!!*/
 
-typedef struct {
-    int speed;
-    int direzione;
-    int x_pos;
-    int y_pos;
-    int cont; //numero di coccodrilli nel flusso
-} InfoFlussi;
 
 typedef struct {
     int x;

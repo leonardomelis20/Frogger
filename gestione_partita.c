@@ -73,7 +73,7 @@ void draw_timer_bar(int seconds_left) {
 
 // Inizializza la struttura del timer
 void init_timer(TimerInfo* timer) {
-    timer->seconds_left = TIMER_DURATION;
+    timer->seconds_left = 60;
     timer->last_update = time(NULL);
     timer->is_active = true;
 }
@@ -273,13 +273,14 @@ void terminate_all_processes(int pipe_fd, Messaggio croc_array[NUM_CROC],
  * @param frog struttura della rana
  * @param message messaggio da visualizzare all'uscita
  */
-void exit_game(int pipe_fd_write, int pipe_fd_read, 
+bool exit_game(int pipe_fd_write, int pipe_fd_read, 
               Messaggio crocs[NUM_CROC], 
               Messaggio bullets[MAX_BULLETS], 
               Messaggio grenades[MAX_GRENADE], 
               Messaggio frog, 
               const char* message) {
-    
+    int input = 0;
+    bool flag ;
     // Prima pulisci lo schermo
     clear();
     
@@ -310,14 +311,124 @@ void exit_game(int pipe_fd_write, int pipe_fd_read,
     mvprintw(start_y + ALTEZZA_SPRITE + 2, (GAME_WIDTH - strlen(message)) / 2, "%s", message);
     
     // Aggiungi istruzioni per uscire
-    mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - 23) / 2, "Premi un tasto per uscire");
+    mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - 23) / 2, "Premi S per riniziare o E per uscire");
     
     attroff(COLOR_PAIR(4));
     
     // Aggiorna lo schermo e attendi l'input dell'utente
     refresh();
     timeout(-1); // Disabilita il timeout per attendere l'input dell'utente
-    getch();
+    
+    // Terminazione ordinata - chiama direttamente le funzioni di chiusura
+    // invece di usare terminate_all_processes
+    
+    
+    
+     do {
+        input = getch();
+    } while (input != 's' && input != 'e' && input != 'S' && input != 'E');
+
+    // Chiudi tutti i processi coccodrillo
+    for (int i = 0; i < NUM_CROC; i++) {
+        if (crocs[i].pid > 1) {
+            kill(crocs[i].pid, SIGKILL);
+            waitpid(crocs[i].pid, NULL, 0);
+        }
+    }
+    
+    // Chiudi tutti i proiettili
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullets[i].is_active && bullets[i].pid > 1) {
+            kill(bullets[i].pid, SIGKILL);
+            waitpid(bullets[i].pid, NULL, 0);
+        }
+    }
+    
+    // Chiudi tutte le granate
+    for (int i = 0; i < MAX_GRENADE; i++) {
+        if (grenades[i].is_active && grenades[i].pid > 1) {
+            kill(grenades[i].pid, SIGKILL);
+            waitpid(grenades[i].pid, NULL, 0);
+        }
+    }
+    
+    // Termina il processo della rana
+    if (frog.pid > 1) {
+        kill(frog.pid, SIGKILL);
+        waitpid(frog.pid, NULL, 0);
+    }
+
+    if (input == 's' || input == 'S') {
+        flag = true;
+        // Pulisci lo schermo e aggiorna per il riavvio
+       // mvprintw(0, 0, "HAI PREMUTO S DIO PERA");
+        refresh();
+       // sleep(4);
+        clear();
+        
+        return flag;
+        
+    } else if (input == 'e' || input == 'E') {
+        flag = false;
+        // Solo se si esce chiudiamo tutto
+        close(pipe_fd_write);
+        close(pipe_fd_read);
+        endwin();
+        printf("Gioco terminato.\n");
+        fflush(stdout);
+        return flag;
+    }
+    
+    return flag;
+    
+
+}
+
+bool victory(int pipe_fd_write, int pipe_fd_read, 
+              Messaggio crocs[NUM_CROC], 
+              Messaggio bullets[MAX_BULLETS], 
+              Messaggio grenades[MAX_GRENADE], 
+              Messaggio frog, 
+              const char* message) {
+    int input = 0;
+    bool flag = false;
+    
+    // Prima pulisci lo schermo
+    clear();
+    
+    // Definisci l'ASCII art per "HAI PERSO"
+    #define ALTEZZA_SPRITE 6
+   wchar_t *sprite_vittoria[ALTEZZA_SPRITE] = {
+    L"██╗░░██╗░█████╗░██╗  ██╗░░░██╗██╗███╗░░██╗████████╗░█████╗░██╗",
+    L"██║░░██║██╔══██╗██║  ██║░░░██║██║████╗░██║╚══██╔══╝██╔══██╗██║",
+    L"███████║███████║██║  ╚██╗░██╔╝██║██╔██╗██║░░░██║░░░██║░░██║██║",
+    L"██╔══██║██╔══██║██║  ░╚████╔╝░██║██║╚████║░░░██║░░░██║░░██║╚═╝",
+    L"██║░░██║██║░░██║██║  ░░╚██╔╝░░██║██║░╚███║░░░██║░░░╚█████╔╝██╗",
+    L"╚═╝░░╚═╝╚═╝░░╚═╝╚═╝  ░░░╚═╝░░░╚═╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝"};
+    
+    // Calcola la posizione centrale per il testo
+    int start_y = (GAME_HEIGHT - ALTEZZA_SPRITE) / 2;
+    int start_x = (GAME_WIDTH - wcslen(sprite_vittoria[0])) / 2;
+    
+    // Imposta colorazione per il messaggio di Game Over
+    attron(COLOR_PAIR(4));  // Rosa fluo per l'effetto drammatico
+    
+    // Stampa ogni riga dell'ASCII art
+    for (int i = 0; i < ALTEZZA_SPRITE; i++) {
+        mvaddwstr(start_y + i, start_x, sprite_vittoria[i]);
+    }
+    
+    // Aggiungi il messaggio specifico sotto l'ASCII art
+    mvprintw(start_y + ALTEZZA_SPRITE + 2, (GAME_WIDTH - strlen(message)) / 2, "%s", message);
+    
+    // Aggiungi istruzioni per uscire
+    mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - 23) / 2, "Premi S per rigiocare o E per uscire");
+    
+    attroff(COLOR_PAIR(4));
+    
+    // Aggiorna lo schermo e attendi l'input dell'utente
+    refresh();
+    timeout(-1); // Disabilita il timeout per attendere l'input dell'utente
     
     // Terminazione ordinata - chiama direttamente le funzioni di chiusura
     // invece di usare terminate_all_processes
@@ -351,20 +462,123 @@ void exit_game(int pipe_fd_write, int pipe_fd_read,
         kill(frog.pid, SIGKILL);
         waitpid(frog.pid, NULL, 0);
     }
+
+
+     do {
+        input = getch();
+    } while (input != 's' && input != 'e' && input != 'S' && input != 'E');
+
+    if (input == 's' || input == 'S') {
+        flag = true;
+        // Pulisci lo schermo e aggiorna per il riavvio
+        
+        clear();
+        refresh();
+        return flag;
+    } else if (input == 'e' || input == 'E') {
+        flag = false;
+        // Solo se si esce chiudiamo tutto
+        close(pipe_fd_write);
+        close(pipe_fd_read);
+        endwin();
+        printf("Gioco terminato.\n");
+        fflush(stdout);
+        return flag;
+    }
     
-    // Chiudiamo la pipe
-    close(pipe_fd_write);
-    close(pipe_fd_read);
+    return flag;
+}
+
+
+bool menu_iniziale() {
+    bool flag;
+    int input = 0;
+    // Definisci l'ASCII art per "FROGGER"
+    wchar_t *spriteTitolo[] = {
+        L"███████╗██████╗░░█████╗░░██████╗░░██████╗░███████╗██████╗░██╗",
+        L"██╔════╝██╔══██╗██╔══██╗██╔════╝░██╔════╝░██╔════╝██╔══██╗██║",
+        L"█████╗░░██████╔╝██║░░██║██║░░██╗░██║░░██╗░█████╗░░██████╔╝██║",
+        L"██╔══╝░░██╔══██╗██║░░██║██║░░╚██╗██║░░╚██╗██╔══╝░░██╔══██╗╚═╝",
+        L"██║░░░░░██║░░██║╚█████╔╝╚██████╔╝╚██████╔╝███████╗██║░░██║██╗",
+        L"╚═╝░░░░░╚═╝░░╚═╝░╚════╝░░╚═════╝░░╚═════╝░╚══════╝╚═╝░░╚═╝╚═╝"
+    };
     
-    // Chiudiamo ncurses
+    // Definisci le regole del gioco
+    char *regole[] = {
+        "REGOLE DEL GIOCO:",
+        "- Muoviti con le frecce direzionali (↑ ↓ ← →)",
+        "- Chiudi tutte le tane per vincere",
+        "- Premi SPAZIO per sparare granate e difenderti dai proiettili",
+        "- Perdi una vita quando:",
+        "  * Vieni colpito da un proiettile",
+        "  * Cadi in acqua",
+        "  * Entri in una tana già chiusa",
+        "- Hai 5 vite a disposizione",
+        "- Completa tutte le manche per vincere!",
+        "",
+        "Premi S per iniziare..."
+        "Premi E per uscire..."
+    };
+    
+    // Pulisci lo schermo
+    clear();
+    
+    // Disegna un bordo attorno allo schermo
+    box(stdscr, 0, 0);
+    
+    // Calcola la posizione centrale per il titolo
+    int titolo_y = 5;
+    int titolo_x = (GAME_WIDTH - wcslen(spriteTitolo[0])) / 2;
+    
+    // Imposta il colore per il titolo (verde fluo)
+    attron(COLOR_PAIR(1));
+    
+    // Stampa ogni riga dell'ASCII art
+    for (int i = 0; i < 6; i++) {
+        mvaddwstr(titolo_y + i, titolo_x, spriteTitolo[i]);
+    }
+    attroff(COLOR_PAIR(1));
+    
+    // Alternanza di colori per le regole
+    int regole_y = titolo_y + 8;
+    int regole_x = (GAME_WIDTH - strlen(regole[0])) / 2;
+    
+    // Stampa il titolo delle regole in giallo
+    attron(COLOR_PAIR(3));
+    mvprintw(regole_y, (GAME_WIDTH - strlen(regole[0])) / 2, "%s", regole[0]);
+    attroff(COLOR_PAIR(3));
+    
+    // Stampa le regole in bianco
+    regole_y += 2;
+    for (int i = 1; i < 10; i++) {
+        mvprintw(regole_y + i - 1, (GAME_WIDTH - strlen(regole[i])) / 2, "%s", regole[i]);
+    }
+    
+    // Stampa il messaggio finale per iniziare in un colore diverso (rosa)
+    attron(COLOR_PAIR(4));
+    mvprintw(regole_y + 11, (GAME_WIDTH - strlen(regole[11])) / 2, "%s", regole[11]);
+    attroff(COLOR_PAIR(4));
+    
+    // Aggiorna lo schermo
+    refresh();
+    
+    // Disabilita il timeout per attendere l'input dell'utente
+    timeout(-1);
+    
+    // Aspetta che l'utente prema un tasto
+    do {
+     input = getch();
+} while (input != 's' && input != 'e' && input != 'S' && input != 'E');
+
+if (input == 's' || input == 'S'){
+        flag = true;
+    } else if (input == 'e' || input == 'E'){
+        flag = false;
+    }
+
+    
+    // Pulisci lo schermo prima di iniziare il gioco
     clear();
     refresh();
-    endwin();
-    
-    // Mostriamo il messaggio finale (nella console, dopo aver chiuso ncurses)
-    printf("Gioco terminato.\n");
-    fflush(stdout);
-    
-    // Usciamo dal programma
-    exit(EXIT_SUCCESS);
+    return flag;
 }

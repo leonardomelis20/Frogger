@@ -24,8 +24,6 @@ void inizializza_schermo(); //per chiamare le funzioni ncurses
 int speed[NUM_STREAMS];
 
 int main(){
-
-
     
     srand(time(NULL));
     int pipe_fd[2];
@@ -75,7 +73,6 @@ int main(){
     int new_x, new_y;
     int count[NUM_CROC];
     int manche = 1;
-    bool restart = true;
     
 
   
@@ -88,11 +85,8 @@ int main(){
     //reset_timer(pipe_fd[WRITE], &pid_timer);
     
     inizializza_schermo();
-    restart = menu_iniziale();
+    menu_iniziale();
    
-
-    while (restart){
-  
 
     //getmaxyx(stdscr, y, x);
     box(stdscr, 0, 0); // Crea un bordo attorno alla finestra
@@ -200,11 +194,8 @@ int main(){
         croc_copy[i].x = -100;   // Posizione off screen
         croc_copy[i].y = -100;
     }
-    bool game_over = false;
 
-    while (!game_over) {
-
-          
+    while (1) {
         // Leggi tutti i messaggi disponibili dalla pipe
 
         ssize_t r = read(pipe_fd[READ], &msg, sizeof(Messaggio));
@@ -222,19 +213,6 @@ int main(){
         if (prev_x_rana != -1 && prev_y_rana != -1) {
             clear_frog(prev_x_rana, prev_y_rana);
         }
-
-        //cancello tutti i proiettili attivi
-        /*for (int i = 0; i < MAX_BULLETS; i++) {
-            if (active_bullets[i].is_active) {
-                clear_bullet(active_bullets[i].x, active_bullets[i].y);
-            }
-        }
-        for (int i = 0; i < MAX_GRENADE; i++) {
-            if (active_grenades[i].is_active) {
-                clear_grenade(active_grenades[i].x, active_grenades[i].y);
-            }
-        }*/
-
 
 
        draw_hearts(vite); // Disegna le vite
@@ -305,13 +283,6 @@ int main(){
                 frog_copy.croc_index = -1;
                 if (vite <= 0) {
                     exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!", score);
-                     if (restart) {
-        // Esci immediatamente dal ciclo while(1) per riavviare il gioco
-        break;  // Aggiungi questa istruzione per uscire dal ciclo attuale
-    } else {
-        // Gestione dell'uscita dal gioco
-        return 0;  // Termina completamente il programma
-    }
                     terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
                    
     
@@ -535,12 +506,7 @@ case ID_BULLET:
                         }
                         
                         if (vite <= 0) {
-                            restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-                             mvprintw(0, 0, "PORCO CANE");
-                             refresh();
-                             sleep(1);
-                             game_over = true;
-                                break;
+                            exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
                             
                             //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], croc_copy, bulle, frog_copy);    
                            
@@ -551,9 +517,7 @@ case ID_BULLET:
         }
     }
     break;
-            // Prima modifica: Assicurarsi che entrambe le granate siano inizializzate correttamente
-// Modifica nel case CREATE_GRENADE in main.c:
-
+           
 case CREATE_GRENADE: {
     int free_slot = -1;
     // Cerchiamo due slot liberi consecutivi
@@ -620,8 +584,7 @@ case CREATE_GRENADE: {
     }
     break;
 }
-            // Seconda modifica: Migliorare la gestione delle granate nel main loop
-// Modifica ancora più completa al case ID_GRENADE in main.c:
+          
 
 case ID_GRENADE:
 {
@@ -684,7 +647,7 @@ case ID_GRENADE:
                 count_burrows++;
                 score += POINT_BURROWS;
                 if (count_burrows >= 5){
-                   restart = victory(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai vinto!");
+                   victory(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai vinto!");
 
                    //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
                 }
@@ -700,27 +663,14 @@ case ID_GRENADE:
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
                 if (vite <= 0){
-                  restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-                   game_over = true;
-                   mvprintw(0, 0, "PORCO CANE");
-                             refresh();
-                             sleep(1);
-                break;
+                  exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
                         //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
                        
-                                  }
-
-
-                
-                 
-                refresh();
+                }
+                 refresh();
             }
         }        
-
-
-        
        
-        
         //disegno la rana
         draw_frog(frog_copy.x, frog_copy.y);
          draw_timer_bar(game_timer.seconds_left);
@@ -753,12 +703,7 @@ case ID_GRENADE:
     frog_copy.croc_index = -1;
     
     if (vite <= 0) {
-        restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-        game_over = true;
-        mvprintw(0, 0, "PORCO CANE");
-                             refresh();
-                             sleep(1);
-                break;
+        exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
              //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
     }
     
@@ -770,21 +715,10 @@ case ID_GRENADE:
 
 }
  if (manche >= 5) {
-    restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-     game_over = true;
-     mvprintw(0, 0, "PORCO CANE");
-                             refresh();
-                             sleep(1);
-                break;
-     
+    exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
     //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
  }
-        
-        
-    }     
-}  
-
-
+    }       
     
     // Prima di uscire, assicuriamoci di chiudere tutti i processi
     terminate_all_processes(pipe_fd[WRITE], croc_copy, active_bullets, active_grenades, frog_copy);
