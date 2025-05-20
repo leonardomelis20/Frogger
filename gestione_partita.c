@@ -168,7 +168,7 @@ void terminate_all_processes(int pipe_fd, Messaggio croc_array[NUM_CROC],
     // Chiudiamo la pipe per evitare che i processi continuino a scrivere
     close(pipe_fd);
     
-    mvprintw(GAME_HEIGHT/2, GAME_WIDTH/2 - 10, "Terminazione del gioco in corso...");
+    mvprintw(GAME_HEIGHT/2, GAME_WIDTH/2 - 10, "Caricamento del gioco in corso...");
     refresh();
     
     // Terminiamo tutti i processi coccodrillo
@@ -252,9 +252,6 @@ void terminate_all_processes(int pipe_fd, Messaggio croc_array[NUM_CROC],
     
     // Puliamo qualsiasi processo zombie rimanente
     while (waitpid(-1, NULL, WNOHANG) > 0);
-    
-    mvprintw(GAME_HEIGHT/2 + 1, GAME_WIDTH/2 - 15, "Tutti i processi sono stati terminati correttamente");
-    refresh();
     sleep(1);  // Mostriamo il messaggio per un secondo
 }
 
@@ -280,7 +277,7 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
               Messaggio frog, 
               const char* message) {
     int input = 0;
-    bool flag ;
+    bool flag = false;
     // Prima pulisci lo schermo
     clear();
     
@@ -323,11 +320,6 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
     // invece di usare terminate_all_processes
     
     
-    
-     do {
-        input = getch();
-    } while (input != 's' && input != 'e' && input != 'S' && input != 'E');
-
     // Chiudi tutti i processi coccodrillo
     for (int i = 0; i < NUM_CROC; i++) {
         if (crocs[i].pid > 1) {
@@ -357,30 +349,25 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
         kill(frog.pid, SIGKILL);
         waitpid(frog.pid, NULL, 0);
     }
+    
+     do {
+        input = getch();
+    } while (input != 's' && input != 'e' && input != 'S' && input != 'E');
+
+    
 
     if (input == 's' || input == 'S') {
         flag = true;
-        // Pulisci lo schermo e aggiorna per il riavvio
-       // mvprintw(0, 0, "HAI PREMUTO S DIO PERA");
-        refresh();
-       // sleep(4);
-        clear();
-        
-        return flag;
-        
+       clear();
+        refresh();      
     } else if (input == 'e' || input == 'E') {
         flag = false;
         // Solo se si esce chiudiamo tutto
         close(pipe_fd_write);
         close(pipe_fd_read);
-        endwin();
-        printf("Gioco terminato.\n");
-        fflush(stdout);
-        return flag;
     }
     
     return flag;
-    
 
 }
 
@@ -471,19 +458,13 @@ bool victory(int pipe_fd_write, int pipe_fd_read,
     if (input == 's' || input == 'S') {
         flag = true;
         // Pulisci lo schermo e aggiorna per il riavvio
-        
         clear();
         refresh();
-        return flag;
     } else if (input == 'e' || input == 'E') {
         flag = false;
         // Solo se si esce chiudiamo tutto
         close(pipe_fd_write);
         close(pipe_fd_read);
-        endwin();
-        printf("Gioco terminato.\n");
-        fflush(stdout);
-        return flag;
     }
     
     return flag;
@@ -568,7 +549,7 @@ bool menu_iniziale() {
     // Aspetta che l'utente prema un tasto
     do {
      input = getch();
-} while (input != 's' && input != 'e' && input != 'S' && input != 'E');
+    } while (input != 's' && input != 'e' && input != 'S' && input != 'E');
 
 if (input == 's' || input == 'S'){
         flag = true;

@@ -81,34 +81,25 @@ int main(){
   
     
     
-    // Aggiungi la variabile per tenere traccia del PID del timer
-    
-    
-    // Avvia il timer
-    //reset_timer(pipe_fd[WRITE], &pid_timer);
-    
+   
+    //inizializza lo schermo
     inizializza_schermo();
+
+    //mostra menu iniziale
     restart = menu_iniziale();
    
 
     while (restart){
-  
 
-    //getmaxyx(stdscr, y, x);
-    box(stdscr, 0, 0); // Crea un bordo attorno alla finestra
-    draw_burrows();
-    draw_safety_zones();
-    init_timer(&game_timer);
-    draw_timer_bar(game_timer.seconds_left);
-    //mvprintw(GAME_HEIGHT/2, GAME_WIDTH/2 - 10, "Caricamento in corso...");
+    clear();
     refresh();
-    
+
     if (pipe(pipe_fd) == -1){
         perror ("Errore creazione pipe");
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < NUM_STREAMS; i++) {
+     for (int i = 0; i < NUM_STREAMS; i++) {
         switch (i) {
             case 0: speed[i] = 120000; break;
             case 1: speed[i] = 140000; break;
@@ -149,6 +140,35 @@ int main(){
         active_grenades[i].pid = -1;  // Nessun processo associato
     }
 
+    score = 0;
+    vite = 5;
+    manche = 1;
+    count_burrows = 0;
+    for (int i = 0; i <= NUM_BURROWS; i++) {
+        flag[i] = false;
+    }
+
+    // Posizione iniziale della rana
+    frog_copy.x = centro_x;
+    frog_copy.y = centro_y;
+    frog_copy.on_croc = false;
+    frog_copy.croc_index = -1;
+
+  
+
+    //disegna area di gioco
+    box(stdscr, 0, 0); // Crea un bordo attorno alla finestra
+    draw_burrows();
+    draw_safety_zones();
+
+    init_timer(&game_timer);
+    draw_timer_bar(game_timer.seconds_left);
+   
+    refresh();
+    
+    
+   
+
     pid_rana = fork();
     if (pid_rana == -1){
         perror("Fork rana fallita");
@@ -158,6 +178,8 @@ int main(){
         frog(pipe_fd[WRITE], flag, speed); //passo la pipe direttamente in scrittura
         exit(EXIT_SUCCESS);
     }
+
+    frog_copy.pid = pid_rana;
 
     
 
@@ -189,7 +211,6 @@ int main(){
                 flag_croc = false;
             }
             main_croc(pipe_fd[WRITE], i, direzioni[i], speed[i], flag_croc); //passo la pipe direttamente in scritturap
-            
             exit(EXIT_SUCCESS);
         }
 
@@ -204,17 +225,12 @@ int main(){
 
     while (!game_over) {
 
-          
         // Leggi tutti i messaggi disponibili dalla pipe
-
         ssize_t r = read(pipe_fd[READ], &msg, sizeof(Messaggio));
         if (r == -1) {
             perror("Errore nella lettura dalla pipe");
             exit(EXIT_FAILURE);
-        } else if (r == 0) {
-            // Nessun messaggio disponibile
-            continue;
-        }
+        } 
 
         correct_x_frog(frog_copy);
 
@@ -222,19 +238,6 @@ int main(){
         if (prev_x_rana != -1 && prev_y_rana != -1) {
             clear_frog(prev_x_rana, prev_y_rana);
         }
-
-        //cancello tutti i proiettili attivi
-        /*for (int i = 0; i < MAX_BULLETS; i++) {
-            if (active_bullets[i].is_active) {
-                clear_bullet(active_bullets[i].x, active_bullets[i].y);
-            }
-        }
-        for (int i = 0; i < MAX_GRENADE; i++) {
-            if (active_grenades[i].is_active) {
-                clear_grenade(active_grenades[i].x, active_grenades[i].y);
-            }
-        }*/
-
 
 
        draw_hearts(vite); // Disegna le vite
@@ -361,9 +364,7 @@ int main(){
                 frog_copy.y = msg.y; 
                 score += POINT_CROCODILE;
                 
-            } 
-            
-                       
+            }       
             break;         
         case RESPAWN: 
 
@@ -389,12 +390,12 @@ int main(){
                 exit(EXIT_SUCCESS);
             }
     
+            // Aggiorna il PID del coccodrillo
+            croc_copy[indice].pid = nuovo_pid;
             
             break;    
        
 
-// Modifica nella sezione CREATE_BULLET del main.c
-// Questo codice rappresenta come dovrebbe essere implementato nel main.c
 
 case CREATE_BULLET: {
     // Cerca una posizione libera nell'array dei proiettili
@@ -536,13 +537,8 @@ case ID_BULLET:
                         
                         if (vite <= 0) {
                             restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-                             mvprintw(0, 0, "PORCO CANE");
-                             refresh();
-                             sleep(1);
                              game_over = true;
-                                break;
-                            
-                            //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], croc_copy, bulle, frog_copy);    
+                             break;
                            
                         }
                     }
@@ -551,9 +547,7 @@ case ID_BULLET:
         }
     }
     break;
-            // Prima modifica: Assicurarsi che entrambe le granate siano inizializzate correttamente
-// Modifica nel case CREATE_GRENADE in main.c:
-
+        
 case CREATE_GRENADE: {
     int free_slot = -1;
     // Cerchiamo due slot liberi consecutivi
@@ -620,9 +614,7 @@ case CREATE_GRENADE: {
     }
     break;
 }
-            // Seconda modifica: Migliorare la gestione delle granate nel main loop
-// Modifica ancora più completa al case ID_GRENADE in main.c:
-
+        
 case ID_GRENADE:
 {
     // Trova la granata nell'array
@@ -685,8 +677,9 @@ case ID_GRENADE:
                 score += POINT_BURROWS;
                 if (count_burrows >= 5){
                    restart = victory(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai vinto!");
-
-                   //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
+                    game_over = true;
+                    break;
+                   
                 }
                 reset_timer(&game_timer);
                 
@@ -701,13 +694,9 @@ case ID_GRENADE:
                 frog_copy.y = centro_y;
                 if (vite <= 0){
                   restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-                   game_over = true;
-                   mvprintw(0, 0, "PORCO CANE");
-                             refresh();
-                             sleep(1);
+                game_over = true;
                 break;
-                        //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
-                       
+                        
                                   }
 
 
@@ -755,11 +744,7 @@ case ID_GRENADE:
     if (vite <= 0) {
         restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
         game_over = true;
-        mvprintw(0, 0, "PORCO CANE");
-                             refresh();
-                             sleep(1);
                 break;
-             //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
     }
     
 
@@ -772,22 +757,23 @@ case ID_GRENADE:
  if (manche >= 5) {
     restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
      game_over = true;
-     mvprintw(0, 0, "PORCO CANE");
-                             refresh();
-                             sleep(1);
                 break;
      
-    //terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
- }
+   
+    }
         
         
-    }     
+    }  
+    
+     // Prima di uscire, assicuriamoci di chiudere tutti i processi
+    terminate_all_processes(pipe_fd[WRITE], croc_copy, active_bullets, active_grenades, frog_copy);
+    close(pipe_fd[READ]);
+    close(pipe_fd[WRITE]);
 }  
 
 
     
-    // Prima di uscire, assicuriamoci di chiudere tutti i processi
-    terminate_all_processes(pipe_fd[WRITE], croc_copy, active_bullets, active_grenades, frog_copy);
+   
 
 
     // Ora possiamo terminare ncurses
