@@ -304,24 +304,36 @@ int main(){
             draw_frog(frog_copy.x, frog_copy.y);
 
             //se è fuori dallo schermo e fuori dalla safe zone perde vite e viene riposizionata
-           /* if ((out_of_bounds && !in_safe_zone) || river(frog_copy)) {
+            if ((out_of_bounds && !in_safe_zone) || river(frog_copy)) {
                 score += POINT_WATER;
                 vite--;
                 reset_timer(&game_timer);
                 manche++;
+                // pulizia a posizione attuale della rana
+                clear_frog(frog_copy.x, frog_copy.y);
+
+                // aggiornamento coordinate
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
                 frog_copy.on_croc = false;
                 frog_copy.croc_index = -1;
+
+                // aggiornamento coordinate precedenti
+                prev_x_rana = frog_copy.x;
+                prev_y_rana = frog_copy.y;
+
+                //  nuova posizione
+                draw_frog(frog_copy.x, frog_copy.y);
+
                     if (vite <= 0) {
-                        exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!", score); 
+                        restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
                         game_over = true;
                         break;
                     }
     
                 
                 }
-            }*/
+            
             break;
 
         case ID_CROCODILE:
@@ -519,10 +531,21 @@ int main(){
                                 vite--;
                                 reset_timer(&game_timer);
                                 manche++;
+                                // pulizia a posizione attuale della rana
+                                clear_frog(frog_copy.x, frog_copy.y);
+
+                                // aggiornamento coordinate
                                 frog_copy.x = centro_x;
                                 frog_copy.y = centro_y;
                                 frog_copy.on_croc = false;
                                 frog_copy.croc_index = -1;
+
+                                // aggiornamento coordinate precedenti
+                                prev_x_rana = frog_copy.x;
+                                prev_y_rana = frog_copy.y;
+
+                                //  nuova posizione
+                                draw_frog(frog_copy.x, frog_copy.y);
 
                                 //kill del proiettile
                                 kill(msg.pid, SIGKILL);
@@ -680,9 +703,21 @@ int main(){
                 flag[num_tane] = true; //setto il flag a true per segnalare che non può più entrare in questa tana
                 tane(frog_copy);  // chiudiamo graficamente la tana
 
-                //riposizioniamo la rana
-                frog_copy.x = centro_x; 
+                // pulizia a posizione attuale della rana
+                clear_frog(frog_copy.x, frog_copy.y);
+
+                // aggiornamento coordinate
+                frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
+                frog_copy.on_croc = false;
+                frog_copy.croc_index = -1;
+
+                // aggiornamento coordinate precedenti
+                prev_x_rana = frog_copy.x;
+                prev_y_rana = frog_copy.y;
+
+                //  nuova posizione
+                draw_frog(frog_copy.x, frog_copy.y);
                 count_burrows++;
                 score += POINT_BURROWS;
 
@@ -691,7 +726,6 @@ int main(){
                    restart = victory(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai vinto!");
                     game_over = true;
                     break;
-                   
                 }
                 reset_timer(&game_timer);
                 
@@ -701,8 +735,22 @@ int main(){
                 vite--;
                 reset_timer(&game_timer);
                 manche++;
+
+                // pulizia posizione attuale della rana
+                clear_frog(frog_copy.x, frog_copy.y);
+
+                // aggiornamento coordinate
                 frog_copy.x = centro_x;
                 frog_copy.y = centro_y;
+                frog_copy.on_croc = false;
+                frog_copy.croc_index = -1;
+
+                // aggiornamento coordinate precedenti
+                prev_x_rana = frog_copy.x;
+                prev_y_rana = frog_copy.y;
+
+                // nuova posizione
+                draw_frog(frog_copy.x, frog_copy.y);
                 if (vite <= 0){
                   restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
                 game_over = true;
@@ -744,10 +792,21 @@ int main(){
             // tempo scaduto
             score += POINT_TIME;
             vite--;
-            frog_copy.x = centro_x;
-            frog_copy.y = centro_y;
-            frog_copy.on_croc = false;
-            frog_copy.croc_index = -1;
+            // pulizia a posizione attuale della rana
+                clear_frog(frog_copy.x, frog_copy.y);
+
+                // aggiornamento coordinate
+                frog_copy.x = centro_x;
+                frog_copy.y = centro_y;
+                frog_copy.on_croc = false;
+                frog_copy.croc_index = -1;
+
+                // aggiornamento coordinate precedenti
+                prev_x_rana = frog_copy.x;
+                prev_y_rana = frog_copy.y;
+
+                //  nuova posizione
+                draw_frog(frog_copy.x, frog_copy.y);
             
                 if (vite <= 0) {
                     restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
