@@ -59,6 +59,7 @@
 #define CREATE_BULLET 4
 #define CREATE_GRENADE 5
 #define ID_GRENADE 6
+#define PAUSE 7
 
 
 // Costanti specifiche per il timer
@@ -76,14 +77,6 @@
 
 
 enum oggetto {FROG, COCCODRILLO};
-
-/*!!!!!!!*/
-//possiamo valutare di usare una struttura per chiudere bene tutti i processi
-typedef struct {
-    pid_t pid_rana;
-    pid_t pid_coccodrillo[NUM_STREAMS];
-} Processi;
-/*!!!!!!!*/
 
 
 typedef struct {
@@ -107,6 +100,6 @@ typedef struct {
     int seconds_left;     // Secondi rimanenti
     time_t last_update;   // Ultimo aggiornamento
     bool is_active;       // Indica se il timer è attivo
-} TimerInfo;
+} info_timer;
 
 #endif

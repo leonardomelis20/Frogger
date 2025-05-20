@@ -113,11 +113,9 @@ void frog(int pipe_fd, bool* flag, int* speed ) {
                 msg.oggetto = CREATE_GRENADE;
                 write(pipe_fd, &msg, sizeof(Messaggio));
                 break;
-            /*case d'uscita*/
-            case 'q': 
-                close(pipe_fd);
-                exit(EXIT_SUCCESS);
-                return;
+            case 'p':
+                msg.oggetto = PAUSE;
+                write(pipe_fd, &msg, sizeof(Messaggio));
                 break;
         }
         

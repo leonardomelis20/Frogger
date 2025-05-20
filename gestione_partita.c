@@ -26,9 +26,6 @@ void draw_timer_bar(int seconds_left) {
         mvprintw(TIMER_BAR_Y + j, TIMER_BAR_X, "%*s", TIMER_BAR_WIDTH, "");
     }
     
-    // Ora disegna la barra del tempo
-    
-    
     // Scegli il colore in base al tempo rimanente
     if (seconds_left > 20) {
         attron(COLOR_PAIR(3));  // Verde
@@ -53,13 +50,6 @@ void draw_timer_bar(int seconds_left) {
     }
     mvprintw(TIMER_BAR_Y + 1, TIMER_BAR_X + TIMER_BAR_WIDTH - 1, "|");
     
-    /*
-    // Scrivi il tempo rimanente
-    char time_str[10];
-    //sprintf(time_str, "%2d sec", seconds_left);
-    mvprintw(TIMER_BAR_Y + 1, TIMER_BAR_X + TIMER_BAR_WIDTH + 2, time_str);
-    */
-    
     if (seconds_left > 20) {
         attroff(COLOR_PAIR(3));
     } else if (seconds_left > 10) {
@@ -72,14 +62,14 @@ void draw_timer_bar(int seconds_left) {
 }
 
 // Inizializza la struttura del timer
-void init_timer(TimerInfo* timer) {
+void init_timer(info_timer* timer) {
     timer->seconds_left = 60;
     timer->last_update = time(NULL);
     timer->is_active = true;
 }
 
 // Aggiorna il timer e restituisce true se il tempo è scaduto
-bool update_timer(TimerInfo* timer) {
+bool update_timer(info_timer* timer) {
     if (!timer->is_active) {
         return false;
     }
@@ -107,7 +97,7 @@ bool update_timer(TimerInfo* timer) {
 }
 
 // Resetta il timer al valore iniziale
-void reset_timer(TimerInfo* timer) {
+void reset_timer(info_timer* timer) {
     timer->seconds_left = TIMER_DURATION;
     timer->last_update = time(NULL);
     timer->is_active = true;
@@ -123,8 +113,7 @@ void draw_hearts(int vite) {
     int heart_spacing = 3;  // Spazio tra un cuore e l'altro 
     char* heart = "<3";  // Simbolo 
     
-    //attron(COLOR_PAIR(0));  // Colore di default (bianco su nero)
-    //attroff(COLOR_PAIR(0));
+
   
     // Disegno i cuori
     attron(COLOR_PAIR(6));  // Arancione pastello per le vite
@@ -283,7 +272,7 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
     
     // Definisci l'ASCII art per "HAI PERSO"
     #define ALTEZZA_SPRITE 6
-    wchar_t *spriteSconfitta[ALTEZZA_SPRITE] = {
+    wchar_t *sprite_sconfitta[ALTEZZA_SPRITE] = {
         L"██╗░░██╗░█████╗░██╗  ██████╗░███████╗██████╗░░██████╗░█████╗░██╗",
         L"██║░░██║██╔══██╗██║  ██╔══██╗██╔════╝██╔══██╗██╔════╝██╔══██╗██║",
         L"███████║███████║██║  ██████╔╝█████╗░░██████╔╝╚█████╗░██║░░██║██║",
@@ -294,14 +283,14 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
     
     // Calcola la posizione centrale per il testo
     int start_y = (GAME_HEIGHT - ALTEZZA_SPRITE) / 2;
-    int start_x = (GAME_WIDTH - wcslen(spriteSconfitta[0])) / 2;
+    int start_x = (GAME_WIDTH - wcslen(sprite_sconfitta[0])) / 2;
     
     // Imposta colorazione per il messaggio di Game Over
     attron(COLOR_PAIR(4));  // Rosa fluo per l'effetto drammatico
     
     // Stampa ogni riga dell'ASCII art
     for (int i = 0; i < ALTEZZA_SPRITE; i++) {
-        mvaddwstr(start_y + i, start_x, spriteSconfitta[i]);
+        mvaddwstr(start_y + i, start_x, sprite_sconfitta[i]);
     }
     
     // Aggiungi il messaggio specifico sotto l'ASCII art
@@ -316,9 +305,7 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
     refresh();
     timeout(-1); // Disabilita il timeout per attendere l'input dell'utente
     
-    // Terminazione ordinata - chiama direttamente le funzioni di chiusura
-    // invece di usare terminate_all_processes
-    
+       
     
     // Chiudi tutti i processi coccodrillo
     for (int i = 0; i < NUM_CROC; i++) {
@@ -417,8 +404,6 @@ bool victory(int pipe_fd_write, int pipe_fd_read,
     refresh();
     timeout(-1); // Disabilita il timeout per attendere l'input dell'utente
     
-    // Terminazione ordinata - chiama direttamente le funzioni di chiusura
-    // invece di usare terminate_all_processes
     
     // Chiudi tutti i processi coccodrillo
     for (int i = 0; i < NUM_CROC; i++) {
@@ -475,7 +460,7 @@ bool menu_iniziale() {
     bool flag;
     int input = 0;
     // Definisci l'ASCII art per "FROGGER"
-    wchar_t *spriteTitolo[] = {
+    wchar_t *sprite_titolo[] = {
         L"███████╗██████╗░░█████╗░░██████╗░░██████╗░███████╗██████╗░██╗",
         L"██╔════╝██╔══██╗██╔══██╗██╔════╝░██╔════╝░██╔════╝██╔══██╗██║",
         L"█████╗░░██████╔╝██║░░██║██║░░██╗░██║░░██╗░█████╗░░██████╔╝██║",
@@ -488,6 +473,7 @@ bool menu_iniziale() {
     char *regole[] = {
         "REGOLE DEL GIOCO:",
         "- Muoviti con le frecce direzionali (↑ ↓ ← →)",
+        "- Premi p per mettere in pausa",
         "- Chiudi tutte le tane per vincere",
         "- Premi SPAZIO per sparare granate e difenderti dai proiettili",
         "- Perdi una vita quando:",
@@ -495,11 +481,11 @@ bool menu_iniziale() {
         "  * Cadi in acqua",
         "  * Entri in una tana già chiusa",
         "- Hai 5 vite a disposizione",
-        "- Completa tutte le manche per vincere!",
-        "",
-        "Premi S per iniziare..."
-        "Premi E per uscire..."
+        "- Completa tutte le manche per vincere!"
     };
+    
+    // Messaggio per iniziare/uscire (separato dall'array delle regole)
+    char *messaggio_finale = "Premi S per iniziare... Premi E per uscire...";
     
     // Pulisci lo schermo
     clear();
@@ -509,35 +495,40 @@ bool menu_iniziale() {
     
     // Calcola la posizione centrale per il titolo
     int titolo_y = 5;
-    int titolo_x = (GAME_WIDTH - wcslen(spriteTitolo[0])) / 2;
+    int titolo_x = (GAME_WIDTH - wcslen(sprite_titolo[0])) / 2;
     
     // Imposta il colore per il titolo (verde fluo)
     attron(COLOR_PAIR(1));
     
     // Stampa ogni riga dell'ASCII art
     for (int i = 0; i < 6; i++) {
-        mvaddwstr(titolo_y + i, titolo_x, spriteTitolo[i]);
+        mvaddwstr(titolo_y + i, titolo_x, sprite_titolo[i]);
     }
     attroff(COLOR_PAIR(1));
     
-    // Alternanza di colori per le regole
+    // Calcola posizione per le regole
     int regole_y = titolo_y + 8;
-    int regole_x = (GAME_WIDTH - strlen(regole[0])) / 2;
     
     // Stampa il titolo delle regole in giallo
     attron(COLOR_PAIR(3));
     mvprintw(regole_y, (GAME_WIDTH - strlen(regole[0])) / 2, "%s", regole[0]);
     attroff(COLOR_PAIR(3));
     
-    // Stampa le regole in bianco
+    // Stampa le regole in ciano
     regole_y += 2;
-    for (int i = 1; i < 10; i++) {
+    attron(COLOR_PAIR(2));  // Ciano per le regole
+    for (int i = 1; i < 11; i++) {  // Stampa tutte le regole da 1 a 10
         mvprintw(regole_y + i - 1, (GAME_WIDTH - strlen(regole[i])) / 2, "%s", regole[i]);
     }
+    attroff(COLOR_PAIR(2));
     
-    // Stampa il messaggio finale per iniziare in un colore diverso (rosa)
-    attron(COLOR_PAIR(4));
-    mvprintw(regole_y + 11, (GAME_WIDTH - strlen(regole[11])) / 2, "%s", regole[11]);
+    // Posizionamento preciso per il messaggio finale
+    // Calcola una posizione Y che sia DOPO tutte le regole
+    int messaggio_y = regole_y + 12;  // Aumenta questo valore se necessario
+    
+    // Stampa il messaggio finale per iniziare in fucsia
+    attron(COLOR_PAIR(4));  // Fucsia
+    mvprintw(messaggio_y, (GAME_WIDTH - strlen(messaggio_finale)) / 2, "%s", messaggio_finale);
     attroff(COLOR_PAIR(4));
     
     // Aggiorna lo schermo
@@ -548,18 +539,41 @@ bool menu_iniziale() {
     
     // Aspetta che l'utente prema un tasto
     do {
-     input = getch();
+        input = getch();
     } while (input != 's' && input != 'e' && input != 'S' && input != 'E');
 
-if (input == 's' || input == 'S'){
+    if (input == 's' || input == 'S'){
         flag = true;
     } else if (input == 'e' || input == 'E'){
         flag = false;
     }
-
     
     // Pulisci lo schermo prima di iniziare il gioco
     clear();
     refresh();
     return flag;
+}
+
+void pause_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio* grenades) {
+    // Invia un segnale SIGSTOP alla rana
+    kill(frog.pid, SIGSTOP);
+    
+    // Invia un segnale SIGSTOP a tutti i coccodrilli
+    for (int i = 0; i < NUM_CROC; i++) {
+        kill(crocs[i].pid, SIGSTOP);
+    }
+    
+    // Invia un segnale SIGSTOP a tutti i proiettili
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullets[i].is_active) {
+            kill(bullets[i].pid, SIGSTOP);
+        }
+    }
+    
+    // Invia un segnale SIGSTOP a tutte le granate
+    for (int i = 0; i < MAX_GRENADE; i++) {
+        if(grenades[i].is_active) {
+        kill(grenades[i].pid, SIGSTOP);
+    }
+}
 }

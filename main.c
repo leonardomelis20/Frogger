@@ -49,7 +49,7 @@ int main(){
     int centro_x = GAME_WIDTH / 2;
     int score = 0;
 
-    TimerInfo game_timer;
+    info_timer game_timer;
     
 
     // Inizializza la rana
@@ -99,6 +99,8 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
+    //inizializzazione velocità flussi
+
      for (int i = 0; i < NUM_STREAMS; i++) {
         switch (i) {
             case 0: speed[i] = 120000; break;
@@ -112,6 +114,8 @@ int main(){
             case 8: speed[i] = 150000; break;
         }
     }
+
+    // assegnazione corretta indici
     for (int i = 0; i < NUM_CROC; i++)
     {
         if (i >= 9){
@@ -119,7 +123,7 @@ int main(){
         }   
     }
         
-    // Inizializza l'array di proiettili
+    // inizializzazione array di proiettili
     for (int i = 0; i < MAX_BULLETS; i++) {
         active_bullets[i].oggetto = ID_BULLET;
         active_bullets[i].is_active = false;
@@ -130,7 +134,7 @@ int main(){
     }
 
 
-    // Inizializza l'array di granate
+    // inizializzazione array di granate
     for (int i = 0; i < MAX_GRENADE; i++) {
         active_grenades[i].oggetto = ID_GRENADE;
         active_grenades[i].is_active = false;
@@ -140,6 +144,7 @@ int main(){
         active_grenades[i].pid = -1;  // Nessun processo associato
     }
 
+    //ripristino variabili di gioco
     score = 0;
     vite = 5;
     manche = 1;
@@ -148,7 +153,7 @@ int main(){
         flag[i] = false;
     }
 
-    // Posizione iniziale della rana
+    // posizione iniziale della rana
     frog_copy.x = centro_x;
     frog_copy.y = centro_y;
     frog_copy.on_croc = false;
@@ -156,7 +161,7 @@ int main(){
 
   
 
-    //disegna area di gioco
+    // area di gioco
     box(stdscr, 0, 0); // Crea un bordo attorno alla finestra
     draw_burrows();
     draw_safety_zones();
@@ -185,7 +190,8 @@ int main(){
 
     
   
-   
+
+   //alternanza direzioni
     if (rand() % 2 == 0){
         direzioni[0] = 1;
     } else {
@@ -216,11 +222,13 @@ int main(){
 
     }
 
+    // inizializzazione coccodrilli
     for (int i = 0; i < NUM_CROC; i++) {
         croc_copy[i].index = i;  // Inizializzazione indici
         croc_copy[i].x = -100;   // Posizione off screen
         croc_copy[i].y = -100;
     }
+    //variabile di controllo per il while
     bool game_over = false;
 
     while (!game_over) {
@@ -240,24 +248,23 @@ int main(){
         }
 
 
-       draw_hearts(vite); // Disegna le vite
-        attron(COLOR_PAIR(7));  // Celeste pastello per il punteggio
+        draw_hearts(vite); // Disegna le vite
+        attron(COLOR_PAIR(7));  
         mvprintw(40, 55, "PUNTI %d ", score);
         attroff(COLOR_PAIR(7));
 
-        attron(COLOR_PAIR(8));  // Pesca pastello per le manche
+        attron(COLOR_PAIR(8)); 
         mvprintw(40, 70, "MANCHE %d ", manche);
         attroff(COLOR_PAIR(8));
         
         switch (msg.oggetto) {
             case ID_RANA:
 
-            // Copia il messaggio
             // calcola nuova posizione
             new_x = frog_copy.x + msg.x;
             new_y = frog_copy.y + msg.y;
 
-            // controlla se è nella safe zona
+            // controlla se è nella safe zone
             in_safe_zone = (new_y >= 33 && new_y <= 39);
 
             //controllo boundaries
@@ -288,7 +295,7 @@ int main(){
             // Verifica se la rana è su un coccodrillo e aggiorna le sue info
             frog_with_croc(&frog_copy, croc_copy);
             
-            // Salva la nuova posizione per la prossima clear
+            //nuova posizione
             prev_x_rana = frog_copy.x;
             prev_y_rana = frog_copy.y;
 
@@ -306,17 +313,11 @@ int main(){
                 frog_copy.y = centro_y;
                 frog_copy.on_croc = false;
                 frog_copy.croc_index = -1;
-                if (vite <= 0) {
-                    exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!", score);
-                     if (restart) {
-        // Esci immediatamente dal ciclo while(1) per riavviare il gioco
-        break;  // Aggiungi questa istruzione per uscire dal ciclo attuale
-    } else {
-        // Gestione dell'uscita dal gioco
-        return 0;  // Termina completamente il programma
-    }
-                    terminate_all_processes(pipe_fd[WRITE], pipe_fd[READ], active_bullets, active_grenades, frog_copy); 
-                   
+                    if (vite <= 0) {
+                        exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!", score); 
+                        game_over = true;
+                        break;
+                    }
     
                 
                 }
@@ -341,18 +342,20 @@ int main(){
                 clear_frog(frog_copy.x, frog_copy.y); // cancella la posizione precedente
                 
                 //la rana si muove con il coccodrillo
-                frog_copy.x += msg.direzione; // aggiorna la posizione verticale della rana
+                frog_copy.x += msg.direzione; // aggiorna la posizione della rana
+
+                //aggiorno il punteggio
+                score += POINT_CROCODILE;
 
             
                 // aggiorna anche le coordinate precedenti
                 prev_x_rana = frog_copy.x;
                 prev_y_rana = frog_copy.y;
             }
-            // Se la rana era sopra questo coccodrillo ma ora non lo è più, azzera i flag
-
-            
+               // Disegna il coccodrillo nella nuova posizione            
             draw_crocodile(msg.x, msg.y);
             
+            // verifica se la rana è sopra il coccodrillo
             if (!frog_copy.on_croc && 
                 frog_copy.y >= msg.y && 
                 frog_copy.y < msg.y + ALTEZZA_COCCODRILLO &&
@@ -368,16 +371,16 @@ int main(){
             break;         
         case RESPAWN: 
 
-        //log_coordinates(msg.x, msg.y, msg.direzione);
             int direzione =  0;
             direzione = msg.direzione;
             int indice = 0;
             indice = msg.index;
             int x = msg.x;
-            kill(msg.pid, SIGKILL);
+
+            kill(msg.pid, SIGKILL); //killiamo il coccodrillo uscito dallo schermo
             waitpid(msg.pid, &status, 0); // aspetta che il processo muoia
-            // Ricrea un nuovo processo coccodrillo con le stesse proprietà
-            
+
+            // ricreo nuovo processo con le stesse caratteristiche
             pid_t nuovo_pid = fork();
             flag_croc = true;
             if (nuovo_pid == -1 ){
@@ -390,292 +393,301 @@ int main(){
                 exit(EXIT_SUCCESS);
             }
     
-            // Aggiorna il PID del coccodrillo
+            // Aggiorna il pid del coccodrillo
             croc_copy[indice].pid = nuovo_pid;
             
             break;    
        
 
 
-case CREATE_BULLET: {
-    // Cerca una posizione libera nell'array dei proiettili
-    int free_slot = -1;
-    for (int i = 0; i < MAX_BULLETS; i++) {
-        if (!active_bullets[i].is_active) {
-            free_slot = i;
-            break;
-        }
-    }
-    
-    if (free_slot != -1) {
-        // Prima di creare un nuovo proiettile, verifica se il coccodrillo ha già un proiettile attivo
-        bool already_has_bullet = false;
-        for (int i = 0; i < MAX_BULLETS; i++) {
-            if (active_bullets[i].is_active && active_bullets[i].index == msg.index) {
-                already_has_bullet = true;
-                break;
-            }
-        }
-        
-        // Se il coccodrillo non ha già un proiettile attivo, ne crea uno nuovo
-        if (!already_has_bullet) {
-            // Inizializza il proiettile
-            active_bullets[free_slot].is_active = true;
-            active_bullets[free_slot].x = msg.x;
-            active_bullets[free_slot].y = msg.y;
-            active_bullets[free_slot].direzione = msg.direzione;
-            active_bullets[free_slot].oggetto = ID_BULLET;
-            active_bullets[free_slot].index = msg.index;  // Indice del coccodrillo che ha sparato
-            
-            bullet_count++;
-            
-            // Crea il processo proiettile
-            pid_bullet = fork();
-            if (pid_bullet == -1) {
-                perror("Fork proiettile fallita");
-                exit(EXIT_FAILURE);
-            } else if (pid_bullet == 0) {
-                close(pipe_fd[READ]);
-                main_bullet(pipe_fd[WRITE], msg);
-                exit(EXIT_SUCCESS);
+        case CREATE_BULLET: {
+            // posizione libera nell'array dei proiettili
+            int free_slot = -1;
+            for (int i = 0; i < MAX_BULLETS; i++) {
+                if (!active_bullets[i].is_active) {
+                    free_slot = i;
+                    break;
+                }
             }
             
-            active_bullets[free_slot].pid = pid_bullet;
-        }
-    }
-    break;
-}
-
-case ID_BULLET:
-    // Aggiorna la posizione del proiettile nell'array
-    
-    if (msg.index >= 0 && msg.index < NUM_CROC) {
-        int bullet_idx = -1;
-        
-        // Trova il proiettile con il pid corrispondente
-        for (int i = 0; i < MAX_BULLETS; i++) {
-            if (active_bullets[i].is_active && active_bullets[i].pid == msg.pid) {
-                bullet_idx = i;
-                break;
-            }
-        }
-        
-        if (bullet_idx != -1) {
-            // Cancella vecchia posizione SOLO se la posizione è cambiata
-        if (active_bullets[bullet_idx].x != msg.x || active_bullets[bullet_idx].y != msg.y) {
-            clear_bullet(active_bullets[bullet_idx].x, active_bullets[bullet_idx].y);
-
-            // Aggiorna la posizione del proiettile
-            active_bullets[bullet_idx].x = msg.x;
-            active_bullets[bullet_idx].y = msg.y;
-            
-            // Disegna il proiettile nella nuova posizione
-            draw_bullet(msg.x, msg.y);
-        }
-            
-            // Se il proiettile non è più attivo, rimuovilo e decrementare il contatore
-            if (!msg.is_active) {
-                active_bullets[bullet_idx].is_active = false;
-                active_bullets[bullet_idx].x = -100;
-                active_bullets[bullet_idx].y = -100;
-                
-                if (bullet_count > 0) {
-                    bullet_count--;
+            if (free_slot != -1) {
+                // verifica se il coccodrillo ha già un proiettile attivo
+                bool already_has_bullet = false;
+                for (int i = 0; i < MAX_BULLETS; i++) {
+                    if (active_bullets[i].is_active && active_bullets[i].index == msg.index) {
+                        already_has_bullet = true;
+                        break;
+                    }
                 }
                 
-                // Termina il processo associato
-                kill(msg.pid, SIGKILL);
-                waitpid(msg.pid, &status, 0);
-            } else {
-                // Aggiorna la posizione del proiettile
-                active_bullets[bullet_idx].x = msg.x;
-                active_bullets[bullet_idx].y = msg.y;
-                
-                // Verifica se il proiettile è uscito dai bordi
-                if (msg.x < 0 || msg.x >= GAME_WIDTH) {
-                    // Il proiettile è uscito, uccidi il processo
-                    kill(msg.pid, SIGKILL);
-                    waitpid(msg.pid, &status, 0);
+                // se non ha già un proiettile attivo, ne crea uno nuovo
+                if (!already_has_bullet) {
+                    // inizializzazione
+                    active_bullets[free_slot].is_active = true;
+                    active_bullets[free_slot].x = msg.x;
+                    active_bullets[free_slot].y = msg.y;
+                    active_bullets[free_slot].direzione = msg.direzione;
+                    active_bullets[free_slot].oggetto = ID_BULLET;
+                    active_bullets[free_slot].index = msg.index; 
                     
-                    // Marca il proiettile come inattivo
-                    active_bullets[bullet_idx].is_active = false;
-                    active_bullets[bullet_idx].x = -100;
-                    active_bullets[bullet_idx].y = -100;
+                    bullet_count++;
                     
-                    // Decrementa il contatore dei proiettili attivi
-                    if (bullet_count > 0) {
-                        bullet_count--;
+                    // creazione processo
+                    pid_bullet = fork();
+                    if (pid_bullet == -1) {
+                        perror("Fork proiettile fallita");
+                        exit(EXIT_FAILURE);
+                    } else if (pid_bullet == 0) {
+                        close(pipe_fd[READ]);
+                        main_bullet(pipe_fd[WRITE], msg);
+                        exit(EXIT_SUCCESS);
                     }
-                } else {
-                    // Disegna il proiettile nella nuova posizione
-                    draw_bullet(msg.x, msg.y);
                     
-                    // Controlla collisione con la rana
-                    if (frog_copy.x < msg.x + 1 && frog_copy.x + LARGHEZZA_RANA > msg.x &&
-                        frog_copy.y < msg.y + 1 && frog_copy.y + ALTEZZA_RANA > msg.y) {
-                        // Collisione! La rana perde una vita
-                        score += POINT_BULLETS;
-                        vite--;
-                        reset_timer(&game_timer);
-                        manche++;
-                        frog_copy.x = centro_x;
-                        frog_copy.y = centro_y;
-                        frog_copy.on_croc = false;
-                        frog_copy.croc_index = -1;
+                    //aggiorno l'array
+                    active_bullets[free_slot].pid = pid_bullet;
+                }
+            }
+            break;
+        }
 
-                        // Disattiva il proiettile
-                        kill(msg.pid, SIGKILL);
-                        waitpid(msg.pid, &status, 0);
+        case ID_BULLET:
+            // aggiorno la posizione del proiettile nell'array
+            if (msg.index >= 0 && msg.index < NUM_CROC) {
+                int bullet_idx = -1;
+                
+                // proiettile con il pid corrispondente
+                for (int i = 0; i < MAX_BULLETS; i++) {
+                    if (active_bullets[i].is_active && active_bullets[i].pid == msg.pid) {
+                        bullet_idx = i;
+                        break;
+                    }
+                }
+                
+                if (bullet_idx != -1) {
+                    // cancelliamo vecchia posizione solo se la posizione è cambiata
+                if (active_bullets[bullet_idx].x != msg.x || active_bullets[bullet_idx].y != msg.y) {
+                    clear_bullet(active_bullets[bullet_idx].x, active_bullets[bullet_idx].y);
+
+                    // aggiornamento posizione
+                    active_bullets[bullet_idx].x = msg.x;
+                    active_bullets[bullet_idx].y = msg.y;
+                    
+                    // disegno
+                    draw_bullet(msg.x, msg.y);
+                }
+                    
+                    //  rimozione proiettile inattivo
+                    if (!msg.is_active) {
                         active_bullets[bullet_idx].is_active = false;
                         active_bullets[bullet_idx].x = -100;
                         active_bullets[bullet_idx].y = -100;
                         
-                        // Decrementa il contatore dei proiettili attivi
                         if (bullet_count > 0) {
                             bullet_count--;
                         }
+            
+                        kill(msg.pid, SIGKILL);
+                        waitpid(msg.pid, &status, 0);
+                    } else {
+                        // aggiornamento posizione
+                        active_bullets[bullet_idx].x = msg.x;
+                        active_bullets[bullet_idx].y = msg.y;
                         
-                        if (vite <= 0) {
-                            restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-                             game_over = true;
-                             break;
-                           
+                        // check borders
+                        if (msg.x < 0 || msg.x >= GAME_WIDTH) {
+                            kill(msg.pid, SIGKILL);
+                            waitpid(msg.pid, &status, 0);
+                            
+                            // proiettile  inattivo
+                            active_bullets[bullet_idx].is_active = false;
+                            active_bullets[bullet_idx].x = -100;
+                            active_bullets[bullet_idx].y = -100;
+                            
+                            // decrementiamo contatore
+                            if (bullet_count > 0) {
+                                bullet_count--;
+                            }
+                        } else {
+                            // nuovo disegno
+                            draw_bullet(msg.x, msg.y);
+                            
+                            // collisione rana
+                            if (frog_copy.x < msg.x + 1 && frog_copy.x + LARGHEZZA_RANA > msg.x &&
+                                frog_copy.y < msg.y + 1 && frog_copy.y + ALTEZZA_RANA > msg.y) {
+                        
+                                score += POINT_BULLETS;
+                                vite--;
+                                reset_timer(&game_timer);
+                                manche++;
+                                frog_copy.x = centro_x;
+                                frog_copy.y = centro_y;
+                                frog_copy.on_croc = false;
+                                frog_copy.croc_index = -1;
+
+                                //kill del proiettile
+                                kill(msg.pid, SIGKILL);
+                                waitpid(msg.pid, &status, 0);
+                                active_bullets[bullet_idx].is_active = false;
+                                active_bullets[bullet_idx].x = -100;
+                                active_bullets[bullet_idx].y = -100;
+                                
+                                
+                                if (bullet_count > 0) {
+                                    bullet_count--;
+                                }
+                                
+                                //check vite
+                                if (vite <= 0) {
+                                    restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                                    game_over = true;
+                                    break;
+                                
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-    }
-    break;
-        
-case CREATE_GRENADE: {
-    int free_slot = -1;
-    // Cerchiamo due slot liberi consecutivi
-    for (int i = 0; i < MAX_GRENADE - 1; i++) {
-        if (!active_grenades[i].is_active && !active_grenades[i+1].is_active) {
-            free_slot = i;
             break;
-        }
-    }
-    
-    if (free_slot != -1) {
-        // Inizializza la granata sinistra
-        active_grenades[free_slot].is_active = true;
-        active_grenades[free_slot].x = frog_copy.x;
-        active_grenades[free_slot].y = frog_copy.y + 1;
-        active_grenades[free_slot].oggetto = ID_GRENADE;
-        active_grenades[free_slot].direzione = -1;
-        active_grenades[free_slot].index = free_slot;
-        
-        // Inizializza la granata destra
-        active_grenades[free_slot+1].is_active = true;
-        active_grenades[free_slot+1].x = frog_copy.x + 2;
-        active_grenades[free_slot+1].y = frog_copy.y + 1;
-        active_grenades[free_slot+1].oggetto = ID_GRENADE;
-        active_grenades[free_slot+1].direzione = 1;
-        active_grenades[free_slot+1].index = free_slot + 1;
-        
-        // Aggiorna il contatore delle granate attive
-        grenade_count += 2;
-        
-        // Crea processo per granata sinistra
-        pid_grenade_lx = fork();
-        if (pid_grenade_lx == -1) {
-            perror("Fork granata fallita");
-            exit(EXIT_FAILURE);
-        } else if (pid_grenade_lx == 0) {
-            close(pipe_fd[READ]);
-            msg.direzione = -1;
-            msg.x = frog_copy.x;
-            msg.y = frog_copy.y + 1;
-            msg.index = free_slot;
-            main_grenade(pipe_fd[WRITE], msg); 
-            exit(EXIT_SUCCESS);
-        }
-        
-        // Crea processo per granata destra
-        pid_grenade_rx = fork();
-        if (pid_grenade_rx == -1) {
-            perror("Fork granata fallita");
-            exit(EXIT_FAILURE);
-        } else if (pid_grenade_rx == 0) {
-            close(pipe_fd[READ]);
-            msg.direzione = 1;
-            msg.x = frog_copy.x + 2;
-            msg.y = frog_copy.y + 1;
-            msg.index = free_slot + 1;
-            main_grenade(pipe_fd[WRITE], msg); 
-            exit(EXIT_SUCCESS);
-        }
-        
-        // Salva i PID dei processi
-        active_grenades[free_slot].pid = pid_grenade_lx;
-        active_grenades[free_slot+1].pid = pid_grenade_rx;
-    }
-    break;
-}
-        
-case ID_GRENADE:
-{
-    // Trova la granata nell'array
-    int grenade_idx = -1;
-    for (int i = 0; i < MAX_GRENADE; i++) {
-        if (active_grenades[i].pid == msg.pid) {
-            grenade_idx = i;
-            break;
-        }
-    }
-    
-    if (grenade_idx != -1) {
-        // Cancella vecchia posizione SOLO se la posizione è cambiata
-        if (active_grenades[grenade_idx].x != msg.x || active_grenades[grenade_idx].y != msg.y) {
-            clear_grenade(active_grenades[grenade_idx].x, active_grenades[grenade_idx].y);
-            
-            // Aggiorna la posizione nell'array
-            active_grenades[grenade_idx].x = msg.x;
-            active_grenades[grenade_idx].y = msg.y;
-            active_grenades[grenade_idx].is_active = true;
-            
-            // Disegna la granata nella nuova posizione
-            draw_grenade(msg.x, msg.y);
-        }
-    }
-    
-    // Verifica se la granata è uscita dai bordi
-    if (msg.x <= 0 || msg.x >= GAME_WIDTH) {
-        // La granata è uscita, uccidi il processo
-        kill(msg.pid, SIGKILL);
-        waitpid(msg.pid, &status, 0);
-        
-        if (grenade_idx != -1) {
-            // Assicurati che venga cancellata dallo schermo
-            clear_grenade(active_grenades[grenade_idx].x, active_grenades[grenade_idx].y);
-            
-            active_grenades[grenade_idx].is_active = false;
-            active_grenades[grenade_idx].x = -100;
-            active_grenades[grenade_idx].y = -100;
-            
-            // Decrementa il contatore
-            if (grenade_count > 0) {
-                grenade_count--;
+                
+        case CREATE_GRENADE: {
+            int free_slot = -1;
+            // cerchiuamo due slot vicini liberi
+            for (int i = 0; i < MAX_GRENADE - 1; i++) {
+                if (!active_grenades[i].is_active && !active_grenades[i+1].is_active) {
+                    free_slot = i;
+                    break;
+                }
             }
+            
+            if (free_slot != -1) {
+                //  granata sinistra
+                active_grenades[free_slot].is_active = true;
+                active_grenades[free_slot].x = frog_copy.x;
+                active_grenades[free_slot].y = frog_copy.y + 1;
+                active_grenades[free_slot].oggetto = ID_GRENADE;
+                active_grenades[free_slot].direzione = -1;
+                active_grenades[free_slot].index = free_slot;
+                
+                //  granata destra
+                active_grenades[free_slot+1].is_active = true;
+                active_grenades[free_slot+1].x = frog_copy.x + 2;
+                active_grenades[free_slot+1].y = frog_copy.y + 1;
+                active_grenades[free_slot+1].oggetto = ID_GRENADE;
+                active_grenades[free_slot+1].direzione = 1;
+                active_grenades[free_slot+1].index = free_slot + 1;
+                
+                // contatore delle granate attive
+                grenade_count += 2;
+                
+                // granata sinistra
+                pid_grenade_lx = fork();
+                if (pid_grenade_lx == -1) {
+                    perror("Fork granata fallita");
+                    exit(EXIT_FAILURE);
+                } else if (pid_grenade_lx == 0) {
+                    close(pipe_fd[READ]);
+                    msg.direzione = -1;
+                    msg.x = frog_copy.x;
+                    msg.y = frog_copy.y + 1;
+                    msg.index = free_slot;
+                    main_grenade(pipe_fd[WRITE], msg); 
+                    exit(EXIT_SUCCESS);
+                }
+                
+                //granata destra
+                pid_grenade_rx = fork();
+                if (pid_grenade_rx == -1) {
+                    perror("Fork granata fallita");
+                    exit(EXIT_FAILURE);
+                } else if (pid_grenade_rx == 0) {
+                    close(pipe_fd[READ]);
+                    msg.direzione = 1;
+                    msg.x = frog_copy.x + 2;
+                    msg.y = frog_copy.y + 1;
+                    msg.index = free_slot + 1;
+                    main_grenade(pipe_fd[WRITE], msg); 
+                    exit(EXIT_SUCCESS);
+                }
+                
+                // aggiorno array
+                active_grenades[free_slot].pid = pid_grenade_lx;
+                active_grenades[free_slot+1].pid = pid_grenade_rx;
+            }
+            break;
         }
-    }
-    break;
-}
-} 
-        //controlla se è dentro la tana oppure se entra in mezzo a due tane
+                
+        case ID_GRENADE:
+        {
+            // cerchiamo granata nell'array
+            int grenade_idx = -1;
+            for (int i = 0; i < MAX_GRENADE; i++) {
+                if (active_grenades[i].pid == msg.pid) {
+                    grenade_idx = i;
+                    break;
+                }
+            }
+            
+            if (grenade_idx != -1) {
+                // cancelliamo soll se la posizione è cambiata
+                if (active_grenades[grenade_idx].x != msg.x || active_grenades[grenade_idx].y != msg.y) {
+                    clear_grenade(active_grenades[grenade_idx].x, active_grenades[grenade_idx].y);
+                    
+                    // aggiorniamo la posizione
+                    active_grenades[grenade_idx].x = msg.x;
+                    active_grenades[grenade_idx].y = msg.y;
+                    active_grenades[grenade_idx].is_active = true;
+                    
+                    //nuovo disegno
+                    draw_grenade(msg.x, msg.y);
+                }
+            }
+            
+            // check borders
+            if (msg.x <= 0 || msg.x >= GAME_WIDTH) {
+                //kill granata
+                kill(msg.pid, SIGKILL);
+                waitpid(msg.pid, &status, 0);
+                
+                if (grenade_idx != -1) {
+                    clear_grenade(active_grenades[grenade_idx].x, active_grenades[grenade_idx].y);
+                    
+                    active_grenades[grenade_idx].is_active = false;
+                    active_grenades[grenade_idx].x = -100;
+                    active_grenades[grenade_idx].y = -100;
+                    
+                    if (grenade_count > 0) {
+                        grenade_count--;
+                    }
+                }
+            }
+            break;
+        }
+        case PAUSE:
+        {
+            int input = getch();
+            while (input == ERR) {
+                pause_game(frog_copy, croc_copy, active_bullets, active_grenades);
+            }
+            break;
+        }
+    } 
+        //controlli per verificare se la rana è dentro una tana
         if (is_inside(frog_copy)){
             int num_tane = num_tana(frog_copy);
             //se la rana è dentro una tana
             if (flag[num_tane] == false && num_tane != 6){
                 flag[num_tane] = true; //setto il flag a true per segnalare che non può più entrare in questa tana
-                tane(frog_copy);  // Chiude graficamente la tana
-                frog_copy.x = centro_x;
+                tane(frog_copy);  // chiudiamo graficamente la tana
+
+                //riposizioniamo la rana
+                frog_copy.x = centro_x; 
                 frog_copy.y = centro_y;
                 count_burrows++;
                 score += POINT_BURROWS;
-                if (count_burrows >= 5){
+
+                //check vittoria
+                if (count_burrows >= NUM_BURROWS){
                    restart = victory(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai vinto!");
                     game_over = true;
                     break;
@@ -683,7 +695,6 @@ case ID_GRENADE:
                 }
                 reset_timer(&game_timer);
                 
-                // Respawna la rana
             } else{
                 //se la tana è già occupata
                 score += POINT_TAKEN_BURROWS;
@@ -705,78 +716,66 @@ case ID_GRENADE:
                 refresh();
             }
         }        
-
-
-        
-       
-        
         //disegno la rana
         draw_frog(frog_copy.x, frog_copy.y);
-         draw_timer_bar(game_timer.seconds_left);
+        draw_timer_bar(game_timer.seconds_left);
 
-        
-        // Disegna tutti i proiettili attivi
+        // disegnamo tutti i proiettili attivi
         for (int i = 0; i < MAX_BULLETS; i++) {
             if (active_bullets[i].is_active) {
                 draw_bullet(active_bullets[i].x, active_bullets[i].y);
             }
         }
+
+        // disegnamo tutte le granate attive
         for (int i = 0; i < MAX_GRENADE; i++) {
             if (active_grenades[i].is_active) {
                 draw_grenade(active_grenades[i].x, active_grenades[i].y);
             }
         }
 
+        // controllo collisioni con i proiettili
         if (collision_b_g(active_bullets, active_grenades, cont_bullets, grenade_count)){
             score += POINT_GRENADE;
         }
 
 
         if (update_timer(&game_timer)) {
-    // Tempo scaduto
-    score += POINT_TIME;
-    vite--;
-    frog_copy.x = centro_x;
-    frog_copy.y = centro_y;
-    frog_copy.on_croc = false;
-    frog_copy.croc_index = -1;
-    
-    if (vite <= 0) {
-        restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-        game_over = true;
-                break;
-    }
-    
+            // tempo scaduto
+            score += POINT_TIME;
+            vite--;
+            frog_copy.x = centro_x;
+            frog_copy.y = centro_y;
+            frog_copy.on_croc = false;
+            frog_copy.croc_index = -1;
+            
+                if (vite <= 0) {
+                    restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                    game_over = true;
+                            break;
+                }
 
-    
-    // Resetta il timer
-    reset_timer(&game_timer);
-    score += POINT_TIME;
+            // Resetta il timer
+            reset_timer(&game_timer);
+            score += POINT_TIME;
+        }
 
-}
- if (manche >= 5) {
-    restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
-     game_over = true;
+        //condizione di game voer
+            if (manche >= 5) {
+                restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                game_over = true;
                 break;
-     
-   
-    }
+            }
         
         
+        }  
+        
+        // prima di uscire chiudiamo tutti i processi e poi le pipe
+        terminate_all_processes(pipe_fd[WRITE], croc_copy, active_bullets, active_grenades, frog_copy);
+        close(pipe_fd[READ]);
+        close(pipe_fd[WRITE]);
     }  
-    
-     // Prima di uscire, assicuriamoci di chiudere tutti i processi
-    terminate_all_processes(pipe_fd[WRITE], croc_copy, active_bullets, active_grenades, frog_copy);
-    close(pipe_fd[READ]);
-    close(pipe_fd[WRITE]);
-}  
-
-
-    
-   
-
-
-    // Ora possiamo terminare ncurses
+    //Terminazione ncurses
     endwin();
 
     printf("Gioco terminato con successo!\n");

@@ -65,15 +65,12 @@ void main_bullet(int pipe_fd, Messaggio copy) {
 
     bullets.y = copy.y +1; //centro verticale del coccodrillo
 
-    //log_coordinates(bullets.pid, bullets.x, bullets.y, bullets.direzione);
+  
     
     /*ciclo principale*/
     while(1) {
         /*aggiorno la posizione del proiettile*/
         bullets.x += bullets.direzione;
-
-
-        
 
         /*controllo se il proiettile è uscito dai bordi*/
         if (check_bullet_borders(bullets)) {
@@ -86,7 +83,6 @@ void main_bullet(int pipe_fd, Messaggio copy) {
         usleep(bullets.velocita); //attendo prima del prossimo aggiornamento
     }
     
-    
-    //bullets.is_active = false; //aggiorna lo stato del proiettile
+
    
 }

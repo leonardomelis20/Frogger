@@ -6,9 +6,7 @@
 
 #include "strutture.h"
 
-/*!!!!!!!!*/
-/*non so se si deve anche richiamare disegni()*/
-/*!!!!!!!!*/
+
 void draw_river();
 void draw_burrows();
 void draw_closed_burrows(Messaggio tana);

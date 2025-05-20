@@ -47,7 +47,7 @@ int main(){
     int centro_x = GAME_WIDTH / 2;
     int score = 0;
 
-    TimerInfo game_timer;
+    info_timer game_timer;
     
 
     // Inizializza la rana

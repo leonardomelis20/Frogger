@@ -1,32 +1,6 @@
 #include "disegni.h"
 
-/**
- * funzione principale che disegna la schermata di gioco senza la logica.
- * inizializza la libreria ncurses, i colori e gestisce il loop principale di disegno 
- * che visualizza il fiume, le zone sicure e le tane.
- * @return 0 nel caso di successo
- */
-int disegni() {
-    initscr(); //inizializziamo ncurses
-    noecho(); //non mostriamo l'input dell'utente
-    curs_set(0); //nascondiamo il cursore
-    start_color(); //abilitiamo l'uso dei colori
 
-
-    /*loop principale di disegno*/
-    while (1) { 
-        clear(); //puliamo lo schermo
-        draw_safety_zones(); //disegniamo le zone sicure
-        draw_river(); //disegniamo il fiume
-        draw_burrows(); //disegniamo le tane
-
-        refresh(); //aggiorniamo lo schermo con le modifche
-        napms(100); //attendiamo 100 millisecondi prima del prossimo ciclo
-    }
-
-    endwin(); //terminiamo la modalità ncurses (!!!!!!!!anche se non verrrà mai interrotto!!!!!!!!)
-    return 0;
-}
 
 /**
  * funzione che disegna l'area del fiume al centro dello schermo.
@@ -92,10 +66,6 @@ void draw_closed_burrows(Messaggio tana) {
  * dove la rana può stare senza pericolo, uno sopra e uno sotto il fiume.
  */
 void draw_safety_zones() {
-    //attron(COLOR_PAIR(1)); //attiviamo il colore verde
-    //attron(COLOR_PAIR(10)); //attiviamo il colore verde
     mvhline(SAFE_ZONE_UP, 0, '=', GAME_WIDTH); //disegniamo la linea superiroe per il marciapiede superiore
     mvhline(SAFE_ZONE_DOWN, 0, '=', GAME_WIDTH); //disegniamo la line ainferiore per il marciapiede superiore
-    //attroff(COLOR_PAIR(10)); //disattiviamo il colore verde
-    //attroff(COLOR_PAIR(1)); //disattiviamo il colore
 }
