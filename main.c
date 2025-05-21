@@ -17,6 +17,7 @@
 #include "granate.h"
 #include "utility.h"
 #include "gestione_partita.h"
+#include "audio.h"
 
 void inizializza_schermo(); //per chiamare le funzioni ncurses
 
@@ -84,6 +85,7 @@ int main(){
    
     //inizializza lo schermo
     inizializza_schermo();
+    //play_background_music("Jacques-Offenbach-Cancan.wav");
 
     //mostra menu iniziale
     restart = menu_iniziale();
@@ -98,6 +100,7 @@ int main(){
         perror ("Errore creazione pipe");
         exit(EXIT_FAILURE);
     }
+    play_background_music("Jacques-Offenbach-Cancan.wav");
 
     //inizializzazione velocità flussi
 
@@ -130,7 +133,7 @@ int main(){
         active_bullets[i].index = i;
         active_bullets[i].x = -100; // Posizione off screen
         active_bullets[i].y = -100;
-        active_bullets[i].pid = -1;  // Nessun processo associato
+        active_bullets[i].pid = -1;  
     }
 
 
@@ -141,7 +144,7 @@ int main(){
         active_grenades[i].index = i;
         active_grenades[i].x = -100; // Posizione off screen
         active_grenades[i].y = -100;
-        active_grenades[i].pid = -1;  // Nessun processo associato
+        active_grenades[i].pid = -1; 
     }
 
     //ripristino variabili di gioco
@@ -355,10 +358,6 @@ int main(){
                 
                 //la rana si muove con il coccodrillo
                 frog_copy.x += msg.direzione; // aggiorna la posizione della rana
-
-                //aggiorno il punteggio
-                score += POINT_CROCODILE;
-
             
                 // aggiorna anche le coordinate precedenti
                 prev_x_rana = frog_copy.x;
@@ -687,13 +686,19 @@ int main(){
             break;
         }
         case PAUSE:
-        {
-            int input = getch();
-            while (input == ERR) {
-                pause_game(frog_copy, croc_copy, active_bullets, active_grenades);
-            }
-            break;
-        }
+            pause_game(frog_copy, croc_copy, active_bullets, active_grenades);
+            time_t pause_start_time = time(NULL);
+
+            // attendi input utente
+            timeout(-1); 
+            int resume_key = getch();
+            timeout(100); // ripristina il timeout normale
+
+
+            resume_game(frog_copy, croc_copy, active_bullets, active_grenades);
+            time_t pause_duration = time(NULL) - pause_start_time; //calcolo il tempo di pausa per ripristinare il timer
+            game_timer.last_update += pause_duration;
+            break;       
     } 
         //controlli per verificare se la rana è dentro una tana
         if (is_inside(frog_copy)){
@@ -752,21 +757,18 @@ int main(){
                 // nuova posizione
                 draw_frog(frog_copy.x, frog_copy.y);
                 if (vite <= 0){
-                  restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
                 game_over = true;
-                break;
-                        
-                                  }
-
-
-                
-                 
+                break;       
+                }
                 refresh();
             }
         }        
         //disegno la rana
         draw_frog(frog_copy.x, frog_copy.y);
         draw_timer_bar(game_timer.seconds_left);
+        draw_safety_zones();
+
 
         // disegnamo tutti i proiettili attivi
         for (int i = 0; i < MAX_BULLETS; i++) {
@@ -834,6 +836,7 @@ int main(){
         close(pipe_fd[READ]);
         close(pipe_fd[WRITE]);
     }  
+    stop_background_music("Jacques-Offenbach-Cancan.wav");
     //Terminazione ncurses
     endwin();
 
@@ -860,20 +863,20 @@ void inizializza_schermo(){
     init_color(1, 0, 1000, 0);
     init_pair(1, 1, COLOR_BLACK);
     
-    // Blu elettrico per i coccodrilli - RGB(0, 140, 255)
-    init_color(2, 0, 549, 1000);
+    // Blu elettrico per i coccodrilli - RGB(177, 240, 166) 
+    init_color(2, 177 * (1000/255), 240 * (1000/255), 166 * (1000/255));
     init_pair(2, 2, COLOR_BLACK);
     
     // Giallo fluo per i proiettili - RGB(255, 255, 0)
     init_color(3, 1000, 1000, 0);
     init_pair(3, 3, COLOR_BLACK);
     
-    // Rosa fluo per le granate - RGB(255, 0, 255)
-    init_color(4, 1000, 0, 1000);
+    // Rosso fluo per le granate - RGB(255, 0, 0)
+    init_color(4, 255 * (1000/255), 0 * (1000/255), 0 * (1000/255));
     init_pair(4, 4, COLOR_BLACK);
     
-    // Viola fluo per le tane - RGB(170, 0, 255)
-    init_color(5, 667, 0, 1000);
+    // marrone per le tane - RGB(145, 81, 0)
+    init_color(5, 145 * (1000/255), 81 * (1000/255), 0 * (1000/255));
     init_pair(5, 5, COLOR_BLACK);
     
     // Arancione fluo per le vite - RGB(255, 128, 0)

@@ -556,7 +556,9 @@ bool menu_iniziale() {
 
 void pause_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio* grenades) {
     // Invia un segnale SIGSTOP alla rana
-    kill(frog.pid, SIGSTOP);
+    if (frog.pid > 1) {
+        kill(frog.pid, SIGSTOP);
+    }
     
     // Invia un segnale SIGSTOP a tutti i coccodrilli
     for (int i = 0; i < NUM_CROC; i++) {
@@ -574,6 +576,56 @@ void pause_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio*
     for (int i = 0; i < MAX_GRENADE; i++) {
         if(grenades[i].is_active) {
         kill(grenades[i].pid, SIGSTOP);
+        }
     }
+// Mostra messaggio di pausa
+    attron(COLOR_PAIR(4) | A_BOLD);
+    mvprintw(GAME_HEIGHT / 2, (GAME_WIDTH - 19) / 2, "GIOCO IN PAUSA");
+    mvprintw(GAME_HEIGHT / 2 + 2, (GAME_WIDTH - 31) / 2, "Premi un tasto per continuare");
+    attroff(COLOR_PAIR(4) | A_BOLD);
+    refresh();
 }
+
+/**
+ * Funzione che riprende tutti i processi del gioco dopo una pausa
+ * @param frog struct Messaggio della rana
+ * @param crocs array di struct Messaggio dei coccodrilli
+ * @param bullets array di struct Messaggio dei proiettili
+ * @param grenades array di struct Messaggio delle granate
+ */
+void resume_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio* grenades) {
+    // Pulisci il messaggio di pausa
+    int pause_y = GAME_HEIGHT / 2;
+    int pause_x = (GAME_WIDTH - 19) / 2;
+    for (int i = 0; i < 4; i++) {
+        mvhline(pause_y + i, pause_x - 2, ' ', 35);
+    }
+    
+    // Invia un segnale SIGCONT alla rana se il PID è valido
+    if (frog.pid > 1) {
+        kill(frog.pid, SIGCONT);
+    }
+    
+    // Invia un segnale SIGCONT a tutti i coccodrilli con PID valido
+    for (int i = 0; i < NUM_CROC; i++) {
+        if (crocs[i].pid > 1) {
+            kill(crocs[i].pid, SIGCONT);
+        }
+    }
+    
+    // Invia un segnale SIGCONT a tutti i proiettili attivi con PID valido
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullets[i].is_active && bullets[i].pid > 1) {
+            kill(bullets[i].pid, SIGCONT);
+        }
+    }
+    
+    // Invia un segnale SIGCONT a tutte le granate attive con PID valido
+    for (int i = 0; i < MAX_GRENADE; i++) {
+        if (grenades[i].is_active && grenades[i].pid > 1) {
+            kill(grenades[i].pid, SIGCONT);
+        }
+    }
+    
+    refresh();
 }

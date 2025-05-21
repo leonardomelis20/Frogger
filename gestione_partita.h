@@ -32,5 +32,6 @@ bool victory(int pipe_fd_write, int pipe_fd_read, Messaggio crocs[NUM_CROC], Mes
 bool exit_game(int pipe_fd_write, int pipe_fd_read, Messaggio crocs[NUM_CROC], Messaggio bullets[MAX_BULLETS], Messaggio grenades[MAX_GRENADE], Messaggio frog, const char* message);
 void terminate_all_processes(int pipe_fd, Messaggio croc_array[NUM_CROC], Messaggio bullet_array[MAX_BULLETS], Messaggio grenade_array[MAX_GRENADE], Messaggio frog) ;
 void pause_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio* grenades);
+void resume_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio* grenades);
 
 #endif
