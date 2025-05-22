@@ -69,7 +69,6 @@ void tane(Messaggio msg) {
     tana.x = num_tana(msg);
     if (is_inside(msg)) {
         draw_closed_burrows(tana);
-        clear_frog(msg.x, msg.y);
         refresh();
     }
 }

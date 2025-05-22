@@ -578,7 +578,6 @@ void pause_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio*
     refresh();
 }
 
-
 /**
  * Funzione che riprende tutti i processi del gioco dopo una pausa
  * @param frog struct Messaggio della rana
@@ -587,6 +586,14 @@ void pause_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio*
  * @param grenades array di struct Messaggio delle granate
  */
 void resume_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio* grenades) {
+    // Prima di tutto, pulisci completamente lo schermo dalle vecchie posizioni
+    clear();
+    
+    // Ridisegna l'area di gioco base
+    box(stdscr, 0, 0);
+    draw_burrows();
+    draw_safety_zones();
+    
     // Pulisci il messaggio di pausa
     int pause_y = GAME_HEIGHT / 2;
     int pause_x = (GAME_WIDTH - 19) / 2;
@@ -594,6 +601,36 @@ void resume_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio
         mvhline(pause_y + i, pause_x - 2, ' ', 35);
     }
     
+    // Ridisegna tutti i coccodrilli nelle loro posizioni correnti
+    for (int i = 0; i < NUM_CROC; i++) {
+        if (crocs[i].pid > 1 && crocs[i].x >= 0 && crocs[i].y >= 0) {
+            draw_crocodile(crocs[i].x, crocs[i].y);
+        }
+    }
+    
+    // Ridisegna tutti i proiettili attivi
+    for (int i = 0; i < MAX_BULLETS; i++) {
+        if (bullets[i].is_active && bullets[i].x >= 0 && bullets[i].y >= 0) {
+            draw_bullet(bullets[i].x, bullets[i].y);
+        }
+    }
+    
+    // Ridisegna tutte le granate attive
+    for (int i = 0; i < MAX_GRENADE; i++) {
+        if (grenades[i].is_active && grenades[i].x >= 0 && grenades[i].y >= 0) {
+            draw_grenade(grenades[i].x, grenades[i].y);
+        }
+    }
+    
+    // Ridisegna la rana
+    if (frog.x >= 0 && frog.y >= 0) {
+        draw_frog(frog.x, frog.y);
+    }
+    
+    // Aggiorna lo schermo prima di riprendere i processi
+    refresh();
+    
+    // Ora riprendi tutti i processi
     // Invia un segnale SIGCONT alla rana se il PID è valido
     if (frog.pid > 1) {
         kill(frog.pid, SIGCONT);
@@ -619,7 +656,4 @@ void resume_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio
             kill(grenades[i].pid, SIGCONT);
         }
     }
-    
-    refresh();
 }
-

@@ -12,6 +12,7 @@
 
 #include "strutture.h"
 #include "utility.h"
+#include "disegni.h"
 
 // Disegna la barra del tempo con i secondi rimanenti
 void draw_timer_bar(int seconds_left);

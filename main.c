@@ -347,23 +347,51 @@ int main(){
             prev_x_cocc = msg.x;
             prev_y_cocc = msg.y;
 
-
-        
             //aggiorno la posizione della rana se è sopra il coccodrillo
             if (frog_copy.on_croc && frog_copy.croc_index == msg.index) {
                 clear_frog(frog_copy.x, frog_copy.y); // cancella la posizione precedente
                 
                 //la rana si muove con il coccodrillo
-                frog_copy.x += msg.direzione; // aggiorna la posizione della rana
-
+                int new_frog_x = frog_copy.x + msg.direzione;
                 
+                // Controlla se la nuova posizione della rana è fuori dai bordi dello schermo
+                if (new_frog_x < 0 || new_frog_x >= GAME_WIDTH - LARGHEZZA_RANA) {
+                    // La rana è uscita dai bordi, perde una vita e viene riposizionata
+                    score += POINT_WATER;
+                    vite--;
+                    reset_timer(&game_timer);
+                    manche++;
+                    
+                    // Aggiornamento coordinate alla posizione iniziale
+                    frog_copy.x = centro_x;
+                    frog_copy.y = centro_y;
+                    frog_copy.on_croc = false;
+                    frog_copy.croc_index = -1;
 
-            
-                // aggiorna anche le coordinate precedenti
-                prev_x_rana = frog_copy.x;
-                prev_y_rana = frog_copy.y;
+                    // Aggiornamento coordinate precedenti
+                    prev_x_rana = frog_copy.x;
+                    prev_y_rana = frog_copy.y;
+
+                    // Disegna la rana nella nuova posizione
+                    draw_frog(frog_copy.x, frog_copy.y);
+
+                    // Controlla se ha perso tutte le vite
+                    if (vite <= 0) {
+                        restart = exit_game(pipe_fd[WRITE], pipe_fd[READ], croc_copy, active_bullets, active_grenades, frog_copy, "Hai perso tutte le vite. Game Over!");
+                        game_over = true;
+                        break;
+                    }
+                } else {
+                    // La rana può muoversi normalmente con il coccodrillo
+                    frog_copy.x = new_frog_x;
+                    
+                    // Aggiorna anche le coordinate precedenti
+                    prev_x_rana = frog_copy.x;
+                    prev_y_rana = frog_copy.y;
+                }
             }
-               // Disegna il coccodrillo nella nuova posizione            
+            
+            // Disegna il coccodrillo nella nuova posizione            
             draw_crocodile(msg.x, msg.y);
             
             // verifica se la rana è sopra il coccodrillo
@@ -376,8 +404,6 @@ int main(){
                 frog_copy.on_croc = true;
                 frog_copy.croc_index = msg.index;
                 frog_copy.y = msg.y; 
-               
-                
             }       
             break;         
         case RESPAWN: 
@@ -700,6 +726,10 @@ int main(){
             // Riprendi tutti i processi attivi
             resume_game(frog_copy, croc_copy, active_bullets, active_grenades);
             
+            // Ridisegna immediatamente il timer e altri elementi UI
+            draw_timer_bar(game_timer.seconds_left);
+            draw_hearts(vite);
+            
             // Aggiorna il timestamp del timer per evitare che avanzi durante la pausa
             time_t pause_duration = time(NULL) - pause_start_time;
             game_timer.last_update += pause_duration;
@@ -779,6 +809,7 @@ int main(){
             }
         }        
         //disegno la rana
+        box(stdscr, 0, 0); // Crea un bordo attorno alla finestra
         draw_frog(frog_copy.x, frog_copy.y);
         draw_timer_bar(game_timer.seconds_left);
         draw_safety_zones();
