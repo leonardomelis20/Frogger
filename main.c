@@ -88,11 +88,12 @@ int main(){
     //mostra menu iniziale
     restart = menu_iniziale();
    
-
+    system("ffplay -nodisp ./Jacques.wav 2> /dev/null &");
     while (restart){
 
     clear();
     refresh();
+
 
     if (pipe(pipe_fd) == -1){
         perror ("Errore creazione pipe");
@@ -881,6 +882,7 @@ int main(){
         close(pipe_fd[WRITE]);
     }  
     //Terminazione ncurses
+    stop_background_music();
     endwin();
 
     printf("Gioco terminato con successo!\n");

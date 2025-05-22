@@ -8,11 +8,11 @@ void play_background_music(const char* music_file) {
     //stop_background_music();
     
     // Costruiamo il comando per riprodurre la musica in background
-    system("aplay -q ./Jacques.wav &> /dev/null &");
+    system("ffplay -nodisp ./Jacques.wav 2> /dev/null &");
     
 }
 
 void stop_background_music() {
     // Fermiamo tutte le istanze di aplay in esecuzione
-    system("pkill aplay");
+    system("pkill -9 ffplay");
 }
