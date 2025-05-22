@@ -28,11 +28,11 @@ void draw_timer_bar(int seconds_left) {
     
     // Scegli il colore in base al tempo rimanente
     if (seconds_left > 20) {
-        attron(COLOR_PAIR(3));  // Verde
+        attron(COLOR_PAIR(1));  // Verde
     } else if (seconds_left > 10) {
-        attron(COLOR_PAIR(4));  // Giallo
+        attron(COLOR_PAIR(3));  // Giallo
     } else {
-        attron(COLOR_PAIR(5));  // Rosso
+        attron(COLOR_PAIR(4));  // Rosso
     }
     
     // Disegna la barra superiore e inferiore
@@ -51,11 +51,11 @@ void draw_timer_bar(int seconds_left) {
     mvprintw(TIMER_BAR_Y + 1, TIMER_BAR_X + TIMER_BAR_WIDTH - 1, "|");
     
     if (seconds_left > 20) {
-        attroff(COLOR_PAIR(3));
+        attroff(COLOR_PAIR(1));
     } else if (seconds_left > 10) {
-        attroff(COLOR_PAIR(4));
+        attroff(COLOR_PAIR(3));
     } else {
-        attroff(COLOR_PAIR(5));
+        attroff(COLOR_PAIR(4));
     }
     
     refresh();
@@ -116,14 +116,14 @@ void draw_hearts(int vite) {
 
   
     // Disegno i cuori
-    attron(COLOR_PAIR(6));  // Arancione pastello per le vite
+    attron(COLOR_PAIR(4));  // Arancione pastello per le vite
     for (int i = 0; i < vite && i < 5; i++) {
         mvprintw(hearts_y, hearts_x + (i * heart_spacing),"<");
         mvprintw(hearts_y, hearts_x + (i * heart_spacing)+1,"3");
         mvprintw(hearts_y, hearts_x + (i * heart_spacing), "%s", heart);
     }
 
-    attroff(COLOR_PAIR(6));
+    attroff(COLOR_PAIR(4));
     
     
     // Mostro i cuori persi in grigio
@@ -286,7 +286,7 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
     int start_x = (GAME_WIDTH - wcslen(sprite_sconfitta[0])) / 2;
     
     // Imposta colorazione per il messaggio di Game Over
-    attron(COLOR_PAIR(4));  // Rosa fluo per l'effetto drammatico
+    attron(COLOR_PAIR(4));  // Rosso fluo per l'effetto drammatico
     
     // Stampa ogni riga dell'ASCII art
     for (int i = 0; i < ALTEZZA_SPRITE; i++) {
@@ -385,7 +385,7 @@ bool victory(int pipe_fd_write, int pipe_fd_read,
     int start_x = (GAME_WIDTH - wcslen(sprite_vittoria[0])) / 2;
     
     // Imposta colorazione per il messaggio di Game Over
-    attron(COLOR_PAIR(4));  // Rosa fluo per l'effetto drammatico
+    attron(COLOR_PAIR(1));  // Rosa fluo per l'effetto drammatico
     
     // Stampa ogni riga dell'ASCII art
     for (int i = 0; i < ALTEZZA_SPRITE; i++) {
@@ -398,7 +398,7 @@ bool victory(int pipe_fd_write, int pipe_fd_read,
     // Aggiungi istruzioni per uscire
     mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - 23) / 2, "Premi S per rigiocare o E per uscire");
     
-    attroff(COLOR_PAIR(4));
+    attroff(COLOR_PAIR(1));
     
     // Aggiorna lo schermo e attendi l'input dell'utente
     refresh();
@@ -516,11 +516,11 @@ bool menu_iniziale() {
     
     // Stampa le regole in ciano
     regole_y += 2;
-    attron(COLOR_PAIR(2));  // Ciano per le regole
+    attron(COLOR_PAIR(8));  // Ciano per le regole
     for (int i = 1; i < 11; i++) {  // Stampa tutte le regole da 1 a 10
         mvprintw(regole_y + i - 1, (GAME_WIDTH - strlen(regole[i])) / 2, "%s", regole[i]);
     }
-    attroff(COLOR_PAIR(2));
+    attroff(COLOR_PAIR(8));
     
     // Posizionamento preciso per il messaggio finale
     // Calcola una posizione Y che sia DOPO tutte le regole

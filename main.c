@@ -253,9 +253,9 @@ int main(){
         mvprintw(40, 55, "PUNTI %d ", score);
         attroff(COLOR_PAIR(7));
 
-        attron(COLOR_PAIR(8)); 
+        attron(COLOR_PAIR(6)); 
         mvprintw(40, 70, "MANCHE %d ", manche);
-        attroff(COLOR_PAIR(8));
+        attroff(COLOR_PAIR(6));
         
         switch (msg.oggetto) {
             case ID_RANA:
@@ -767,6 +767,7 @@ int main(){
         //disegno la rana
         draw_frog(frog_copy.x, frog_copy.y);
         draw_timer_bar(game_timer.seconds_left);
+        draw_safety_zones();
 
         // disegnamo tutti i proiettili attivi
         for (int i = 0; i < MAX_BULLETS; i++) {
@@ -856,44 +857,40 @@ void inizializza_schermo(){
 
     start_color();
     
-    // Verde fluo per la rana - RGB(0, 255, 0)
-    init_color(1, 0, 1000, 0);
+    //Verde fluo per la rana - RGB(51, 255, 51)
+    init_color(1, 51 * (1000 / 255), 255 * (1000 / 255), 0);
     init_pair(1, 1, COLOR_BLACK);
     
-    // Blu elettrico per i coccodrilli - RGB(0, 140, 255)
-    init_color(2, 0, 549, 1000);
+    //Verde scuro per i coccodrilli - RGB(0, 153, 0)
+    init_color(2, 0, 153 * (1000 / 255), 0);
     init_pair(2, 2, COLOR_BLACK);
     
     // Giallo fluo per i proiettili - RGB(255, 255, 0)
-    init_color(3, 1000, 1000, 0);
+    init_color(3, 255 * (1000 / 255), 255 * (1000 / 255), 0);
     init_pair(3, 3, COLOR_BLACK);
     
-    // Rosa fluo per le granate - RGB(255, 0, 255)
-    init_color(4, 1000, 0, 1000);
+    // Rosso per le granate e per i cuori delle vite- RGB(255, 0, 0)
+    init_color(4, 255 * (1000 / 255), 0, 0);
     init_pair(4, 4, COLOR_BLACK);
     
-    // Viola fluo per le tane - RGB(170, 0, 255)
-    init_color(5, 667, 0, 1000);
+    // Marrone  per le tane - RGB(153, 76, 0)
+    init_color(5, 153 * (1000 / 255), 76 * (1000 / 255), 0);
     init_pair(5, 5, COLOR_BLACK);
     
-    // Arancione fluo per le vite - RGB(255, 128, 0)
-    init_color(6, 1000, 502, 0);
+    // Arancione fluo per le manche - RGB(255, 128, 0)
+    init_color(6, 255 * (1000 / 255), 128 * (1000 / 255), 0);
     init_pair(6, 6, COLOR_BLACK);
     
     // Azzurro fluo per il punteggio - RGB(0, 255, 255)
-    init_color(7, 0, 1000, 1000);
+    init_color(7, 0, 255 * (1000 / 255), 255 * (1000 / 255));
     init_pair(7, 7, COLOR_BLACK);
     
-    // Rosso fluo per le manche - RGB(255, 0, 0)
-    init_color(8, 1000, 0, 0);
-    init_pair(8, 8, COLOR_BLACK);
-    
     // Colori per il fiume e aree di gioco
-    init_color(9, 0, 1000, 700);  // Ciano fluo
-    init_pair(9, 9, COLOR_BLACK);  // Per il fiume
+    init_color(8, 0, 1000, 700);  // Ciano fluo
+    init_pair(8, 8, COLOR_BLACK);  // Per il fiume
     
-    init_color(10, 800, 0, 1000);  // Viola-blu fluo
-    init_pair(10, 10, COLOR_BLACK);  // Per le zone sicure
+    init_color(9, 800, 0, 1000);  // Viola-blu fluo
+    init_pair(9, 9, COLOR_BLACK);  // Per le zone sicure
 }
 
 

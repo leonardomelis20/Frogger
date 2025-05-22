@@ -1,23 +1,5 @@
 #include "disegni.h"
 
-
-
-/**
- * funzione che disegna l'area del fiume al centro dello schermo.
- * utilizza il simbolo '~' con colore blu su sfondo nero per rappresentare l'acqua del fiume 
- * nella zona centrale dello schermo tra le due zone sicure.
- */
-void draw_river() {
-    attron(COLOR_PAIR(9)); //attiviamo la coppia di colore blu
-
-    /*cicliamo sulle righe centrali*/
-    for (int i = ALTEZZA_RANA; i < GAME_HEIGHT - ALTEZZA_RANA; i++) {
-        mvhline(i, 0, '~', GAME_WIDTH); //disegniamo '~' per simulare l'acqua
-    }
-
-    attroff(COLOR_PAIR(9)); //disattiviamo il colore
-}
-
 /**
  * funzione che disegna le tane aperte nella parte superiore dello schermo. 
  * visualizza NUM_BURROWS tane aperte, che sono rappresentate come "[       ]" 
@@ -27,7 +9,7 @@ void draw_burrows() {
     int spacing = 0; //variabile che serve per salvare lo spazio far una tana e un'altra
     int x = 0; //variabile che serve per salvare la tana al centro del suo spazio
 
-    attron(COLOR_PAIR(5)); //attiviamo la coppia di colore giallo
+    attron(COLOR_PAIR(5)); //attiviamo la coppia di colore marrone
 
     spacing = GAME_WIDTH / NUM_BURROWS; //calcoliamo lo spazio fra una tana e l'altra
 
