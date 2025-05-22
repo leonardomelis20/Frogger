@@ -356,8 +356,7 @@ int main(){
                 //la rana si muove con il coccodrillo
                 frog_copy.x += msg.direzione; // aggiorna la posizione della rana
 
-                //aggiorno il punteggio
-                score += POINT_CROCODILE;
+                
 
             
                 // aggiorna anche le coordinate precedenti
@@ -377,7 +376,7 @@ int main(){
                 frog_copy.on_croc = true;
                 frog_copy.croc_index = msg.index;
                 frog_copy.y = msg.y; 
-                score += POINT_CROCODILE;
+               
                 
             }       
             break;         
@@ -686,14 +685,26 @@ int main(){
             }
             break;
         }
-        case PAUSE:
-        {
-            int input = getch();
-            while (input == ERR) {
-                pause_game(frog_copy, croc_copy, active_bullets, active_grenades);
-            }
+        case PAUSE: 
+            // Metti in pausa tutti i processi attivi
+            pause_game(frog_copy, croc_copy, active_bullets, active_grenades);
+            
+            // Salva il tempo corrente per aggiornare il timer dopo la pausa
+            time_t pause_start_time = time(NULL);
+            
+            // Attendi l'input dell'utente per riprendere
+            timeout(-1); // Disabilita il timeout
+            int resume_key = getch();
+            timeout(100); // Ripristina il timeout normale
+            
+            // Riprendi tutti i processi attivi
+            resume_game(frog_copy, croc_copy, active_bullets, active_grenades);
+            
+            // Aggiorna il timestamp del timer per evitare che avanzi durante la pausa
+            time_t pause_duration = time(NULL) - pause_start_time;
+            game_timer.last_update += pause_duration;
             break;
-        }
+
     } 
         //controlli per verificare se la rana è dentro una tana
         if (is_inside(frog_copy)){
@@ -701,10 +712,13 @@ int main(){
             //se la rana è dentro una tana
             if (flag[num_tane] == false && num_tane != 6){
                 flag[num_tane] = true; //setto il flag a true per segnalare che non può più entrare in questa tana
-                tane(frog_copy);  // chiudiamo graficamente la tana
 
                 // pulizia a posizione attuale della rana
                 clear_frog(frog_copy.x, frog_copy.y);
+
+                tane(frog_copy);  // chiudiamo graficamente la tana
+
+                
 
                 // aggiornamento coordinate
                 frog_copy.x = centro_x;

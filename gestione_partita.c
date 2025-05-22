@@ -244,21 +244,7 @@ void terminate_all_processes(int pipe_fd, Messaggio croc_array[NUM_CROC],
     sleep(1);  // Mostriamo il messaggio per un secondo
 }
 
-/**
- * Funzione che gestisce in modo ordinato la terminazione del gioco,
- * pulisce i processi, chiude ncurses e visualizza un messaggio di uscita
- * @param message messaggio da visualizzare all'uscita
- */
-/**
- * Funzione che gestisce in modo ordinato la terminazione del gioco
- * @param pipe_fd_write il file descriptor in scrittura della pipe
- * @param pipe_fd_read il file descriptor in lettura della pipe
- * @param crocs array dei coccodrilli
- * @param bullets array dei proiettili
- * @param grenades array delle granate
- * @param frog struttura della rana
- * @param message messaggio da visualizzare all'uscita
- */
+
 bool exit_game(int pipe_fd_write, int pipe_fd_read, 
               Messaggio crocs[NUM_CROC], 
               Messaggio bullets[MAX_BULLETS], 
@@ -293,19 +279,18 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
         mvaddwstr(start_y + i, start_x, sprite_sconfitta[i]);
     }
     
-    // Aggiungi il messaggio specifico sotto l'ASCII art
+    // Aggiungi il messaggio specifico sotto l'ASCII art - CENTRATO CORRETTAMENTE
     mvprintw(start_y + ALTEZZA_SPRITE + 2, (GAME_WIDTH - strlen(message)) / 2, "%s", message);
     
-    // Aggiungi istruzioni per uscire
-    mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - 23) / 2, "Premi S per riniziare o E per uscire");
+    // Aggiungi istruzioni per uscire - CENTRATO CORRETTAMENTE
+    char* exit_instruction = "Premi S per ricominciare o E per uscire";
+    mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - strlen(exit_instruction)) / 2, "%s", exit_instruction);
     
     attroff(COLOR_PAIR(4));
     
     // Aggiorna lo schermo e attendi l'input dell'utente
     refresh();
     timeout(-1); // Disabilita il timeout per attendere l'input dell'utente
-    
-       
     
     // Chiudi tutti i processi coccodrillo
     for (int i = 0; i < NUM_CROC; i++) {
@@ -337,15 +322,13 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
         waitpid(frog.pid, NULL, 0);
     }
     
-     do {
+    do {
         input = getch();
     } while (input != 's' && input != 'e' && input != 'S' && input != 'E');
 
-    
-
     if (input == 's' || input == 'S') {
         flag = true;
-       clear();
+        clear();
         refresh();      
     } else if (input == 'e' || input == 'E') {
         flag = false;
@@ -355,7 +338,6 @@ bool exit_game(int pipe_fd_write, int pipe_fd_read,
     }
     
     return flag;
-
 }
 
 bool victory(int pipe_fd_write, int pipe_fd_read, 
@@ -370,40 +352,41 @@ bool victory(int pipe_fd_write, int pipe_fd_read,
     // Prima pulisci lo schermo
     clear();
     
-    // Definisci l'ASCII art per "HAI PERSO"
+    // Definisci l'ASCII art per "HAI VINTO"
     #define ALTEZZA_SPRITE 6
-   wchar_t *sprite_vittoria[ALTEZZA_SPRITE] = {
-    L"██╗░░██╗░█████╗░██╗  ██╗░░░██╗██╗███╗░░██╗████████╗░█████╗░██╗",
-    L"██║░░██║██╔══██╗██║  ██║░░░██║██║████╗░██║╚══██╔══╝██╔══██╗██║",
-    L"███████║███████║██║  ╚██╗░██╔╝██║██╔██╗██║░░░██║░░░██║░░██║██║",
-    L"██╔══██║██╔══██║██║  ░╚████╔╝░██║██║╚████║░░░██║░░░██║░░██║╚═╝",
-    L"██║░░██║██║░░██║██║  ░░╚██╔╝░░██║██║░╚███║░░░██║░░░╚█████╔╝██╗",
-    L"╚═╝░░╚═╝╚═╝░░╚═╝╚═╝  ░░░╚═╝░░░╚═╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝"};
+    wchar_t *sprite_vittoria[ALTEZZA_SPRITE] = {
+        L"██╗░░██╗░█████╗░██╗  ██╗░░░██╗██╗███╗░░██╗████████╗░█████╗░██╗",
+        L"██║░░██║██╔══██╗██║  ██║░░░██║██║████╗░██║╚══██╔══╝██╔══██╗██║",
+        L"███████║███████║██║  ╚██╗░██╔╝██║██╔██╗██║░░░██║░░░██║░░██║██║",
+        L"██╔══██║██╔══██║██║  ░╚████╔╝░██║██║╚████║░░░██║░░░██║░░██║╚═╝",
+        L"██║░░██║██║░░██║██║  ░░╚██╔╝░░██║██║░╚███║░░░██║░░░╚█████╔╝██╗",
+        L"╚═╝░░╚═╝╚═╝░░╚═╝╚═╝  ░░░╚═╝░░░╚═╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝"
+    };
     
     // Calcola la posizione centrale per il testo
     int start_y = (GAME_HEIGHT - ALTEZZA_SPRITE) / 2;
     int start_x = (GAME_WIDTH - wcslen(sprite_vittoria[0])) / 2;
     
-    // Imposta colorazione per il messaggio di Game Over
-    attron(COLOR_PAIR(1));  // Rosa fluo per l'effetto drammatico
+    // Imposta colorazione per il messaggio di vittoria
+    attron(COLOR_PAIR(1));  // Verde per l'effetto positivo
     
     // Stampa ogni riga dell'ASCII art
     for (int i = 0; i < ALTEZZA_SPRITE; i++) {
         mvaddwstr(start_y + i, start_x, sprite_vittoria[i]);
     }
     
-    // Aggiungi il messaggio specifico sotto l'ASCII art
+    // Aggiungi il messaggio specifico sotto l'ASCII art - CENTRATO CORRETTAMENTE
     mvprintw(start_y + ALTEZZA_SPRITE + 2, (GAME_WIDTH - strlen(message)) / 2, "%s", message);
     
-    // Aggiungi istruzioni per uscire
-    mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - 23) / 2, "Premi S per rigiocare o E per uscire");
+    // Aggiungi istruzioni per uscire - CENTRATO CORRETTAMENTE
+    char* victory_instruction = "Premi S per rigiocare o E per uscire";
+    mvprintw(start_y + ALTEZZA_SPRITE + 4, (GAME_WIDTH - strlen(victory_instruction)) / 2, "%s", victory_instruction);
     
     attroff(COLOR_PAIR(1));
     
     // Aggiorna lo schermo e attendi l'input dell'utente
     refresh();
     timeout(-1); // Disabilita il timeout per attendere l'input dell'utente
-    
     
     // Chiudi tutti i processi coccodrillo
     for (int i = 0; i < NUM_CROC; i++) {
@@ -435,8 +418,7 @@ bool victory(int pipe_fd_write, int pipe_fd_read,
         waitpid(frog.pid, NULL, 0);
     }
 
-
-     do {
+    do {
         input = getch();
     } while (input != 's' && input != 'e' && input != 'S' && input != 'E');
 
@@ -554,37 +536,48 @@ bool menu_iniziale() {
     return flag;
 }
 
+/**
+ * Funzione che mette in pausa tutti i processi del gioco
+ * @param frog struct Messaggio della rana
+ * @param crocs array di struct Messaggio dei coccodrilli
+ * @param bullets array di struct Messaggio dei proiettili
+ * @param grenades array di struct Messaggio delle granate
+ */
 void pause_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio* grenades) {
-    // Invia un segnale SIGSTOP alla rana
+    // Invia un segnale SIGSTOP alla rana se il PID è valido
     if (frog.pid > 1) {
         kill(frog.pid, SIGSTOP);
     }
     
-    // Invia un segnale SIGSTOP a tutti i coccodrilli
+    // Invia un segnale SIGSTOP a tutti i coccodrilli con PID valido
     for (int i = 0; i < NUM_CROC; i++) {
-        kill(crocs[i].pid, SIGSTOP);
+        if (crocs[i].pid > 1) {
+            kill(crocs[i].pid, SIGSTOP);
+        }
     }
     
-    // Invia un segnale SIGSTOP a tutti i proiettili
+    // Invia un segnale SIGSTOP a tutti i proiettili attivi con PID valido
     for (int i = 0; i < MAX_BULLETS; i++) {
-        if (bullets[i].is_active) {
+        if (bullets[i].is_active && bullets[i].pid > 1) {
             kill(bullets[i].pid, SIGSTOP);
         }
     }
     
-    // Invia un segnale SIGSTOP a tutte le granate
+    // Invia un segnale SIGSTOP a tutte le granate attive con PID valido
     for (int i = 0; i < MAX_GRENADE; i++) {
-        if(grenades[i].is_active) {
-        kill(grenades[i].pid, SIGSTOP);
+        if (grenades[i].is_active && grenades[i].pid > 1) {
+            kill(grenades[i].pid, SIGSTOP);
         }
     }
-// Mostra messaggio di pausa
+    
+    // Mostra messaggio di pausa
     attron(COLOR_PAIR(4) | A_BOLD);
     mvprintw(GAME_HEIGHT / 2, (GAME_WIDTH - 19) / 2, "GIOCO IN PAUSA");
     mvprintw(GAME_HEIGHT / 2 + 2, (GAME_WIDTH - 31) / 2, "Premi un tasto per continuare");
     attroff(COLOR_PAIR(4) | A_BOLD);
     refresh();
 }
+
 
 /**
  * Funzione che riprende tutti i processi del gioco dopo una pausa
@@ -629,3 +622,4 @@ void resume_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio
     
     refresh();
 }
+

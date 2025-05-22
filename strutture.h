@@ -71,7 +71,6 @@
 #define POINT_BURROWS 500
 #define POINT_BULLETS (-25)
 #define POINT_WATER (-200)
-#define POINT_CROCODILE 10
 #define POINT_TIME (-500)
 #define POINT_TAKEN_BURROWS (-1000)
 
