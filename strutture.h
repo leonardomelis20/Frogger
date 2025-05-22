@@ -60,6 +60,7 @@
 #define CREATE_GRENADE 5
 #define ID_GRENADE 6
 #define PAUSE 7
+#define ID_BURROWS 8
 
 
 // Costanti specifiche per il timer

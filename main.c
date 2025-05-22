@@ -39,6 +39,7 @@ int main(){
     Messaggio frog_copy, croc_copy[NUM_CROC];
     Messaggio active_bullets[MAX_BULLETS];
     Messaggio active_grenades[MAX_GRENADE];
+    Messaggio closed_burrows[NUM_BURROWS];
     
     
     
@@ -133,6 +134,13 @@ int main(){
         active_bullets[i].y = -100;
         active_bullets[i].pid = -1;  // Nessun processo associato
     }
+
+    for (int i = 0; i < NUM_BURROWS; i++){
+        if (closed_burrows[i].index != -1){
+            draw_closed_burrows(closed_burrows[i]);
+        }
+    }
+    
 
 
     // inizializzazione array di granate
@@ -730,6 +738,13 @@ int main(){
             // Ridisegna immediatamente il timer e altri elementi UI
             draw_timer_bar(game_timer.seconds_left);
             draw_hearts(vite);
+            for (int i = 0; i < NUM_BURROWS; i++)
+            {
+                if (closed_burrows[i].index != -1){
+                    draw_closed_burrows(closed_burrows[i]);
+                }
+            }
+            
             
             // Aggiorna il timestamp del timer per evitare che avanzi durante la pausa
             time_t pause_duration = time(NULL) - pause_start_time;
@@ -747,9 +762,18 @@ int main(){
                 // pulizia a posizione attuale della rana
                 clear_frog(frog_copy.x, frog_copy.y);
 
-                tane(frog_copy);  // chiudiamo graficamente la tana
-
                 
+                int burrow_index = num_tane -1;
+                
+                Messaggio burrow_copy;
+                burrow_copy.oggetto = ID_BURROWS;
+                burrow_copy.x = num_tane;
+                burrow_copy.y = num_tane;
+
+
+                closed_burrows[burrow_index] = burrow_copy;
+
+                tane(frog_copy);  // chiudiamo graficamente la tana
 
                 // aggiornamento coordinate
                 frog_copy.x = centro_x;
@@ -801,10 +825,7 @@ int main(){
                 game_over = true;
                 break;
                         
-                                  }
-
-
-                
+                }
                  
                 refresh();
             }
@@ -814,7 +835,12 @@ int main(){
         draw_frog(frog_copy.x, frog_copy.y);
         draw_timer_bar(game_timer.seconds_left);
         draw_safety_zones();
-
+        for (int i = 0; i < NUM_BURROWS; i++)
+        {
+            if (closed_burrows[i].oggetto == ID_BURROWS && closed_burrows[i].index != -1){
+                draw_closed_burrows(closed_burrows[i]);
+            }
+        }
         // disegnamo tutti i proiettili attivi
         for (int i = 0; i < MAX_BULLETS; i++) {
             if (active_bullets[i].is_active) {
