@@ -3,7 +3,9 @@
 
 #include <unistd.h>
 #include <time.h>
-
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdbool.h>
 
 #define VITE 5
 
@@ -48,9 +50,7 @@
 #define TIMER_BAR_Y 39
 #define TIMER_BAR_X 1
 
-/*macro da usare nelle pipe per codice più leggibile*/
-#define READ 0 
-#define WRITE 1
+/*macro da usare nel buffer per codice più leggibile*/
 #define RESPAWN -1
 #define TANE -2
 #define ID_RANA 1
@@ -75,6 +75,7 @@
 #define POINT_TIME (-500)
 #define POINT_TAKEN_BURROWS (-1000)
 
+#define BUFFER_SIZE 1000
 
 enum oggetto {FROG, COCCODRILLO};
 
@@ -86,7 +87,7 @@ typedef struct {
     int velocita;
     int index;
     int direzione;
-    int pid;
+    pthread_t tid;
     bool on_croc;
     int croc_index;
     bool is_shooting;
@@ -95,11 +96,46 @@ typedef struct {
     int tempo_rimanente; // Tempo  per il timer
 } Messaggio;
 
+typedef struct {
+    Messaggio buffer[BUFFER_SIZE]; 
+    int head ; //indice di scrittura 
+    int tail; //indice di lettura 
+    int count; //contatore elementi
+
+    pthread_mutex_t mutex; 
+    sem_t empty_slots; //semaforo per slot vuoti 
+    sem_t full_slots; //semaforo per slot pieni
+} Circular_buffer; 
+
 // Struttura per tenere traccia dello stato del timer
 typedef struct {
     int seconds_left;     // Secondi rimanenti
     time_t last_update;   // Ultimo aggiornamento
     bool is_active;       // Indica se il timer è attivo
-} info_timer;
+} Info_timer;
+
+typedef struct {
+    Circular_buffer* buffer; 
+    bool* flag_array; 
+    int* speed_array; 
+} Frog_arg;
+
+typedef struct {
+    Circular_buffer* buffer; 
+    Messaggio copy; 
+} Bullets_arg;
+
+typedef struct {
+    Circular_buffer* buffer; 
+    Messaggio copy;
+} Grenade_arg;
+
+typedef struct {
+    Circular_buffer* buffer; 
+    int tid; 
+    int direzione; 
+    int speed; 
+    bool flag; 
+} Crocs_arg;
 
 #endif

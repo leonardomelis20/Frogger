@@ -78,7 +78,7 @@ int main(){
   
     
     
-    // Aggiungi la variabile per tenere traccia del PID del timer
+    // Aggiungi la variabile per tenere traccia del pid del timer
     
     
     // Avvia il timer
@@ -578,7 +578,7 @@ case CREATE_GRENADE: {
             exit(EXIT_SUCCESS);
         }
         
-        // Salva i PID dei processi
+        // Salva i pid dei processi
         active_grenades[free_slot].pid = pid_grenade_lx;
         active_grenades[free_slot+1].pid = pid_grenade_rx;
     }

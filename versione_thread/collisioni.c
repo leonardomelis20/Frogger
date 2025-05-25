@@ -144,13 +144,13 @@ bool collision_b_g(Messaggio* bullet, Messaggio* grenade, int count_bullet, int 
                         clear_bullet(bullet[i].x, bullet[i].y); 
                         clear_grenade(grenade[j].x, grenade[j].y); 
                         
-                        /*terminiamo il processo del proiettile se il PID è valido*/
+                        /*terminiamo il processo del proiettile se il pid è valido*/
                         if (bullet[i].pid > 1) {
                             kill(bullet[i].pid, SIGKILL); //inviamo un segnale SIGKILL al processo del proiettile
                             waitpid(bullet[i].pid, &status, 0); //attendiamo la terminazione del processo
                         }
 
-                        /*determina il processo della granata se il PID è valido*/
+                        /*determina il processo della granata se il pid è valido*/
                         if (grenade[j].pid > 1) {
                             kill(grenade[j].pid, SIGKILL); //inviamo un segnale SIGKILL al processo del proiettile
                             waitpid(grenade[j].pid, &status, 0); //attendiamo la terminazione del processo

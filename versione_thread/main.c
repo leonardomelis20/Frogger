@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <pthread.h>
 #include <curses.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -30,7 +31,7 @@ int main(){
     srand(time(NULL));
     int pipe_fd[2];
     Messaggio coccodrilli[NUM_CROC];    //array di coccodrilli
-    pid_t pid_rana, pid_coccodrillo[NUM_STREAMS*COCCODRILLI_X_FLUSSO], pid_bullet, pid_grenade_rx, pid_grenade_lx;
+    pthread_t pid_rana, pid_coccodrillo[NUM_STREAMS*COCCODRILLI_X_FLUSSO], pid_bullet, pid_grenade_rx, pid_grenade_lx;
     Messaggio msg;
     int prev_x_rana = -1, prev_y_rana = -1; 
     int prev_x_cocc = -1, prev_y_cocc = -1;

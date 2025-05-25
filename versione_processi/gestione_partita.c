@@ -162,7 +162,7 @@ void terminate_all_processes(int pipe_fd, Messaggio croc_array[NUM_CROC],
     
     // Terminiamo tutti i processi coccodrillo
     for (int i = 0; i < NUM_CROC; i++) {
-        if (croc_array[i].pid > 1) {  // Verifichiamo che sia un PID valido
+        if (croc_array[i].pid > 1) {  // Verifichiamo che sia un pid valido
             if (kill(croc_array[i].pid, SIGTERM) == 0) {
                 killed++;
                 // Aspettiamo un breve periodo per dare tempo al processo di terminare
@@ -544,26 +544,26 @@ bool menu_iniziale() {
  * @param grenades array di struct Messaggio delle granate
  */
 void pause_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio* grenades) {
-    // Invia un segnale SIGSTOP alla rana se il PID è valido
+    // Invia un segnale SIGSTOP alla rana se il pid è valido
     if (frog.pid > 1) {
         kill(frog.pid, SIGSTOP);
     }
     
-    // Invia un segnale SIGSTOP a tutti i coccodrilli con PID valido
+    // Invia un segnale SIGSTOP a tutti i coccodrilli con pid valido
     for (int i = 0; i < NUM_CROC; i++) {
         if (crocs[i].pid > 1) {
             kill(crocs[i].pid, SIGSTOP);
         }
     }
     
-    // Invia un segnale SIGSTOP a tutti i proiettili attivi con PID valido
+    // Invia un segnale SIGSTOP a tutti i proiettili attivi con pid valido
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullets[i].is_active && bullets[i].pid > 1) {
             kill(bullets[i].pid, SIGSTOP);
         }
     }
     
-    // Invia un segnale SIGSTOP a tutte le granate attive con PID valido
+    // Invia un segnale SIGSTOP a tutte le granate attive con pid valido
     for (int i = 0; i < MAX_GRENADE; i++) {
         if (grenades[i].is_active && grenades[i].pid > 1) {
             kill(grenades[i].pid, SIGSTOP);
@@ -631,26 +631,26 @@ void resume_game(Messaggio frog, Messaggio* crocs, Messaggio* bullets, Messaggio
     refresh();
     
     // Ora riprendi tutti i processi
-    // Invia un segnale SIGCONT alla rana se il PID è valido
+    // Invia un segnale SIGCONT alla rana se il pid è valido
     if (frog.pid > 1) {
         kill(frog.pid, SIGCONT);
     }
     
-    // Invia un segnale SIGCONT a tutti i coccodrilli con PID valido
+    // Invia un segnale SIGCONT a tutti i coccodrilli con pid valido
     for (int i = 0; i < NUM_CROC; i++) {
         if (crocs[i].pid > 1) {
             kill(crocs[i].pid, SIGCONT);
         }
     }
     
-    // Invia un segnale SIGCONT a tutti i proiettili attivi con PID valido
+    // Invia un segnale SIGCONT a tutti i proiettili attivi con pid valido
     for (int i = 0; i < MAX_BULLETS; i++) {
         if (bullets[i].is_active && bullets[i].pid > 1) {
             kill(bullets[i].pid, SIGCONT);
         }
     }
     
-    // Invia un segnale SIGCONT a tutte le granate attive con PID valido
+    // Invia un segnale SIGCONT a tutte le granate attive con pid valido
     for (int i = 0; i < MAX_GRENADE; i++) {
         if (grenades[i].is_active && grenades[i].pid > 1) {
             kill(grenades[i].pid, SIGCONT);

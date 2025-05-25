@@ -62,7 +62,7 @@ void main_grenade(int pipe_fd, Messaggio grenade) {
     grenade.is_active = true; //settiamo la flag a true per indicare che la granata è attiva 
     grenade.velocita = GRENADE_SPEED; //impostiamo la velocità della granata mediante la macro apposita costante
     grenade.oggetto = ID_GRENADE; //impostiamo il tipo dell'oggetto per identificarlo come granata 
-    grenade.pid = getpid(); //salviamo il PID del processo corrente nella struct Messaggio
+    grenade.pid = getpid(); //salviamo il pid del processo corrente nella struct Messaggio
 
     write(pipe_fd, &grenade, sizeof(Messaggio)); //inviamo alla pipe lo stato iniziale della granata
 
