@@ -8,7 +8,6 @@ char bullet = 'P'; //definizione del carattere che rappresenta il proiettile
  * @param y coordinata verticale del proiettile
  */
 void draw_bullet(int x, int y) {
-
     attron(COLOR_PAIR(3)); //attiviamo il colore m,agente per il proiettile
     mvaddch(y, x, bullet); //uso la funzione ncurses per disegnare il proiettile nella coordinata (x,y)
     attroff(COLOR_PAIR(3)); //disattiviamo il colore magenta
@@ -23,11 +22,6 @@ void clear_bullet(int x, int y) {
     mvaddch(y, x, ' '); //uso la funzione ncurses per disegnare lo spazio vuoto nella coordinata (x,y)
 }
 
-/*funzione per aggiornare il movimento del proiettile*/
-void movement_bullet(Messaggio *croc, Messaggio *bullet) {
-    bullet->x += croc->direzione;
-}
-
 /*!!!!!!!!!!*/
 /*questa funzione si potrebbe mettere nel file delel collisioni*/
 /*!!!!!!!!!!*/
@@ -36,22 +30,27 @@ bool check_bullet_borders(Messaggio bullet) {
     return (bullet.x < 0 || bullet.x >= GAME_WIDTH);
 }
 
-void main_bullet(int pipe_fd, Messaggio copy) {
+/**
+ * funzione che si occupa del thread del proiettile
+ * @param arg puntatore ai parametri del thread
+ * @return NULL
+ */
+void* bullet_thread(void* arg) {
+    Bullets_arg* params = (Bullets_arg*) arg; 
+    Circular_buffer* buffer = params->buffer; 
+    Messaggio copy = params->copy; 
+
     Messaggio bullets;
-    int adjusted_i;
-    int i; 
     
-    /*inizializzazione proiettile*/
+    /*inizializziamo il proiettile*/
     bullets.is_active = true;
     bullets.velocita = BULLET_SPEED;
     bullets.direzione = copy.direzione;
     bullets.index = copy.index;
     bullets.oggetto = ID_BULLET;
-    bullets.pid = getpid();
-    
-    
+    bullets.tid = pthread_self();
 
-    /*posiziono il proiettile alla testa del coccodrillo*/
+    /*posizioniamo il proiettile alla testa del coccodrillo*/
     if (bullets.direzione == 1) {
         /*se il coccodrillo va verso destra allora il proiettile parte dalla testa destra*/
         bullets.x = copy.x + LARGHEZZA_COCCODRILLO;
@@ -60,13 +59,13 @@ void main_bullet(int pipe_fd, Messaggio copy) {
         bullets.x = copy.x - 1;
     }
     
-    /*calcola la posizione y del proiettile, ovvero il centro del coccodrillo*/
-    
+    bullets.y = copy.y + 1; //centro verticale del coccodrillo
 
-    bullets.y = copy.y +1; //centro verticale del coccodrillo
-
-  
-    
+    /*!!!!!
+    nel while al posto di 1 game_running
+    è una variabile globale che si trova nel file buffer.c ->
+    -> bool game_running = true;
+    !!!!!*/
     /*ciclo principale*/
     while(1) {
         /*aggiorno la posizione del proiettile*/
@@ -75,14 +74,14 @@ void main_bullet(int pipe_fd, Messaggio copy) {
         /*controllo se il proiettile è uscito dai bordi*/
         if (check_bullet_borders(bullets)) {
             bullets.is_active = false;  // Marca come inattivo
-            write(pipe_fd, &bullets, sizeof(Messaggio));  // Comunica la disattivazione
+            produce_message(buffer, bullets);  // Comunica la disattivazione
             break; //è uscito dallo schermo quindi termina
         }
         
-        write(pipe_fd, &bullets, sizeof(Messaggio));
+        produce_msg(buffer, bullets);
         usleep(bullets.velocita); //attendo prima del prossimo aggiornamento
     }
     
-
-   
+    free(params); 
+    return NULL; 
 }

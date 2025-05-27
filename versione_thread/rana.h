@@ -13,12 +13,13 @@
 
 #include "strutture.h"
 #include "disegni.h"
+#include "buffer.h"
 
-void frog(int pipe_fd, bool*, int*);
-bool is_inside(Messaggio);
-void tane(Messaggio);
-int num_tana(Messaggio);
 void draw_frog(int x, int y);
 void clear_frog(int x, int y);
+bool is_inside (Messaggio msg);
+int num_tana(Messaggio msg); 
+void tane(Messaggio msg);
+void* frog_thread(void* arg); 
 
 #endif

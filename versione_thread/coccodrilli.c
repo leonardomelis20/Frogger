@@ -76,82 +76,63 @@ void clear_croc(Messaggio msg) {
 }
 
 /**
- * funzione che cerca l'indice di un coccodrillo nell'array di coccodrilli in base al suo pid
- * @param msg array di struct Messaggio che contiene le informazioni sui coccodrilli
- * @param pid l'iidentificatore del processo da cercare
- * @return indice del coccodrillo trovato o -1 se non trovato
+ * funzione che si occupa del thread del coccodrillo
+ * @param arg puntatore ai parametri del thread 
+ * @return NULL
  */
-int get_index_croc(Messaggio msg[], pid_t pid) {
-    /*scorriamo tutti i coccodrilli*/
-    for(int i = 0; i < NUM_CROC; i++) {
+void* crocodile_thread(void* arg) {
+    Crocs_arg* params = (Crocs_arg*) arg; 
+    Circular_buffer* buffer = params->buffer; 
 
-        /*se troviamo il pid corrispondente*/
-        if(msg[i].pid == pid) {
-            return i; //restituiamo l'indice del coccodrillo trovato 
-        }
-    }  
+    int num = params->tid; 
+    int direzione = params->direzione; 
+    int speed = params->speed;
+    bool flag = params->flag; 
+    Messaggio msg;
+    int adjusted_num; 
+    bool shooting = false; 
 
-    return -1; //oppure restituiamo -1 come valore di default se non trova corrispondenza
-}
-
-/**
- * funzione principale per la gestione del processo coccodrillo
- * @param pipe_fd file descriptor della pipe per comunicare con il processo principale
- * @param num indice del coccodrillo
- * @param direzione direzione del coccodrillo, ovvero 1 per destra e -1 per sinistra
- * @param speed velocità del coccodrillo
- * @param flag indica se è il primo gruppo di coccodrilli
- * @return valore di uscita del processo
- */
-int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag) {
-    Messaggio msg; //struct Messaggio da inviare tramite pipe
-    int adjusted_num; //numero modificato per il posizionamento verticale
-    bool shooting = false; //flag che controlla se il coccodrillo ha già sparato un proiettile
-    
-    /* se usiamo solo srand(time(NULL)); i due processi coccodrillo per ogni flusso vengono creati quasi contemporaneamente 
-     * e quindi ereditano lo stesso stato del generatore di numeri casuali rand(),
-     * producendo la stessa sequenza di numeri casuali all'inizio e facendoli sparare nello stesso momento.
-     * 
-     * usando srand(time(NULL) ^ getpid()) abbiamo un valore diverso per ogni processo coccodrillo, 
-     * usando quindi il pid e il tempo corrente per ottenere più casualità.
-     */
-    srand(time(NULL) ^ getpid());  //inizializziamo il generatore di numeri casuali con un seed unico
+    /*inizializzaziamo il generatore di numeri casuali*/
+    srand(time(NULL) ^ (unsigned int) pthread_self()); 
 
     /*se non è il primo gruppo di coccodrilli*/
-    if(!flag) {  
-        usleep(5000000); //attendiamo 5 secondi prima di iniziare per scaglionare l'apparizione dei coccodrilli
+    if(!flag) {
+        usleep(5000000); //attendiamo 5 secondi prima di iniziare
     }
 
     /*se è uno dei secondi coccodrilli, quelli da 9 a 17*/
     if (num >= 9) {
-        adjusted_num = num - 9; //lo riportiamo nell'intervallo da 0 a 8 per calcolare la posizione verticale
-    } 
-    /*altrimenti lo lasciamo normale*/
+        adjusted_num = num - 9; 
+    }
     else {
-        adjusted_num = num;
+        adjusted_num = num; 
     }
 
     /*inizializziamo la struct Messaggio*/
-    msg.index = num; //impostiamo l'indice del coccodrillo
-    msg.pid = getpid(); //salviamo il pid del processo corrente
-    msg.oggetto = ID_CROCODILE; //settiamo il tipo dell'oggetto come coccodrillo
-    msg.direzione = direzione; //impostiamo la direzione del coccodrillo
-    msg.y = 6 + (adjusted_num * 3); //calcoliamo la posizione verticale, ovvero distante ogni 3 righe
-    
+    msg.index = num; 
+    msg.tid = pthread_self(); 
+    msg.oggetto = ID_CROCODILE; 
+    msg.direzione = direzione; 
+    msg.y = 6 + (adjusted_num * 3); 
+
     /*se la direzione è verso destra*/
     if (msg.direzione == 1) {
-        msg.x = 0; //lo facciamo partire dasinistra
-    } 
-    /*altrimenti se la direzione è verso sinistra*/
-    else {
-        msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO; //lo facciamo partire da destra
+        msg.x = 0; 
     }
+    else {
+        msg.x = GAME_WIDTH - LARGHEZZA_COCCODRILLO; 
+    }
+
+    msg.velocita = speed; 
+    usleep(50000); 
+
+    produce_message(buffer, msg); 
     
-    msg.velocita = speed; //impostiamo la velocità del coccodrillo
-    usleep(50000); //attendiamo un breve periodo prima di iniziare il movimento
-
-    write(pipe_fd, &msg, sizeof(Messaggio)); //inviamo le informazioni iniziali al processo principale
-
+    /*!!!!!
+    nel while al posto di 1 game_running
+    è una variabile globale che si trova nel file buffer.c ->
+    -> bool game_running = true;
+    !!!!!*/
     /*ciclo infinito per il movimento continuo del coccodrillo*/
     while(1) {
         /*aggiorniamo la posizione del coccodrillo*/
@@ -166,7 +147,7 @@ int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag) {
             /*se il coccodrillo non ha ancora sparato in questo ciclo*/
             if(shooting == false) {
                 shooting = true; //impostiamo il flag che indica che il coccodrillo ha sparato
-                write(pipe_fd, &msg, sizeof(Messaggio)); //inviamo il messaggio alla pipe per creare il proiettile
+                produce_msg(buffer, msg); //inviamo il messaggio alla pipe per creare il proiettile
             }
 
             msg.oggetto = ID_CROCODILE; //risettiamo il tipo dell'oggetto a coccodrillo
@@ -175,11 +156,24 @@ int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag) {
         /*se il coccodrillo non ha superato i limiti dell'area di gioco*/
         if (check_borders(msg)) {
             msg.oggetto = RESPAWN; //impostiamo il tipo dell'oggetto a respawn per specificare che deve riapparire
-            write(pipe_fd, &msg, sizeof(Messaggio)); //inviamo il messaggio alla pipe lper far si che avvenga il respawn
-            break; //usciamo dal ciclo infinito
+            produce_msg(buffer, msg); //inviamo il messaggio alla pipe lper far si che avvenga il respawn
+            
+            /*resettiamo il respawn*/
+            shooting = false; 
+            if (msg.direzione == 1) {
+                msg.x = 0; 
+            }
+            else {
+                msg.x = GAME_HEIGHT - LARGHEZZA_COCCODRILLO;
+            }
+
+            msg.oggetto = ID_CROCODILE; 
+            usleep(100000);
         } 
 
-        write(pipe_fd, &msg, sizeof(Messaggio)); //inviamo la posizione aggiornata al processo principale
+        produce_msg(buffer, msg); //inviamo la posizione aggiornata al processo principale
         usleep(msg.velocita); //attendiamo un periodo in base dalla velocità prima del prossimo aggiornamento
     }
+    
+    return NULL; 
 }

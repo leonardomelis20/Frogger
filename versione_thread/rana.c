@@ -61,6 +61,10 @@ int num_tana(Messaggio msg) {
         }
         return tana;
     }
+    /*!!!!!
+    modifica
+    !!!!!*/
+    return tana; 
 }
 
 void tane(Messaggio msg) {
@@ -73,21 +77,35 @@ void tane(Messaggio msg) {
     }
 }
 
-void frog(int pipe_fd, bool* flag, int* speed ) {
+/**
+ * funzione che si occupa del thread della rana che gestisce l'input del giocatore
+ * @param arg puntatore ai parametri del thread
+ */
+void* frog_thread(void* arg) {
+    Frog_arg* params = (Frog_arg*) arg; 
+    Circular_buffer* buffer = params->buffer;
     Messaggio msg;
+
     msg.oggetto = ID_RANA;
-    msg.pid = getpid();
+    msg.tid = pthread_self();
+
     int input;
     msg.on_croc = false;
     msg.croc_index = -1;
     msg.x = 0;
     msg.y = 0;
-    int i = 0;
 
     /*invia la posizione iniziale*/
-    write(pipe_fd, &msg, sizeof(Messaggio));
+    produce_msg(buffer, msg);
 
     /*loop principale che gestisce l'input*/
+
+    /*!!!!!
+    nel while al posto di 1 game_running
+    è una variabile globale che si trova nel file buffer.c ->
+    -> bool game_running = true;
+    !!!!!*/
+
     while(1) {
         usleep(100000); //0.1 secondi di attesa
         
@@ -108,19 +126,24 @@ void frog(int pipe_fd, bool* flag, int* speed ) {
                 msg.x = 3;
                 break;
             case ' ':
-                /*invio un messaggio per creare un proiettile*/
+                /*invio un messaggio per creare una granata*/
                 msg.oggetto = CREATE_GRENADE;
-                write(pipe_fd, &msg, sizeof(Messaggio));
+                produce_msg(buffer, msg);
                 break;
             case 'p':
                 msg.oggetto = PAUSE;
-                write(pipe_fd, &msg, sizeof(Messaggio));
+                produce_msg(buffer, msg);
                 break;
         }
         
         msg.oggetto = ID_RANA; //ripristino l'oggetto a rana
-        write(pipe_fd, &msg, sizeof(Messaggio)); //invio la posizione aggiornata
+        produce_msg(buffer, msg); //invio la posizione aggiornata
         msg.x = 0;
         msg.y = 0;
     }
+
+    /*!!!!!
+    modifica
+    !!!!!*/
+    return NULL; 
 }

@@ -13,12 +13,12 @@
 #include <stdbool.h>
 
 #include "strutture.h"
+#include "buffer.h"
 
 void draw_crocodile(int x, int y);
 void movement_croc(Messaggio* croc);
 bool check_borders(Messaggio croc);
-void clear_croc(Messaggio msg);
-int get_index_croc(Messaggio msg[], pid_t pid);
-int main_croc(int pipe_fd, int num, int direzione, int speed, bool flag);
+void clear_croc(Messaggio msg); 
+void* crocodile_thread(void* arg);
 
 #endif

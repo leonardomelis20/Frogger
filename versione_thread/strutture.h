@@ -93,7 +93,7 @@ typedef struct {
     bool is_shooting;
     bool is_active;
     int pos_array;
-    int tempo_rimanente; // Tempo  per il timer
+    int tempo_rimanente; 
 } Messaggio;
 
 typedef struct {
@@ -114,6 +114,18 @@ typedef struct {
     bool is_active;       // Indica se il timer è attivo
 } Info_timer;
 
+/*!!!!
+prima si chiamava Crocs_arg
+!!!!*/
+/*struttura per i parametri dei thread*/
+typedef struct {
+    Circular_buffer* buffer; 
+    int tid; 
+    int direzione; 
+    int speed; 
+    bool flag; 
+} Crocs_arg;
+
 typedef struct {
     Circular_buffer* buffer; 
     bool* flag_array; 
@@ -129,13 +141,5 @@ typedef struct {
     Circular_buffer* buffer; 
     Messaggio copy;
 } Grenade_arg;
-
-typedef struct {
-    Circular_buffer* buffer; 
-    int tid; 
-    int direzione; 
-    int speed; 
-    bool flag; 
-} Crocs_arg;
 
 #endif

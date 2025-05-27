@@ -13,11 +13,11 @@
 #include <stdbool.h>
 
 #include "strutture.h"
+#include "buffer.h"
 
 void draw_bullet(int x, int y);
 void clear_bullet(int x, int y);
-void movement_bullet(Messaggio* croc, Messaggio* bullet); 
-bool check_bullet_borders(Messaggio bullet); 
-void main_bullet(int pipe_fd, Messaggio copy);
+bool check_bullet_borders(Messaggio bullet);
+void* bullet_thread(void* arg);
 
 #endif
