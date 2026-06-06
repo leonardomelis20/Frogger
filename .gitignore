@@ -1,0 +1,9 @@
+
+*.o
+*.DS_Store
+*Zone.Identifier
+*.wav
+coordinates_log.txt
+debug.log
+programma
+frogger_thread
